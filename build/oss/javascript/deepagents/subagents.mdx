@@ -193,7 +193,7 @@ Subagents support [structured output](/oss/javascript/langchain/structured-outpu
 
 
 <Note>
-Structured output for subagents requires `deepagents` version 1.8.4 or newer.
+    Structured output for subagents requires `deepagents>=1.8.4`.
 </Note>
 
 Pass `responseFormat` on the subagent config. When the subagent finishes, its structured response is JSON-serialized and returned as the `ToolMessage` content to the parent agent. The schema accepts anything supported by `createAgent`: Zod schemas, JSON schema objects, `toolStrategy(...)`, or `providerStrategy(...)`.
