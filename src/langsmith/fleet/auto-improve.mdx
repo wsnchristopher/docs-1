@@ -1,0 +1,49 @@
+---
+title: Auto-Improve
+description: Let your Fleet agent reflect on recent conversations daily and improve itself automatically.
+---
+
+Auto-Improve runs your agent on a daily cron job that reviews the last 24 hours of conversations and applies any clear improvements to the agent itself. When enabled, the agent inspects its recent threads, looks for explicit and implicit feedback, and updates its own configuration if there is a justified change to make.
+
+The agent can update itself by:
+
+- Editing `AGENTS.md` (its system prompt and operating instructions).
+- Enabling or adjusting [tools](/langsmith/fleet/tools) it already has access to.
+- Creating focused [`SKILL.md`](/langsmith/fleet/skills) files for repeatable tasks it struggles with.
+- Writing additional `.md` files to a `wiki/` directory (with an `index.md`) to record longer-form context or memories, then referencing them from `AGENTS.md`.
+
+If there isn't strong evidence for a change, the agent leaves itself unchanged. Auto-Improve is intentionally conservative: it does not invent new tools or make speculative edits.
+
+## How it works
+
+Enabling Auto-Improve creates a [schedule](/langsmith/fleet/schedules) that runs once per day at 7:00 UTC (12:00 AM PST / 3:00 AM EST). On each run, the agent is prompted to:
+
+1. Use the `load_previous_conversations` tool to gather the previous 24 hours of conversations.
+2. Inspect each conversation, paying attention to the agent's final outputs, the user's messages, and any explicit or implicit feedback.
+3. Decide whether a real improvement is warranted. If so, apply it via one of the update paths above. If not, make no changes.
+
+Because Auto-Improve must be able to write to memory without human review, enabling it automatically turns off [required approval for memory updates](/langsmith/fleet/manage-agent-settings#disable-required-approval-for-memory-updates).
+
+## Enable Auto-Improve
+
+1. In the [LangSmith UI](https://smith.langchain.com), navigate to your agent's inbox.
+1. Next to the agent name, click the <Icon icon="pencil" /> **Edit Agent** icon.
+1. In the top right corner, click the <Icon icon="settings" /> **Settings** icon.
+1. In the **Auto-Improve** section, toggle **Enable Auto-Improve** on.
+
+<Note>
+Enabling Auto-Improve disables the **Require approval to update memories** setting so the daily run can write memory updates without pausing for manual approval.
+</Note>
+
+## Disable Auto-Improve
+
+To stop the daily improvement run, toggle **Enable Auto-Improve** off in the same **Settings** popover. The underlying daily schedule is removed. The memory write approval setting is not re-enabled automatically — re-enable it manually under **Memory** if you want approvals back on.
+
+## Review what changed
+
+Auto-Improve runs surface in the same places as any other [scheduled run](/langsmith/fleet/schedules):
+
+- The agent's inbox shows the run and any messages or memory updates it produced.
+- File changes (for example, edits to `AGENTS.md`, new `SKILL.md` files, or new entries under `wiki/`) appear in the agent's memory.
+
+Review these periodically to confirm the changes the agent is making to itself match your expectations.

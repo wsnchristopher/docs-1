@@ -979,7 +979,8 @@
                 "langsmith/fleet/code",
                 "langsmith/fleet/mcp-framework",
                 "langsmith/fleet/webhooks",
-                "langsmith/fleet/auth-format"
+                "langsmith/fleet/auth-format",
+                "langsmith/fleet/auto-improve"
               ]
             },
             {
