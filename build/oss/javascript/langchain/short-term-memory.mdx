@@ -65,7 +65,7 @@ In production, use a checkpointer backed by a database:
 ```ts
 import { PostgresSaver } from "@langchain/langgraph-checkpoint-postgres";
 
-const DB_URI = "postgresql://postgres:postgres@localhost:5442/postgres?sslmode=disable";
+const DB_URI = "postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable";
 const checkpointer = PostgresSaver.fromConnString(DB_URI);
 ```
 
