@@ -1,6 +1,6 @@
 ---
 title: LangSmith Remote MCP
-description: Connect MCP-compatible clients to LangSmith over OAuth — no API key, no self-hosting, no header configuration.
+description: Connect MCP-compatible clients to LangSmith over OAuth—no API key, no self-hosting, no header configuration.
 ---
 
 The LangSmith Remote MCP is a [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP) server hosted by LangSmith. It exposes the same tools as the [standalone LangSmith MCP Server](/langsmith/langsmith-mcp-server) (conversation history, prompts, runs and traces, datasets, experiments, billing) but with OAuth-based authentication, so MCP-compatible clients connect directly without an API key, a separate deployment, or any header configuration.
@@ -20,7 +20,7 @@ The server discovers the rest of its OAuth metadata via [RFC 8414](https://datat
 
 ## Authentication
 
-Authentication uses OAuth 2.1 with [Dynamic Client Registration (RFC 7591)](https://datatracker.ietf.org/doc/html/rfc7591). Compatible MCP clients register themselves automatically on first use — there is no client ID to provision and no API key to manage.
+Authentication uses OAuth 2.1 with [Dynamic Client Registration (RFC 7591)](https://datatracker.ietf.org/doc/html/rfc7591). Compatible MCP clients register themselves automatically on first use—there is no client ID to provision and no API key to manage.
 
 After registration:
 
@@ -29,7 +29,7 @@ After registration:
 3. The client receives an access token and refresh token.
 4. The access token is automatically refreshed by the client when it expires.
 
-The session is scoped to your LangSmith user and workspace permissions — calls through the MCP server can only see what your account is permitted to see.
+The session is scoped to your LangSmith user and workspace permissions—calls through the MCP server can only see what your account is permitted to see.
 
 ## Quickstart
 
@@ -81,7 +81,7 @@ The Remote MCP exposes the same tool surface as the [standalone server](/langsmi
 - **Experiments and evaluations:** `list_experiments`, `run_experiment`
 - **Billing:** `get_billing_usage`
 
-See the [standalone server reference](/langsmith/langsmith-mcp-server#available-tools) for parameter and pagination details — both servers share the same tool implementations.
+See the [standalone server reference](/langsmith/langsmith-mcp-server#available-tools) for parameter and pagination details—both servers share the same tool implementations.
 
 ## Re-authenticating
 
@@ -93,4 +93,4 @@ If a client loses its session (for example, after revoking access in your LangSm
 
 ## Self-hosted LangSmith
 
-The Remote MCP is a SaaS-only feature, hosted alongside LangSmith Cloud — it is not yet available for [self-hosted LangSmith](/langsmith/self-hosted) deployments. To connect MCP clients to a self-hosted instance, run the [standalone LangSmith MCP Server](/langsmith/langsmith-mcp-server) in your own environment and point its `LANGSMITH_ENDPOINT` at your self-hosted instance.
+The Remote MCP is a SaaS-only feature, hosted alongside LangSmith Cloud—it is not yet available for [self-hosted LangSmith](/langsmith/self-hosted) deployments. To connect MCP clients to a self-hosted instance, run the [standalone LangSmith MCP Server](/langsmith/langsmith-mcp-server) in your own environment and point its `LANGSMITH_ENDPOINT` at your self-hosted instance.
