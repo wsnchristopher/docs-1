@@ -1,11 +1,11 @@
 ---
 title: Track and limit evaluator spend
 sidebarTitle: Evaluator spend
-description: Cap weekly LLM spend on evaluators with an organization-wide default or per-attachment limits to keep evaluator costs predictable.
+description: Cap weekly LLM spend on evaluators with an organization-wide default or per-evaluator overrides to keep evaluator costs predictable.
 keywords: ["evaluator spend", "spend limit", "evaluator budget", "evaluator cost", "weekly limit", "evaluator monitoring", "stop evaluator", "pause evaluator", "run rule limit"]
 ---
 
-Cap weekly LLM spend per evaluator to prevent a single evaluator from exceeding your budget. LangSmith tracks evaluator spend in a rolling 7-day window and lets [organization admins](/langsmith/rbac#organization-admin) set a weekly cap on each evaluator's [attachments](/langsmith/evaluation-concepts#attachments), the projects and datasets the evaluator runs on. The cap can be a single organization-wide default or a custom override on a specific attachment.
+Cap weekly LLM spend per evaluator to prevent a single evaluator from exceeding your budget. LangSmith tracks week-to-date evaluator spend, resetting at Monday 12AM UTC. It lets [organization admins](/langsmith/rbac#organization-admin) set a weekly cap on each evaluator's [attached projects and datasets](/langsmith/evaluation-concepts#attaching-an-evaluator-to-a-tracing-project-or-dataset). The cap can be a single organization-wide default or a custom override on a specific attached project or dataset.
 
 This guide shows you how to view and configure weekly evaluator spend caps.
 
@@ -14,18 +14,18 @@ LangSmith also offers [per-trace and per-model cost tracking](/langsmith/cost-tr
 </Tip>
 
 <Warning>
-Spend limits only enforce against runs whose model has [pricing configured](/langsmith/cost-tracking#create-a-new-or-modify-an-existing-model-price-entry) in LangSmith. Verify model pricing before relying on a limit, otherwise a single evaluator on an un-priced model will continue without enforcement.
+Setting spend limits is available for OpenAI, Anthropic, and Gemini models. Spend limits only enforce against runs on supported models that have [pricing configured](/langsmith/cost-tracking#create-a-new-or-modify-an-existing-model-price-entry) in LangSmith. Verify model pricing before relying on a limit. Unsupported models cannot be used in evaluators once a limit is set.
 </Warning>
 
 <Note>
-Spend totals are computed over a rolling 7-day window. The UI labels this window as **this week**.
+The UI labels the week-to-date window as **this week**.
 </Note>
 
 ## How enforcement works
 
-LangSmith records spend after each evaluator run completes, then sums spend across the rolling 7-day window. When the total reaches the effective limit, LangSmith pauses the evaluator on that attachment and resumes automatically once spend drops below the limit. In-flight runs may push the total slightly above the cap before they finalize, so an attachment can briefly overshoot by a small amount.
+LangSmith records spend after each evaluator run completes, then sums spend from Monday 12AM UTC to the current moment. When the total reaches the effective limit, LangSmith pauses the evaluator on that attached project or dataset. In-flight runs may push the total slightly above the cap before they finalize, so spend can briefly overshoot by a small amount.
 
-The agent and the trace are unaffected. Only the evaluator stops producing scores until spend drops below the limit.
+The agent and the trace are unaffected. Only the evaluator stops producing scores until the spend limit resets or the limit is [manually increased](#override-the-default-for-an-attached-project-or-dataset).
 
 ## Spend views and controls
 
@@ -35,13 +35,13 @@ The agent and the trace are unaffected. Only the evaluator stops producing score
 | [Evaluators table](#evaluators-table) (Spend, Spend Status) | **Evaluators** in the left sidebar | All workspace members |
 | [Projects & Datasets tab](#projects--datasets-tab-on-an-evaluator) | Open an evaluator, **Projects & Datasets** | All workspace members |
 | [Organization default spend limit](#set-an-organization-default-spend-limit) | Organization **Settings** > **Usage Configuration** | `organization:manage` required to view and edit |
-| [Per-attachment override](#override-the-default-for-an-attachment) | Edit evaluator > **Advanced** > **Spend limit** | All members can view, `organization:manage` required to edit |
+| [Per-evaluator override](#override-the-default-for-an-attached-project-or-dataset) | Edit evaluator > **Advanced** > **Spend limit** | All members can view, `organization:manage` required to edit |
 
 <CardGroup cols={2}>
   <Card title="Set your first limit" icon="settings" href="#set-an-organization-default-spend-limit">
-    Open organization Settings and define a single weekly cap that applies to every attachment across every workspace in the org.
+    Open organization **Settings** and define a single weekly cap that applies to all evaluator attachments to every project and dataset across all workspaces in the organization.
   </Card>
-  <Card title="Override for one attachment" icon="edit" href="#override-the-default-for-an-attachment">
+  <Card title="Override for one project or dataset" icon="edit" href="#override-the-default-for-an-attached-project-or-dataset">
     Customize the limit for a specific project or dataset attached to an evaluator.
   </Card>
 </CardGroup>
@@ -57,35 +57,35 @@ Navigate to the **Evaluators** page from the left sidebar. The top of the page s
 - **Daily evaluator spend**: Stacked bar chart of spend per day. Toggle between **Evaluator** and **Project / Dataset** breakdowns.
 - **Evaluator spend this week**: Total USD spend across all evaluators, with the change versus the previous week.
 - **Evaluator runs this week**: Total run count across all evaluators, with the change versus the previous week.
-- **Weekly evaluator spend limit monitoring**: Sorted list of top spenders with a per-attachment progress bar against its `$ spent / $ limit`. The header surfaces the count of attachments that have hit their limit (**Limit hit**) or are **on pace to hit limit**.
+- **Weekly evaluator spend limit monitoring**: Sorted list of top spenders with a per project or dataset progress bar against its `$ spent / $ limit`. The header surfaces the count of projects or datasets that have hit their limit (**Limit hit**) or are **on pace to hit limit**.
 
-Use the **Prev week** and **Next week** controls in the page header to move the 7-day window.
+Use the **Prev week** and **Next week** controls in the page header to move the weekly view.
 
-The tracing project or dataset view has an **Evaluators** tab that mirrors these widgets scoped to that attachment, for example, **Daily evaluator spend on this tracing project**.
+The tracing project or dataset view has an **Evaluators** tab that mirrors these widgets scoped to that project or dataset, for example, **Daily evaluator spend on this tracing project**.
 
 ### Evaluators table
 
 The Evaluators table on the same page includes:
 
-- **Spend (this week)**: Total LLM cost for the evaluator across all attachments over the last 7 days. Sortable. Evaluators that do not call an LLM (for example, code evaluators) show no value.
+- **Spend (this week)**: Total LLM cost for the evaluator across all attached projects and datasets since Monday 12AM UTC. Sortable. Evaluators that do not call an LLM (for example, code evaluators) show no value.
 - **Spend Status**: One of the following:
-    - **Under limits**: At least one attachment has a limit, and none are at the cap.
-    - **N limit hit**: One or more attachments have reached their limit and are paused. The number reflects how many attachments are paused.
-    - **Unlimited**: No attachment has a limit set.
+    - **Under limits**: At least one attached project or dataset has a limit, and none are at the cap.
+    - **N limit hit**: The evaluator has reached its limit in one or more projects or datasets it is attached to. The number reflects how many are paused.
+    - **Unlimited**: No limits have been set.
 
 ### Projects & Datasets tab on an evaluator
 
-Open an evaluator and select the **Projects & Datasets** tab to see per-attachment spend and limits:
+Open an evaluator and select the **Projects & Datasets** tab to see per-project or dataset spend and limits:
 
-- **Spend (this week)**: Total LLM cost for the evaluator for that attachment over the last 7 days.
-- **Current spend**: Progress bar showing spend against the limit over the rolling 7-day window.
-- **Weekly limit**: Effective weekly limit for that attachment, either the organization default or a per-attachment override.
+- **Spend (this week)**: Total LLM cost for the evaluator on that project or dataset since Monday 12AM UTC.
+- **Current spend**: Progress bar showing spend against the limit since Monday 12AM UTC.
+- **Weekly limit**: Effective weekly limit for that project or dataset, either the organization default or a custom override.
 
 For attachment management, refer to [Manage evaluators](/langsmith/evaluators).
 
 ## Set an organization default spend limit
 
-Organization admins set a single weekly cap that applies to every attachment across every workspace in the organization. There is one default per organization, not one per workspace.
+Organization admins set a single weekly cap that applies to every evaluator's attached projects and datasets across every workspace in the organization. There is one default per organization, not one per workspace.
 
 <Note>Setting and editing the organization default requires the `organization:manage` [permission](/langsmith/rbac).</Note>
 
@@ -93,17 +93,17 @@ Organization admins set a single weekly cap that applies to every attachment acr
 1. Enter a USD amount. The unit is `/ week`. Leave blank for no limit.
 1. Click **Save**.
 
-If no organization default is set, attachments are unlimited unless a per-attachment override is configured. Clearing the default removes the cap from every attachment that currently inherits it.
+If no organization default is set, attached projects and datasets are unlimited unless a custom override is configured. Clearing the default removes the cap from every attached project or dataset that currently inherits it.
 
-Changing the default updates only attachments that inherit it. Per-attachment overrides are preserved.
+Changing the default updates only attached projects and datasets that inherit it. Custom overrides are preserved.
 
-## Override the default for an attachment
+## Override the default for an attached project or dataset
 
-Organization admins can override the default for a specific attachment.
+Organization admins can override the default for a specific project or dataset attached to an evaluator.
 
 1. Navigate to **Evaluators** in the left sidebar and open the evaluator.
 1. Click the **Edit evaluator** icon at the top right.
-1. Under **Source**, select the specific attachment.
+1. Under **Source**, select the specific project or dataset.
 1. Scroll past **Filters** and **Sampling Rate**, then expand **Advanced**.
 1. In the **Spend limit** field, set a custom USD amount. The unit is `/ week`.
 1. **Save** the evaluator configuration.
@@ -118,25 +118,23 @@ Members without `organization:manage` see the limit but cannot change it. The re
 
 ## When a limit is reached
 
-When an attachment's weekly spend reaches its effective limit:
+When weekly spend on an attached project or dataset reaches its effective limit:
 
-- LangSmith stops running the evaluator on new runs from that attachment.
-- The Evaluators table **Spend Status** column shows **N limit hit**, and the Weekly evaluator spend limit monitoring widget surfaces the affected attachment.
-- Skipped runs are not backfilled. Evaluation resumes automatically on new runs once the rolling 7-day spend falls below the limit.
+- LangSmith stops running the evaluator on new runs from that project or dataset.
+- The Evaluators table **Spend Status** column shows **N limit hit**, and the Weekly evaluator spend limit monitoring widget surfaces the affected project or dataset.
+- Skipped runs are not backfilled. Evaluation resumes automatically on new runs once the spend limit resets or the limit is [manually increased](#override-the-default-for-an-attached-project-or-dataset).
 
 ## Configure model pricing
 
-Spend tracking and limits depend on per-model pricing stored in LangSmith. Confirm that every model used by your evaluators has pricing configured in [Model pricing](/langsmith/cost-tracking#create-a-new-or-modify-an-existing-model-price-entry) and that runs surface cost via [Cost tracking](/langsmith/cost-tracking).
+When a spend limit is set, evaluators can only be run on supported models (OpenAI, Anthropic, and Gemini), and the models need to have pricing configured. Models without pricing configured cannot be used in evaluators.
 
-If a model has no pricing configured, its runs are not counted toward spend, and a spend limit cannot enforce against it.
+Configure pricing for the models your evaluators use under [Model pricing](/langsmith/cost-tracking#create-a-new-or-modify-an-existing-model-price-entry).
 
 ## Troubleshooting
 
-**Limit set but the evaluator still ran past it**: Check that the model used by the evaluator has a pricing entry in [Model pricing](/langsmith/cost-tracking#create-a-new-or-modify-an-existing-model-price-entry). Spend on un-priced models is not counted, and limits cannot enforce against zero spend.
+**Trouble creating an evaluator**: When a limit is set, evaluators must use a supported model (OpenAI, Anthropic, or Gemini) with a pricing entry in [Model pricing](/langsmith/cost-tracking#create-a-new-or-modify-an-existing-model-price-entry).
 
 **LangSmith spend does not match my LLM provider invoice**: LangSmith computes spend from the per-model rates configured in [Model pricing](/langsmith/cost-tracking#create-a-new-or-modify-an-existing-model-price-entry), not from your provider's billing. Differences are expected if your provider applies discounts, custom contracts, or model variants you have not added to LangSmith.
-
-**Limit hit earlier than expected**: The window is a rolling 7-day window, not a calendar week. Spend from any run in the past 7 days counts, including spend from earlier in the previous calendar week.
 
 ## Related resources
 

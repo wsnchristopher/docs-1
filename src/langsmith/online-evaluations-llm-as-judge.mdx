@@ -64,7 +64,7 @@ In order to track progress of the backfill, you can view logs for your evaluator
 
 ## Set a spend limit
 
-You can cap LLM cost on this evaluator's attached projects and datasets per week. The organization default applies unless an organization admin sets a custom value in the **Spend limit** field under the **Advanced** section of the evaluator. To remove an override and inherit the organization default again, click **Reset to organization default**. When weekly spend reaches the effective limit, LangSmith pauses running this evaluator, and resumes once spend drops below the limit.
+You can cap LLM cost on this evaluator's attached projects and datasets per week. By default, the organization-wide evaluator limit applies. Organization admins can override this for a specific evaluator by setting a custom value in the **Spend limit** field under **Advanced**. To remove an override and inherit the organization default again, click **Reset to organization default**. When weekly spend reaches the effective limit, LangSmith pauses the evaluator on that project or dataset until the limit resets at Monday 12AM UTC or the limit is manually increased.
 
 For details, refer to [Track and limit evaluator spend](/langsmith/evaluator-spend).
 
