@@ -9,6 +9,8 @@ import ToolReturnObjectJs from '/snippets/code-samples/tool-return-object-js.mdx
 import ToolReturnCommandPy from '/snippets/code-samples/tool-return-command-py.mdx';
 import ToolReturnCommandJs from '/snippets/code-samples/tool-return-command-js.mdx';
 import ToolUpdateStatePy from '/snippets/code-samples/tool-update-state-py.mdx';
+import ToolErrorHandlingPy from '/snippets/code-samples/tool-error-handling-py.mdx';
+import ToolErrorHandlingJs from '/snippets/code-samples/tool-error-handling-js.mdx';
 
 Tools extend what [agents](/oss/python/langchain/agents) can do—letting them fetch real-time data, execute code, query external databases, and take actions in the world.
 
@@ -468,43 +470,11 @@ Requires `deepagents>=0.5.0` (or `langgraph>=1.1.5`).
 
 
 
-## ToolNode
+## Tool execution
 
-[`ToolNode`](https://reference.langchain.com/python/langgraph/agents/#langgraph.prebuilt.tool_node.ToolNode) is a prebuilt node that executes tools in LangGraph workflows. It handles parallel tool execution, error handling, and state injection automatically.
+In LangChain, tools are used by agents (for example via [`create_agent`](https://reference.langchain.com/python/langchain/agents/factory/create_agent)) and tool error handling is configured through [middleware](/oss/python/langchain/middleware).
 
-<Info>
-    For custom workflows where you need fine-grained control over tool execution patterns, use [`ToolNode`](https://reference.langchain.com/python/langgraph/agents/#langgraph.prebuilt.tool_node.ToolNode) instead of [`create_agent`](https://reference.langchain.com/python/langchain/agents/factory/create_agent). It's the building block that powers agent tool execution.
-</Info>
-
-### Basic usage
-
-```python
-from langchain.tools import tool
-from langgraph.prebuilt import ToolNode
-from langgraph.graph import StateGraph, MessagesState, START, END
-
-@tool
-def search(query: str) -> str:
-    """Search for information."""
-    return f"Results for: {query}"
-
-@tool
-def calculator(expression: str) -> str:
-    """Evaluate a math expression."""
-    return str(eval(expression))
-
-# Create the ToolNode with your tools
-tool_node = ToolNode([search, calculator])
-
-# Use in a graph
-builder = StateGraph(MessagesState)
-builder.add_node("tools", tool_node)
-# ... add other nodes and edges
-```
-
-
-
-
+For LangGraph workflows, tool execution is handled by [`ToolNode`](https://reference.langchain.com/python/langgraph/agents/#langgraph.prebuilt.tool_node.ToolNode). See [ToolNode](/oss/python/langgraph/workflows-agents#toolnode).
 
 ### Tool return values
 
@@ -572,52 +542,9 @@ Use this when the tool is not just returning data, but also mutating agent state
 
 ### Error handling
 
-Configure how tool errors are handled. See the [`ToolNode`](https://reference.langchain.com/python/langgraph/agents/#langgraph.prebuilt.tool_node.ToolNode) API reference for all options.
+Handle tool errors using LangChain agent [middleware](/oss/python/langchain/middleware) to retry failed tool calls or return custom error messages:
 
-```python
-from langgraph.prebuilt import ToolNode
-
-# Default: catch invocation errors, re-raise execution errors
-tool_node = ToolNode(tools)
-
-# Catch all errors and return error message to LLM
-tool_node = ToolNode(tools, handle_tool_errors=True)
-
-# Custom error message
-tool_node = ToolNode(tools, handle_tool_errors="Something went wrong, please try again.")
-
-# Custom error handler
-def handle_error(e: ValueError) -> str:
-    return f"Invalid input: {e}"
-
-tool_node = ToolNode(tools, handle_tool_errors=handle_error)
-
-# Only catch specific exception types
-tool_node = ToolNode(tools, handle_tool_errors=(ValueError, TypeError))
-```
-
-
-
-
-
-### Route with tools_condition
-
-Use [`tools_condition`](https://reference.langchain.com/python/langgraph/agents/#langgraph.prebuilt.tool_node.tools_condition) for conditional routing based on whether the LLM made tool calls:
-
-```python
-from langgraph.prebuilt import ToolNode, tools_condition
-from langgraph.graph import StateGraph, MessagesState, START, END
-
-builder = StateGraph(MessagesState)
-builder.add_node("llm", call_llm)
-builder.add_node("tools", ToolNode(tools))
-
-builder.add_edge(START, "llm")
-builder.add_conditional_edges("llm", tools_condition)  # Routes to "tools" or END
-builder.add_edge("tools", "llm")
-
-graph = builder.compile()
-```
+<ToolErrorHandlingPy />
 
 
 
@@ -629,15 +556,12 @@ Tools can access the current graph state through [`ToolRuntime`](https://referen
 
 ```python
 from langchain.tools import tool, ToolRuntime
-from langgraph.prebuilt import ToolNode
 
 @tool
 def get_message_count(runtime: ToolRuntime) -> str:
     """Get the number of messages in the conversation."""
     messages = runtime.state["messages"]
     return f"There are {len(messages)} messages."
-
-tool_node = ToolNode([get_message_count])
 ```
 
 

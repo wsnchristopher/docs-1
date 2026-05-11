@@ -1163,6 +1163,41 @@ for await (const step of stream) {
 ```
 </CodeGroup>
 
+
+### ToolNode
+
+[`ToolNode`](https://reference.langchain.com/javascript/langchain-langgraph/prebuilt/ToolNode) is a prebuilt node that executes tools in LangGraph workflows. It handles parallel tool execution, error handling, and state injection automatically.
+
+Use [`ToolNode`](https://reference.langchain.com/javascript/langchain-langgraph/prebuilt/ToolNode) when you need fine-grained control over how your graph executes tools. This is the building block that powers tool execution in many LangGraph agent patterns.
+
+
+
+```typescript
+import { ToolNode } from "@langchain/langgraph/prebuilt";
+import { tool } from "@langchain/core/tools";
+import * as z from "zod";
+
+const search = tool(
+  ({ query }) => `Results for: ${query}`,
+  {
+    name: "search",
+    description: "Search for information.",
+    schema: z.object({ query: z.string() }),
+  }
+);
+
+const calculator = tool(
+  ({ expression }) => String(eval(expression)),
+  {
+    name: "calculator",
+    description: "Evaluate a math expression.",
+    schema: z.object({ expression: z.string() }),
+  }
+);
+
+const toolNode = new ToolNode([search, calculator]);
+```
+
 ---
 
 <div className="source-links">
