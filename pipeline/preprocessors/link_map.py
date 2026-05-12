@@ -50,6 +50,7 @@ LINK_MAPS: list[LinkMap] = [
             "LocalShellBackend": "deepagents/backends/local_shell/LocalShellBackend",
             "StoreBackend": "deepagents/backends/store/StoreBackend",
             "CompositeBackend": "deepagents/backends/composite/CompositeBackend",
+            "ContextHubBackend": "deepagents/backends/context_hub/ContextHubBackend",
             "BackendProtocol": "deepagents/backends/protocol/BackendProtocol",
             "SandboxBackendProtocol": "deepagents/backends/protocol/SandboxBackendProtocol",
             "LangSmithSandbox": "deepagents/backends/langsmith/LangSmithSandbox",

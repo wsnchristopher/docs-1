@@ -13,6 +13,7 @@ import BackendStorePy from '/snippets/backend-store-py.mdx';
 import BackendStoreJs from '/snippets/backend-store-js.mdx';
 import BackendCompositePy from '/snippets/backend-composite-py.mdx';
 import BackendCompositeJs from '/snippets/backend-composite-js.mdx';
+import BackendContextHubPy from '/snippets/backend-context-hub-py.mdx';
 
 Deep Agents expose a filesystem surface to the agent via tools like `ls`, `read_file`, `write_file`, `edit_file`, `glob`, and `grep`. These tools operate through a pluggable backend. The `read_file` tool natively supports image files (`.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`) across all backends, returning them as multimodal content blocks.
 
@@ -49,6 +50,7 @@ Here are a few prebuilt filesystem backends that you can quickly use with your d
 | [Sandbox](/oss/deepagents/sandboxes) | `agent = create_deep_agent(model="google_genai:gemini-3.1-pro-preview", backend=sandbox)` <br></br>Execute code in isolated environments. Sandboxes provide filesystem tools plus the `execute` tool for running shell commands. Choose from Modal, Daytona, Deno, or local VFS. |
 | [Local shell](#localshellbackend-local-shell) | `agent = create_deep_agent(model="google_genai:gemini-3.1-pro-preview", backend=LocalShellBackend(root_dir=".", env={"PATH": "/usr/bin:/bin"}))` <br></br>Filesystem and shell execution directly on the host. No isolation—use only in controlled development environments. See [security considerations](#localshellbackend-local-shell) below. |
 | [Composite](#compositebackend-router) | Thread-scoped by default, `/memories/` persisted across threads. The Composite backend is maximally flexible. You can specify different routes in the filesystem to point towards different backends. See Composite routing below for a ready-to-paste example. |
+| [Context Hub](#contexthubbackend-langsmith-hub) (Python only) | `agent = create_deep_agent(model="google_genai:gemini-3.1-pro-preview", backend=ContextHubBackend(identifier="my-org/my-agent"))` <br></br>Persist files in a LangSmith Hub agent repo. Files are stored as commits in Context Hub and shared across threads, deployments, and machines. Great for centrally managed agent context (prompts, skills, memories) that you want versioned in LangSmith. |
 
 
 ```mermaid
@@ -61,12 +63,14 @@ graph TB
     Backend --> Sandbox[Sandbox]
     Backend --> LocalShell[Local Shell]
     Backend --> Composite[Composite]
+    Backend --> ContextHub[Context Hub]
     Backend --> Custom[Custom]
 
     Composite --> Router{Routes}
     Router --> State
     Router --> Disk
     Router --> Store
+    Router --> ContextHub
 
     Sandbox --> Execute["#43; execute tool"]
     LocalShell --> Execute["#43; execute tool"]
@@ -77,7 +81,7 @@ graph TB
     classDef output fill:#EBD0F0,stroke:#885270,stroke-width:2px,color:#441E33
 
     class Tools trigger
-    class Backend,State,Disk,Store,Sandbox,LocalShell,Composite,Custom process
+    class Backend,State,Disk,Store,Sandbox,LocalShell,Composite,ContextHub,Custom process
     class Router decision
     class Execute output
 ```
@@ -343,6 +347,34 @@ Namespace components must contain only alphanumeric characters, hyphens, undersc
 - When you want to give your agent both thread-scoped and cross-thread storage, a `CompositeBackend` allows you provide both a `StateBackend` and `StoreBackend`
 - When you have multiple sources of information that you want to provide to your agent as part of a single filesystem.
     - e.g. You have long-term memories stored under `/memories/` in one Store and you also have a custom backend that has documentation accessible at /docs/.
+
+### ContextHubBackend (LangSmith Hub)
+
+:::python
+@[`ContextHubBackend`] persists files in a [LangSmith](/langsmith/home) Hub agent repo. Files are written as commits to Context Hub and shared across threads, deployments, and machines.
+
+<BackendContextHubPy />
+
+**How it works:**
+- Lazily loads the agent repo's file tree on first access. A missing repo (`pull_agent` returns 404) is treated as empty and created on first write.
+- Maintains an in-memory cache of file contents and a commit hash, so subsequent reads are served locally and writes are chained as optimistic commits via `parent_commit`.
+- Each `write` or `edit` is committed as a single Hub commit; multi-file uploads are batched into one commit.
+- On a mutating failure, the cache is invalidated so the next read re-pulls fresh state from Hub.
+- Tracks linked entries (skills, sub-agents, other Hub repos) separately from regular files. Use `get_linked_entries()` to inspect them.
+
+**Best for:**
+- Agents whose context (prompts, skills, memories, instructions) is centrally managed in LangSmith.
+- Sharing the same versioned file tree across many deployments, threads, and developers.
+- Auditing or rolling back agent state via Hub commit history.
+
+<Note>
+Requires a LangSmith account and a configured `LANGSMITH_API_KEY`. The `identifier` is the Hub agent repo in `"owner/name"` form (or `"-/name"` for the authenticated user's namespace).
+</Note>
+:::
+
+:::js
+`ContextHubBackend` is currently Python-only. Track [`deepagents`](https://github.com/langchain-ai/deepagents) releases for JS support.
+:::
 
 ## Specify a backend
 
