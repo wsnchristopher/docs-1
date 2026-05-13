@@ -751,6 +751,7 @@
                 {
                   "group": "Deployment guides",
                   "pages": [
+                    "langsmith/deploy-managed-deep-agent",
                     "langsmith/deploy-to-cloud",
                     "langsmith/deploy-standalone-server",
                     "langsmith/deploy-with-control-plane",
@@ -939,6 +940,16 @@
                           "source": "https://api.host.langchain.com/openapi.json"
                         }
                   },
+                  {
+                    "group": "Managed Deep Agents API",
+                    "pages": [
+                      "langsmith/managed-deep-agents-api"
+                    ],
+                    "openapi": {
+                      "source": "langsmith/managed-deep-agents-openapi.json",
+                      "directory": "langsmith/managed-deep-agents-api"
+                    }
+                  },
                       "langsmith/smith-deployments-sdk",
                       "langsmith/cli",
                       "langsmith/remote-graph",
@@ -1041,7 +1052,7 @@
                     {
                       "group": "Deployment",
                       "pages": [
-                        "oss/python/deepagents/deploy",
+                        "langsmith/deploy-managed-deep-agent",
                         "oss/python/deepagents/going-to-production"
                       ]
                     },
