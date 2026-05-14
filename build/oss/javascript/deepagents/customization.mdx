@@ -27,6 +27,27 @@ import SandboxBasicPy from '/snippets/deepagents-sandbox-basic-py.mdx';
 import SandboxBasicJs from '/snippets/deepagents-sandbox-basic-js.mdx';
 import CreateDeepAgentConfigOptionsPy from '/snippets/create-deep-agent-config-options-py.mdx';
 import CreateDeepAgentConfigOptionsJs from '/snippets/create-deep-agent-config-options-js.mdx';
+import CustomizationToolsPy from '/snippets/code-samples/customization-tools-py.mdx';
+import CustomizationToolsJs from '/snippets/code-samples/customization-tools-js.mdx';
+import CustomizationSystemPromptPy from '/snippets/code-samples/customization-system-prompt-py.mdx';
+import CustomizationSystemPromptJs from '/snippets/code-samples/customization-system-prompt-js.mdx';
+import CustomizationMiddlewarePy from '/snippets/code-samples/customization-middleware-py.mdx';
+import CustomizationMiddlewareJs from '/snippets/code-samples/customization-middleware-js.mdx';
+import CustomizationMiddlewareDoPy from '/snippets/code-samples/customization-middleware-do-py.mdx';
+import CustomizationMiddlewareDoJs from '/snippets/code-samples/customization-middleware-do-js.mdx';
+import CustomizationMiddlewareDontPy from '/snippets/code-samples/customization-middleware-dont-py.mdx';
+import CustomizationMiddlewareDontJs from '/snippets/code-samples/customization-middleware-dont-js.mdx';
+import CustomizationInterpretersPy from '/snippets/code-samples/customization-interpreters-py.mdx';
+import CustomizationInterpretersJs from '/snippets/code-samples/customization-interpreters-js.mdx';
+import CustomizationMemoryStatePy from '/snippets/code-samples/customization-memory-state-py.mdx';
+import CustomizationMemoryStateJs from '/snippets/code-samples/customization-memory-state-js.mdx';
+import CustomizationMemoryStorePy from '/snippets/code-samples/customization-memory-store-py.mdx';
+import CustomizationMemoryStoreJs from '/snippets/code-samples/customization-memory-store-js.mdx';
+import CustomizationMemoryFilesystemPy from '/snippets/code-samples/customization-memory-filesystem-py.mdx';
+import CustomizationMemoryFilesystemJs from '/snippets/code-samples/customization-memory-filesystem-js.mdx';
+import CustomizationProfilesPy from '/snippets/code-samples/customization-profiles-py.mdx';
+import CustomizationStructuredOutputPy from '/snippets/code-samples/customization-structured-output-py.mdx';
+import CustomizationStructuredOutputJs from '/snippets/code-samples/customization-structured-output-js.mdx';
 
 
 
@@ -75,51 +96,7 @@ In addition to [built-in tools](/oss/javascript/deepagents/overview#core-capabil
 
 
 
-```typescript
-import { tool } from "langchain";
-import { TavilySearch } from "@langchain/tavily";
-import { createDeepAgent } from "deepagents";
-import { z } from "zod";
-
-const internetSearch = tool(
-  async ({
-    query,
-    maxResults = 5,
-    topic = "general",
-    includeRawContent = false,
-  }: {
-    query: string;
-    maxResults?: number;
-    topic?: "general" | "news" | "finance";
-    includeRawContent?: boolean;
-  }) => {
-    const tavilySearch = new TavilySearch({
-      maxResults,
-      tavilyApiKey: process.env.TAVILY_API_KEY,
-      includeRawContent,
-      topic,
-    });
-    return await tavilySearch._call({ query });
-  },
-  {
-    name: "internet_search",
-    description: "Run a web search",
-    schema: z.object({
-      query: z.string().describe("The search query"),
-      maxResults: z.number().optional().default(5),
-      topic: z
-        .enum(["general", "news", "finance"])
-        .optional()
-        .default("general"),
-      includeRawContent: z.boolean().optional().default(false),
-    }),
-  },
-);
-
-const agent = createDeepAgent({
-  tools: [internetSearch],
-});
-```
+<CustomizationToolsJs />
 
 
 ## System prompt
@@ -132,17 +109,7 @@ Each deep agent should also include a custom system prompt specific to its speci
 
 
 
-```typescript
-import { createDeepAgent } from "deepagents";
-
-const researchInstructions = `You are an expert researcher. ` +
-  `Your job is to conduct thorough research, and then ` +
-  `write a polished report.`;
-
-const agent = createDeepAgent({
-  systemPrompt: researchInstructions,
-});
-```
+<CustomizationSystemPromptJs />
 
 
 ### Prompt assembly
@@ -178,7 +145,7 @@ Assembled shapes (✓ = field is set, - = field is unset):
 | `str`            |                    ✓                    |                     -                     | `USER` + `CUSTOM`             |
 | `str`            |                    ✓                    |                     ✓                     | `USER` + `CUSTOM` + `SUFFIX`  |
 
-Worked example — built-in profiles (Anthropic, OpenAI) ship only a `system_prompt_suffix`, so a typical call lands in the `str` + `-` + `✓` row:
+Worked example—built-in profiles (Anthropic, OpenAI) ship only a `system_prompt_suffix`, so a typical call lands in the `str` + `-` + `✓` row:
 
 ```python
 agent = create_deep_agent(
@@ -276,54 +243,7 @@ You can provide additional middleware to extend functionality, add tools, or imp
 
 
 
-```typescript
-import { tool, createMiddleware } from "langchain";
-import { createDeepAgent } from "deepagents";
-import * as z from "zod";
-
-const getWeather = tool(
-  ({ city }: { city: string }) => {
-    return `The weather in ${city} is sunny.`;
-  },
-  {
-    name: "get_weather",
-    description: "Get the weather in a city.",
-    schema: z.object({
-      city: z.string(),
-    }),
-  }
-);
-
-let callCount = 0;
-
-const logToolCallsMiddleware = createMiddleware({
-  name: "LogToolCallsMiddleware",
-  wrapToolCall: async (request, handler) => {
-    // Intercept and log every tool call - demonstrates cross-cutting concern
-    callCount += 1;
-    const toolName = request.toolCall.name;
-
-    console.log(`[Middleware] Tool call #${callCount}: ${toolName}`);
-    console.log(
-      `[Middleware] Arguments: ${JSON.stringify(request.toolCall.args)}`
-    );
-
-    // Execute the tool call
-    const result = await handler(request);
-
-    // Log the result
-    console.log(`[Middleware] Tool call #${callCount} completed`);
-
-    return result;
-  },
-});
-
-const agent = await createDeepAgent({
-  model: "google_genai:gemini-3.1-pro-preview",
-  tools: [getWeather] as any,
-  middleware: [logToolCallsMiddleware] as any,
-});
-```
+<CustomizationMiddlewareJs />
 
 
 <Warning>
@@ -336,30 +256,14 @@ Graph state is scoped to a thread by design, so updates are safe under concurren
 
 
 
-```typescript
-const customMiddleware = createMiddleware({
-  name: "CustomMiddleware",
-  beforeAgent: async (state) => {
-    return { x: (state.x ?? 0) + 1 }; // Update graph state instead
-  },
-});
-```
+<CustomizationMiddlewareDoJs />
 
 
 Do **not** do this:
 
 
 
-```typescript
-let x = 1;
-
-const customMiddleware = createMiddleware({
-  name: "CustomMiddleware",
-  beforeAgent: async () => {
-    x += 1; // Mutation causes race conditions
-  },
-});
-```
+<CustomizationMiddlewareDontJs />
 
 
 
@@ -376,15 +280,7 @@ Use [interpreters](/oss/javascript/deepagents/interpreters) to add an `eval` too
 
 
 
-```typescript
-import { createDeepAgent } from "deepagents";
-import { createCodeInterpreterMiddleware } from "@langchain/quickjs";
-
-const agent = createDeepAgent({
-  model: "openai:gpt-5.4",
-  middleware: [createCodeInterpreterMiddleware()],
-});
-```
+<CustomizationInterpretersJs />
 
 
 For setup, programmatic tool calling, interpreter skills, and limits, see [Interpreters](/oss/javascript/deepagents/interpreters).
@@ -532,151 +428,20 @@ You can pass one or more file paths to the `memory` parameter when creating your
 
 
 <Tabs>
-  <Tab title="StateBackend">
-    ```typescript
-    import { createDeepAgent, type FileData } from "deepagents";
-    import { MemorySaver } from "@langchain/langgraph";
-
-    const AGENTS_MD_URL =
-      "https://raw.githubusercontent.com/langchain-ai/deepagents/refs/heads/main/examples/text-to-sql-agent/AGENTS.md";
-
-    async function fetchText(url: string): Promise<string> {
-      const res = await fetch(url);
-      if (!res.ok) {
-        throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`);
-      }
-      return await res.text();
-    }
-
-    const agentsMd = await fetchText(AGENTS_MD_URL);
-    const checkpointer = new MemorySaver();
-
-    function createFileData(content: string): FileData {
-      const now = new Date().toISOString();
-      return {
-        content,
-        mimeType: "text/plain",
-        created_at: now,
-        modified_at: now,
-      };
-    }
-
-    const agent = await createDeepAgent({
-      memory: ["/AGENTS.md"],
-      checkpointer: checkpointer,
-    });
-
-    const result = await agent.invoke(
-      {
-        messages: [
-          {
-            role: "user",
-            content: "Please tell me what's in your memory files.",
-          },
-        ],
-        // Seed the default StateBackend's in-state filesystem (virtual paths must start with "/").
-        files: { "/AGENTS.md": createFileData(agentsMd) },
-      },
-      { configurable: { thread_id: "12345" } }
-    );
-    ```
-  </Tab>
-  <Tab title="StoreBackend">
-```typescript
-    import { createDeepAgent, StoreBackend, type FileData } from "deepagents";
-    import {
-      InMemoryStore,
-      MemorySaver,
-    } from "@langchain/langgraph";
-
-    const AGENTS_MD_URL =
-      "https://raw.githubusercontent.com/langchain-ai/deepagents/refs/heads/main/examples/text-to-sql-agent/AGENTS.md";
-
-    async function fetchText(url: string): Promise<string> {
-      const res = await fetch(url);
-      if (!res.ok) {
-        throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`);
-      }
-      return await res.text();
-    }
-
-    const agentsMd = await fetchText(AGENTS_MD_URL);
-
-    function createFileData(content: string): FileData {
-      const now = new Date().toISOString();
-      return {
-        content,
-        mimeType: "text/plain",
-        created_at: now,
-        modified_at: now,
-      };
-    }
-
-    const store = new InMemoryStore();
-    const fileData = createFileData(agentsMd);
-    await store.put(["filesystem"], "/AGENTS.md", fileData);
-
-    const checkpointer = new MemorySaver();
-
-    const agent = await createDeepAgent({
-      backend: new StoreBackend(),
-      store: store,
-      checkpointer: checkpointer,
-      memory: ["/AGENTS.md"],
-    });
-
-    const result = await agent.invoke(
-      {
-        messages: [
-          {
-            role: "user",
-            content: "Please tell me what's in your memory files.",
-          },
-        ],
-      },
-      { configurable: { thread_id: "12345" } }
-    );
-    ```
-  </Tab>
-  <Tab title="Filesystem">
-    ```typescript
-    import { createDeepAgent, FilesystemBackend } from "deepagents";
-    import { MemorySaver } from "@langchain/langgraph";
-
-    // Checkpointer is REQUIRED for human-in-the-loop
-    const checkpointer = new MemorySaver();
-
-    const agent = await createDeepAgent({
-      backend: new FilesystemBackend({ rootDir: "/Users/user/{project}" }),
-      memory: ["./AGENTS.md", "./.deepagents/AGENTS.md"],
-      interruptOn: {
-        read_file: true,
-        write_file: true,
-        delete_file: true,
-      },
-      checkpointer, // Required!
-    });
-    ```
-  </Tab>
+    <Tab title="StateBackend">
+        <CustomizationMemoryStateJs />
+    </Tab>
+    <Tab title="StoreBackend">
+        <CustomizationMemoryStoreJs />
+    </Tab>
+    <Tab title="Filesystem">
+        <CustomizationMemoryFilesystemJs />
+    </Tab>
 </Tabs>
 
 
 
-## Profiles
 
-A [harness profile](/oss/javascript/deepagents/profiles#harness-profiles) packages per-provider or per-model tweaks (system prompt suffixes, tool description overrides, excluded tools or middleware, extra middleware, and general-purpose subagent edits) so `create_deep_agent` applies them automatically when the matching model is selected.
-
-```python
-from deepagents import HarnessProfile, register_harness_profile
-
-# Append a system-prompt suffix whenever gpt-5.4 is selected.
-register_harness_profile(
-    "openai:gpt-5.4",
-    HarnessProfile(system_prompt_suffix="Respond in under 100 words."),
-)
-```
-
-See [Profiles](/oss/javascript/deepagents/profiles) for registration keys, merge semantics, and plugin packaging. A narrower companion API, [provider profiles](/oss/javascript/deepagents/profiles#provider-profiles), packages model-construction arguments for a provider.
 
 ## Structured output
 
@@ -685,82 +450,7 @@ Deep Agents support [structured output](/oss/javascript/langchain/structured-out
 You can set a desired structured output schema by passing it as the `responseFormat` argument to the call to `createDeepAgent()`.
 When the model generates the structured data, it's captured, validated, and returned in the 'structuredResponse' key of the agent's state.
 
-```typescript
-import { tool } from "langchain";
-import { TavilySearch } from "@langchain/tavily";
-import { createDeepAgent } from "deepagents";
-import { z } from "zod";
-
-const internetSearch = tool(
-  async ({
-    query,
-    maxResults = 5,
-    topic = "general",
-    includeRawContent = false,
-  }: {
-    query: string;
-    maxResults?: number;
-    topic?: "general" | "news" | "finance";
-    includeRawContent?: boolean;
-  }) => {
-    const tavilySearch = new TavilySearch({
-      maxResults,
-      tavilyApiKey: process.env.TAVILY_API_KEY,
-      includeRawContent,
-      topic,
-    });
-    return await tavilySearch._call({ query });
-  },
-  {
-    name: "internet_search",
-    description: "Run a web search",
-    schema: z.object({
-      query: z.string().describe("The search query"),
-      maxResults: z.number().optional().default(5),
-      topic: z
-        .enum(["general", "news", "finance"])
-        .optional()
-        .default("general"),
-      includeRawContent: z.boolean().optional().default(false),
-    }),
-  }
-);
-
-const weatherReportSchema = z.object({
-  location: z.string().describe("The location for this weather report"),
-  temperature: z.number().describe("Current temperature in Celsius"),
-  condition: z
-    .string()
-    .describe("Current weather condition (e.g., sunny, cloudy, rainy)"),
-  humidity: z.number().describe("Humidity percentage"),
-  windSpeed: z.number().describe("Wind speed in km/h"),
-  forecast: z.string().describe("Brief forecast for the next 24 hours"),
-});
-
-const agent = await createDeepAgent({
-  responseFormat: weatherReportSchema,
-  tools: [internetSearch],
-});
-
-const result = await agent.invoke({
-  messages: [
-    {
-      role: "user",
-      content: "What's the weather like in San Francisco?",
-    },
-  ],
-});
-
-console.log(result.structuredResponse);
-// {
-//   location: 'San Francisco, California',
-//   temperature: 18.3,
-//   condition: 'Sunny',
-//   humidity: 48,
-//   windSpeed: 7.6,
-//   forecast: 'Clear skies with temperatures remaining mild. High of 18°C (64°F) during the day, dropping to around 11°C (52°F) at night.'
-// }
-```
+<CustomizationStructuredOutputJs />
 
 
 
