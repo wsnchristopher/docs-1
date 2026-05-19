@@ -1,0 +1,240 @@
+---
+title: Migrate from langgraph-supervisor
+sidebarTitle: langgraph-supervisor
+---
+
+This guide helps you migrate from the `langgraph-supervisor` package to the [LangChain multi-agent patterns](https://docs.langchain.com/oss/langchain/multi-agent).
+
+The `langgraph-supervisor` library provided a `create_supervisor` function for building hierarchical multi-agent systems where a central supervisor agent orchestrates specialized subagents using `create_react_agent`. The recommended approach today uses LangChain's `create_agent` with standard tools, which gives you more control over context engineering and takes advantage of the full middleware system.
+
+<Note>
+The `langgraph-supervisor` package remains available for users who need it, and has been updated to be compatible with LangChain v1. The patterns in this guide are recommended for new projects and for users upgrading existing code.
+</Note>
+
+## Why migrate?
+
+| | `langgraph-supervisor` | New patterns |
+|---|---|---|
+| Agent creation | `create_react_agent` (deprecated) | `create_agent` |
+| Supervisor creation | `create_supervisor` wrapper | Plain `create_agent` + tool wrapping |
+| Subagent invocation | Auto-generated handoff tools | Standard `@tool`-wrapped agents |
+| Context engineering | `output_mode`, `include_agent_name` params | Full control via tool wrapping |
+| Middleware support | Limited | Full middleware system |
+| Async subagents | Not supported | Supported via async subagents pattern |
+
+## Quick migration reference
+
+| `langgraph-supervisor` | New equivalent |
+|---|---|
+| `create_supervisor([agents], model=model)` | `create_agent(model, tools=[call_agent_a, call_agent_b])` |
+| `create_react_agent(model, tools, name="X")` | `create_agent(model, tools)` |
+| `create_handoff_tool(agent_name="X")` | `@tool` wrapping the agent's `.invoke()` call |
+| `output_mode="last_message"` | Return `result["messages"][-1].content` in your tool |
+| `output_mode="full_history"` | Return `result["messages"]` in your tool |
+
+## Basic migration
+
+### Before (langgraph-supervisor)
+
+:::python
+```python
+from langchain_openai import ChatOpenAI
+from langgraph.prebuilt import create_react_agent
+from langgraph_supervisor import create_supervisor
+
+model = ChatOpenAI(model="gpt-4o")
+
+math_agent = create_react_agent(  # [!code --]
+    model=model,
+    tools=[add, multiply],
+    name="math_expert",
+    prompt="You are a math expert.",
+)
+
+research_agent = create_react_agent(  # [!code --]
+    model=model,
+    tools=[web_search],
+    name="research_expert",
+    prompt="You are a world class researcher.",
+)
+
+workflow = create_supervisor(  # [!code --]
+    [research_agent, math_agent],  # [!code --]
+    model=model,  # [!code --]
+    prompt="You are a team supervisor managing a research expert and a math expert.",  # [!code --]
+)
+
+app = workflow.compile()
+result = app.invoke({"messages": [{"role": "user", "content": "..."}]})
+```
+:::
+
+### After (new patterns)
+
+:::python
+```python
+from langchain.agents import create_agent
+from langchain.tools import tool
+
+math_agent = create_agent(  # [!code ++]
+    "openai:gpt-4o",
+    tools=[add, multiply],
+    system_prompt="You are a math expert.",
+)
+
+research_agent = create_agent(  # [!code ++]
+    "openai:gpt-4o",
+    tools=[web_search],
+    system_prompt="You are a world class researcher.",
+)
+
+@tool("call_math_expert", description="Use for math problems.")  # [!code ++]
+def call_math_expert(query: str) -> str:  # [!code ++]
+    result = math_agent.invoke({"messages": [{"role": "user", "content": query}]})  # [!code ++]
+    return result["messages"][-1].content  # [!code ++]
+
+@tool("call_research_expert", description="Use for research and current events.")  # [!code ++]
+def call_research_expert(query: str) -> str:  # [!code ++]
+    result = research_agent.invoke({"messages": [{"role": "user", "content": query}]})  # [!code ++]
+    return result["messages"][-1].content  # [!code ++]
+
+supervisor = create_agent(  # [!code ++]
+    "openai:gpt-4o",  # [!code ++]
+    tools=[call_math_expert, call_research_expert],  # [!code ++]
+    system_prompt="You are a team supervisor managing a research expert and a math expert.",  # [!code ++]
+)
+
+result = supervisor.invoke({"messages": [{"role": "user", "content": "..."}]})
+```
+:::
+
+## Migrate `output_mode`
+
+The `create_supervisor` parameter `output_mode` controlled how subagent results were returned to the supervisor. In the new pattern, you control this directly in the tool wrapper.
+
+### `output_mode="last_message"` (default)
+
+Return only the final message from the subagent:
+
+:::python
+```python
+@tool("call_research_expert", description="Research a topic.")
+def call_research_expert(query: str) -> str:
+    result = research_agent.invoke({"messages": [{"role": "user", "content": query}]})
+    return result["messages"][-1].content  # [!code highlight]
+```
+:::
+
+### `output_mode="full_history"`
+
+Return the full message history from the subagent:
+
+:::python
+```python
+from langchain.messages import BaseMessage
+
+@tool("call_research_expert", description="Research a topic.")
+def call_research_expert(query: str) -> list[BaseMessage]:
+    result = research_agent.invoke({"messages": [{"role": "user", "content": query}]})
+    return result["messages"]  # [!code highlight]
+```
+:::
+
+## Migrate `add_handoff_messages`
+
+The `add_handoff_messages` parameter inserted synthetic messages into the message history when transferring to a subagent. In the new pattern, the tool call mechanism handles this automatically—tool calls and their results appear in the supervisor's message history as standard `ToolMessage` objects.
+
+## Migrate `include_agent_name`
+
+The `include_agent_name="inline"` parameter prepended the agent's name to output messages. In the new pattern, include identifying information directly in the tool return value:
+
+:::python
+```python
+@tool("call_research_expert", description="Research a topic.")
+def call_research_expert(query: str) -> str:
+    result = research_agent.invoke({"messages": [{"role": "user", "content": query}]})
+    content = result["messages"][-1].content
+    return f"[research_expert]: {content}"  # [!code highlight]
+```
+:::
+
+## Migrate `create_handoff_tool`
+
+The `create_handoff_tool` helper created a tool to transfer control between agents. This pattern maps to handoffs in LangChain, where tools return a `Command` to update state:
+
+### Before
+
+:::python
+```python
+from langgraph_supervisor import create_handoff_tool
+
+handoff_to_billing = create_handoff_tool(agent_name="billing_agent")  # [!code --]
+```
+:::
+
+### After
+
+:::python
+```python
+from langchain.tools import tool
+from langchain.messages import ToolMessage
+from langgraph.types import Command
+
+@tool  # [!code ++]
+def transfer_to_billing(runtime) -> Command:  # [!code ++]
+    """Transfer to the billing agent."""  # [!code ++]
+    return Command(  # [!code ++]
+        update={  # [!code ++]
+            "messages": [  # [!code ++]
+                ToolMessage(  # [!code ++]
+                    content="Transferred to billing agent",  # [!code ++]
+                    tool_call_id=runtime.tool_call_id,  # [!code ++]
+                )  # [!code ++]
+            ],  # [!code ++]
+            "current_step": "billing",  # [!code ++]
+        }  # [!code ++]
+    )  # [!code ++]
+```
+:::
+
+For more details on this pattern, see [Handoffs](/oss/langchain/multi-agent/handoffs).
+
+## Migrate `parallel_tool_calls`
+
+The `parallel_tool_calls=True` option on `create_supervisor` allowed the supervisor to invoke multiple subagents in a single turn. In the new pattern, this is the default behavior when the model supports it—no extra configuration is needed.
+
+If you need to disable parallel tool calls:
+
+:::python
+```python
+from langchain_openai import ChatOpenAI
+
+model = ChatOpenAI(model="gpt-4o").bind(parallel_tool_calls=False)  # [!code highlight]
+
+supervisor = create_agent(
+    model,  # [!code highlight]
+    tools=[call_math_expert, call_research_expert],
+    system_prompt="...",
+)
+```
+:::
+
+## Choose the right multi-agent pattern
+
+The `langgraph-supervisor` library implemented the **subagents** pattern. Depending on your use case, one of several LangChain multi-agent patterns may be a better fit:
+
+| Your use case | Recommended pattern |
+|---|---|
+| Central agent delegates tasks to specialists | [Subagents](/oss/langchain/multi-agent/subagents) |
+| Agents hand control to each other across turns | [Handoffs](/oss/langchain/multi-agent/handoffs) |
+| Single agent with on-demand specialized context | [Skills](/oss/langchain/multi-agent/skills) |
+| Classify and fan out to parallel agents | [Router](/oss/langchain/multi-agent/router) |
+| Custom graph logic mixing agents and deterministic steps | [Custom workflow](/oss/langchain/multi-agent/custom-workflow) |
+
+For a full comparison, see the [multi-agent overview](/oss/langchain/multi-agent).
+
+## Further reading
+
+- [Subagents guide](/oss/langchain/multi-agent/subagents) — in-depth coverage of the recommended pattern
+- [Multi-agent overview](/oss/langchain/multi-agent) — compare all patterns
+- [LangChain v1 migration guide](/oss/migrate/langchain-v1) — migrate from `create_react_agent` to `create_agent`
