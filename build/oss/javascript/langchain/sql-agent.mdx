@@ -43,13 +43,13 @@ We will cover the following concepts:
 
     <CodeGroup>
     ```bash npm
-    npm i langchain @langchain/core typeorm sqlite3 zod
+    npm i langchain @langchain/core sqlite3 zod
     ```
     ```bash yarn
-    yarn add langchain @langchain/core typeorm sqlite3 zod
+    yarn add langchain @langchain/core sqlite3 zod
     ```
     ```bash pnpm
-    pnpm add langchain @langchain/core typeorm sqlite3 zod
+    pnpm add langchain @langchain/core sqlite3 zod
     ```
     </CodeGroup>
 
@@ -102,24 +102,31 @@ async function resolveDbPath() {
 
 ## 3. Add tools for database interactions
 
-Use the `SqlDatabase` wrapper available in the `langchain/sql_db` to interact with the database. The wrapper provides a simple interface to execute SQL queries and fetch results:
-```typescript
-import { SqlDatabase } from "@langchain/classic/sql_db";
-import { DataSource } from "typeorm";
+<Warning>
+The following database tools are minimal wrappers for demonstration purposes only. They are not intended to be secure or used in production. Use narrowly scoped database permissions and add application-specific validation before executing model-generated SQL.
+</Warning>
 
-let db: SqlDatabase | undefined;
-async function getDb() {
-  if (!db) {
-    const dbPath = await resolveDbFile();
-    const datasource = new DataSource({ type: "sqlite", database: dbPath });
-    db = await SqlDatabase.fromDataSourceParams({ appDataSource: datasource });
-  }
-  return db;
+
+We will use the `sqlite3` library to query the database and fetch schemas:
+```typescript
+import sqlite3 from "sqlite3";
+
+// Below are minimal tools for demonstration purposes.
+async function runQuery(query: string): Promise<any[]> {
+  const dbPath = await resolveDbPath();
+  const db = new sqlite3.Database(dbPath);
+  return new Promise((resolve, reject) => {
+    db.all(query, [], (err, rows) => {
+      db.close();
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
 }
 
 async function getSchema() {
-  const db = await getDb();
-  return await db.getTableInfo();
+  const tables = await runQuery("SELECT sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';");
+  return tables.map((row) => row.sql).join("\n\n");
 }
 ```
 
@@ -164,7 +171,7 @@ function sanitizeSqlQuery(q) {
 
 ```
 
-Then, use `run` from `SQLDatabase` to execute commands with an `execute_sql` tool:
+Then, execute commands with an `execute_sql` tool:
 
 ```typescript
 import { tool } from "langchain"
@@ -174,8 +181,8 @@ const executeSql = tool(
   async ({ query }) => {
     const q = sanitizeSqlQuery(query);
     try {
-      const result = await db.run(q);
-      return typeof result === "string" ? result : JSON.stringify(result, null, 2);
+      const result = await runQuery(q);
+      return JSON.stringify(result, null, 2);
     } catch (e) {
       throw new Error(e?.message ?? String(e))
     }
@@ -286,8 +293,7 @@ In directory you will run in, you will need a `langgraph.json` file with the fol
 ```typescript
 import fs from "node:fs/promises";
 import path from "node:path";
-import { SqlDatabase } from "@langchain/classic/sql_db";
-import { DataSource } from "typeorm";
+import sqlite3 from "sqlite3";
 import { SystemMessage, createAgent, tool } from "langchain"
 import * as z from "zod";
 
@@ -305,19 +311,22 @@ async function resolveDbPath() {
   return localPath;
 }
 
-let db: SqlDatabase | undefined;
-async function getDb() {
-  if (!db) {
-    const dbPath = await resolveDbPath();
-    const datasource = new DataSource({ type: "sqlite", database: dbPath });
-    db = await SqlDatabase.fromDataSourceParams({ appDataSource: datasource });
-  }
-  return db;
+// Below are minimal tools for demonstration purposes.
+async function runQuery(query: string): Promise<any[]> {
+  const dbPath = await resolveDbPath();
+  const db = new sqlite3.Database(dbPath);
+  return new Promise((resolve, reject) => {
+    db.all(query, [], (err, rows) => {
+      db.close();
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
 }
 
 async function getSchema() {
-  const db = await getDb();
-  return await db.getTableInfo();
+  const tables = await runQuery("SELECT sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';");
+  return tables.map((row) => row.sql).join("\n\n");
 }
 
 const DENY_RE = /\b(INSERT|UPDATE|DELETE|ALTER|DROP|CREATE|REPLACE|TRUNCATE)\b/i;
@@ -352,8 +361,8 @@ const executeSql = tool(
   async ({ query }) => {
     const q = sanitizeSqlQuery(query);
     try {
-      const result = await db.run(q);
-      return typeof result === "string" ? result : JSON.stringify(result, null, 2);
+      const result = await runQuery(q);
+      return JSON.stringify(result, null, 2);
     } catch (e) {
       throw new Error(e?.message ?? String(e))
     }

@@ -34,13 +34,13 @@ We will cover the following concepts:
 
     <CodeGroup>
     ```bash npm
-    npm i langchain @langchain/core @langchain/classic @langchain/langgraph @langchain/openai typeorm sqlite3 zod
+    npm i langchain @langchain/core @langchain/langgraph @langchain/openai sqlite3 zod
     ```
     ```bash yarn
-    yarn add langchain @langchain/core @langchain/classic @langchain/langgraph @langchain/openai typeorm sqlite3 zod
+    yarn add langchain @langchain/core @langchain/langgraph @langchain/openai sqlite3 zod
     ```
     ```bash pnpm
-    pnpm add langchain @langchain/core @langchain/classic @langchain/langgraph @langchain/openai typeorm sqlite3 zod
+    pnpm add langchain @langchain/core @langchain/langgraph @langchain/openai sqlite3 zod
     ```
     </CodeGroup>
 
@@ -92,22 +92,31 @@ async function resolveDbPath() {
 }
 ```
 
-We will use a handy SQL database wrapper available in the `@langchain/classic/sql_db` module to interact with the database. The wrapper provides a simple interface to execute SQL queries and fetch results:
+We will use the `sqlite3` library to interact with the database:
 
 ```typescript
-import { SqlDatabase } from "@langchain/classic/sql_db";
-import { DataSource } from "typeorm";
+import sqlite3 from "sqlite3";
 
-const dbPath = await resolveDbPath();
-const datasource = new DataSource({ type: "sqlite", database: dbPath });
-const db = await SqlDatabase.fromDataSourceParams({ appDataSource: datasource });
-const dialect = db.appDataSourceOptions.type;
+const dialect = "sqlite";
 
+async function runQuery(query: string, params: unknown[] = []): Promise<any[]> {
+  const dbPath = await resolveDbPath();
+  const db = new sqlite3.Database(dbPath);
+  return new Promise((resolve, reject) => {
+    db.all(query, params, (err, rows) => {
+      db.close();
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+}
+
+const tableRows = await runQuery("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';");
+const tableNames = tableRows.map((row) => String(row.name));
 console.log(`Dialect: ${dialect}`);
-const tableNames = db.allTables.map(t => t.tableName);
 console.log(`Available tables: ${tableNames.join(", ")}`);
-const sampleResults = await db.run("SELECT * FROM Artist LIMIT 5;");
-console.log(`Sample output: ${sampleResults}`);
+const sampleResults = await runQuery("SELECT * FROM Artist LIMIT 5;");
+console.log(`Sample output: ${JSON.stringify(sampleResults)}`);
 ```
 ```
 Dialect: sqlite
@@ -118,6 +127,10 @@ Sample output: [{"ArtistId":1,"Name":"AC/DC"},{"ArtistId":2,"Name":"Accept"},{"A
 
 ## 3. Add tools for database interactions
 
+<Warning>
+The following database tools are minimal wrappers for demonstration purposes only. They are not intended to be secure or used in production. Use narrowly scoped database permissions and add application-specific validation before executing model-generated SQL.
+</Warning>
+
 
 We'll create custom tools to interact with the database:
 
@@ -125,10 +138,18 @@ We'll create custom tools to interact with the database:
 import { tool } from "langchain";
 import * as z from "zod";
 
-// Tool to list all tables
+async function getTableNames() {
+  const rows = await runQuery("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';");
+  return rows.map((row) => String(row.name));
+}
+
+function quoteSqliteIdentifier(identifier: string) {
+  return `"${identifier.replaceAll('"', '""')}"`;
+}
+
 const listTablesTool = tool(
   async () => {
-    const tableNames = db.allTables.map(t => t.tableName);
+    const tableNames = await getTableNames();
     return tableNames.join(", ");
   },
   {
@@ -138,11 +159,38 @@ const listTablesTool = tool(
   }
 );
 
-// Tool to get schema for specific tables
 const getSchemaTool = tool(
   async ({ table_names }) => {
-    const tables = table_names.split(",").map(t => t.trim());
-    return await db.getTableInfo(tables);
+    const validTables = new Set(await getTableNames());
+    const results: string[] = [];
+    for (const table of table_names.split(",").map((t) => t.trim())) {
+      if (!validTables.has(table)) {
+        results.push(`Error: table_names {'${table}'} not found in database`);
+        continue;
+      }
+      const schemaRows = await runQuery(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name=?;",
+        [table]
+      );
+      const schema = schemaRows[0]?.sql;
+      if (schema) {
+        results.push(String(schema));
+        try {
+          const rows = await runQuery(`SELECT * FROM ${quoteSqliteIdentifier(table)} LIMIT 3;`);
+          if (rows.length > 0) {
+            const colNames = Object.keys(rows[0]);
+            results.push(
+              `/*\n3 rows from ${table} table:\n${colNames.join("\t")}\n` +
+                rows.map((row) => colNames.map((col) => String(row[col])).join("\t")).join("\n") +
+                "\n*/"
+            );
+          }
+        } catch (e) {
+          results.push(`Error fetching sample rows: ${e}`);
+        }
+      }
+    }
+    return results.join("\n\n");
   },
   {
     name: "sql_db_schema",
@@ -153,14 +201,13 @@ const getSchemaTool = tool(
   }
 );
 
-// Tool to execute SQL query
 const queryTool = tool(
   async ({ query }) => {
     try {
-      const result = await db.run(query);
-      return typeof result === "string" ? result : JSON.stringify(result);
+      const result = await runQuery(query);
+      return JSON.stringify(result);
     } catch (error) {
-      return `Error: ${error.message}`;
+      return `Error: ${error instanceof Error ? error.message : String(error)}`;
     }
   },
   {
