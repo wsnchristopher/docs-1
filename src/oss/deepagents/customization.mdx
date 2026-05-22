@@ -573,6 +573,30 @@ For more information and examples, see [response format](/oss/langchain/structur
 
 `create_deep_agent` is a thin wrapper around [`create_agent`][langchain.agents.create_agent] — under the hood it assembles a middleware stack and calls `create_agent` with it. For fully custom agents, you can use `create_agent` directly and compose exactly the middleware you need.
 
+The table below shows all available middleware by category. The sections that follow build a complete example layer by layer.
+
+| Category | Middleware | What it adds | Default in `create_deep_agent` |
+|---|---|---|---|
+| **Execution environment** | @[`FilesystemMiddleware`] | Virtual filesystem, file tools, large-result offloading | ✓ |
+| | @[`CodeInterpreterMiddleware`] | Persistent JS REPL via QuickJS (`langchain_quickjs`) | |
+| | @[`ShellToolMiddleware`] | Stateful shell tool that persists across turns | |
+| **Context management** | @[`SummarizationMiddleware`] | Compresses history and offloads large tool results | ✓ |
+| | @[`SummarizationToolMiddleware`] | Agent-triggered summarization between tasks | |
+| | @[`MemoryMiddleware`] | Injects `AGENTS.md` files every turn | when `memory=` set |
+| | @[`SkillsMiddleware`] | Progressive skill disclosure | when `skills=` set |
+| | @[`AnthropicPromptCachingMiddleware`] | Reduces redundant token processing | ✓ (Anthropic) |
+| | @[`LLMToolSelectorMiddleware`] | Dynamic LLM-based tool filtering | |
+| **Planning & delegation** | @[`TodoListMiddleware`] | Todo list tracking across turns | ✓ |
+| | @[`SubAgentMiddleware`] | Sync subagent spawning via `task` tool | ✓ |
+| | @[`AsyncSubAgentMiddleware`] | Background non-blocking subagents | |
+| **Fault tolerance** | @[`ModelRetryMiddleware`] | Retry on model call failure | |
+| | @[`ToolRetryMiddleware`] | Retry failed tool calls | |
+| | @[`ModelFallbackMiddleware`] | Fall back to an alternate model | |
+| | @[`ModelCallLimitMiddleware`] | Cap total model calls per session | |
+| | @[`ToolCallLimitMiddleware`] | Cap total tool calls per session | |
+| **Guardrails** | @[`PIIMiddleware`] | Detect and redact PII from tool results | |
+| **Steering** | @[`HumanInTheLoopMiddleware`] | Pause for human approval before tool calls | when `interrupt_on=` set |
+
 The most minimal agent is just a model calling tools in a loop:
 
 ```python
@@ -588,7 +612,7 @@ From here, each section below adds one capability layer, building toward a compl
 
 ### Execution environment
 
-@[`FilesystemMiddleware`] gives the agent a virtual filesystem: it can read, write, and edit files, and automatically offloads large tool results out of the context window to keep it from filling up.
+@[`FilesystemMiddleware`] gives the agent a virtual filesystem: it can read, write, and edit files, and automatically offloads large tool results out of the context window. For code execution, @[`CodeInterpreterMiddleware`] adds a persistent JavaScript REPL via QuickJS, and @[`ShellToolMiddleware`] provides a stateful shell that persists across turns. To run code in a fully isolated environment, swap `StateBackend` for a [`SandboxBackend`](/oss/deepagents/sandboxes).
 
 ```python
 from langchain.agents import create_agent
@@ -606,45 +630,43 @@ agent = create_agent(
 )
 ```
 
-Swap `StateBackend` for a [`SandboxBackend`](/oss/deepagents/sandboxes) to give the agent an isolated environment with shell execution.
-
 ### Context management
 
-@[`MemoryMiddleware`] injects `AGENTS.md` context on every turn. @[`SkillsMiddleware`] progressively loads skill files only when the agent determines they are relevant — keeping the initial context window lean.
+@[`SummarizationMiddleware`] compresses message history and offloads large tool results when the context window fills up. @[`MemoryMiddleware`] injects `AGENTS.md` context on every turn. @[`SkillsMiddleware`] progressively loads skill files only when the agent determines they are relevant, keeping the initial context window lean.
 
 ```python
 from langchain.agents import create_agent
 from deepagents.backends import StateBackend
-from deepagents.middleware import FilesystemMiddleware, MemoryMiddleware, SkillsMiddleware
+from deepagents.middleware import FilesystemMiddleware, MemoryMiddleware, SkillsMiddleware, SummarizationMiddleware
 
 backend = StateBackend()
+model = "anthropic:claude-sonnet-4-6"
 
 agent = create_agent(
-    model="anthropic:claude-sonnet-4-6",
+    model=model,
     tools=[search],
     middleware=[
         FilesystemMiddleware(backend=backend),
+        SummarizationMiddleware(model=model, backend=backend),
         MemoryMiddleware(backend=backend, sources=["./AGENTS.md"]),
         SkillsMiddleware(backend=backend, sources=["./skills/"]),
     ],
 )
 ```
 
-<Note>
-`create_deep_agent` also includes @[`SummarizationMiddleware`] by default, which compresses message history when the context window grows long. Add it explicitly from `langchain.agents.middleware` if your custom agent handles long sessions.
-</Note>
-
 ### Planning and delegation
 
-@[`SubAgentMiddleware`] adds a `task` tool that spawns subagents for isolated subtasks. Each subagent runs in its own fresh context window, so complex multi-step work does not exhaust the main agent's context.
+@[`TodoListMiddleware`] tracks tasks across turns. @[`SubAgentMiddleware`] adds a `task` tool that spawns subagents for isolated subtasks — each subagent runs in its own fresh context window, so complex multi-step work does not exhaust the main agent's context.
 
 ```python
 from langchain.agents import create_agent
+from langchain.agents.middleware import TodoListMiddleware
 from deepagents import SubAgent
 from deepagents.backends import StateBackend
-from deepagents.middleware import FilesystemMiddleware, MemoryMiddleware, SkillsMiddleware, SubAgentMiddleware
+from deepagents.middleware import FilesystemMiddleware, MemoryMiddleware, SkillsMiddleware, SubAgentMiddleware, SummarizationMiddleware
 
 backend = StateBackend()
+model = "anthropic:claude-sonnet-4-6"
 
 researcher: SubAgent = {
     "name": "researcher",
@@ -654,12 +676,14 @@ researcher: SubAgent = {
 }
 
 agent = create_agent(
-    model="anthropic:claude-sonnet-4-6",
+    model=model,
     tools=[search],
     middleware=[
         FilesystemMiddleware(backend=backend),
+        SummarizationMiddleware(model=model, backend=backend),
         MemoryMiddleware(backend=backend, sources=["./AGENTS.md"]),
         SkillsMiddleware(backend=backend, sources=["./skills/"]),
+        TodoListMiddleware(),
         SubAgentMiddleware(backend=backend, subagents=[researcher]),
     ],
 )
@@ -673,13 +697,14 @@ For background (non-blocking) subagents that run in parallel, see @[`AsyncSubAge
 
 ```python
 from langchain.agents import create_agent
-from langchain.agents.middleware import HumanInTheLoopMiddleware
+from langchain.agents.middleware import HumanInTheLoopMiddleware, TodoListMiddleware
 from langgraph.checkpoint.memory import MemorySaver
 from deepagents import SubAgent
 from deepagents.backends import StateBackend
-from deepagents.middleware import FilesystemMiddleware, MemoryMiddleware, SkillsMiddleware, SubAgentMiddleware
+from deepagents.middleware import FilesystemMiddleware, MemoryMiddleware, SkillsMiddleware, SubAgentMiddleware, SummarizationMiddleware
 
 backend = StateBackend()
+model = "anthropic:claude-sonnet-4-6"
 
 researcher: SubAgent = {
     "name": "researcher",
@@ -689,14 +714,16 @@ researcher: SubAgent = {
 }
 
 agent = create_agent(
-    model="anthropic:claude-sonnet-4-6",
+    model=model,
     tools=[search],
     middleware=[
-        FilesystemMiddleware(backend=backend),                                   # execution environment
-        MemoryMiddleware(backend=backend, sources=["./AGENTS.md"]),              # context management
-        SkillsMiddleware(backend=backend, sources=["./skills/"]),                # context management
-        SubAgentMiddleware(backend=backend, subagents=[researcher]),             # planning & delegation
-        HumanInTheLoopMiddleware(interrupt_on={"write_file": True}),            # steering
+        FilesystemMiddleware(backend=backend),                                       # execution environment
+        SummarizationMiddleware(model=model, backend=backend),                       # context management
+        MemoryMiddleware(backend=backend, sources=["./AGENTS.md"]),                  # context management
+        SkillsMiddleware(backend=backend, sources=["./skills/"]),                    # context management
+        TodoListMiddleware(),                                                         # planning & delegation
+        SubAgentMiddleware(backend=backend, subagents=[researcher]),                 # planning & delegation
+        HumanInTheLoopMiddleware(interrupt_on={"write_file": True}),                # steering
     ],
     checkpointer=MemorySaver(),
 )
