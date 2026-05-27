@@ -3,6 +3,10 @@ title: Graph API overview
 sidebarTitle: Graph API
 ---
 
+import GraphApiUsingTasksOriginalJs from '/snippets/code-samples/graph-api-using-tasks-original-js.mdx';
+import GraphApiUsingTasksOriginalPy from '/snippets/code-samples/graph-api-using-tasks-original-py.mdx';
+import GraphApiUsingTasksTaskJs from '/snippets/code-samples/graph-api-using-tasks-task-js.mdx';
+import GraphApiUsingTasksTaskPy from '/snippets/code-samples/graph-api-using-tasks-task-py.mdx';
 import LanggraphGraphApiResumeV2Py from '/snippets/code-samples/langgraph-graph-api-resume-v2-py.mdx';
 
 ## Graphs
@@ -264,7 +268,7 @@ In LangGraph, nodes are Python functions (either synchronous or asynchronous) th
 
 1. `state`—The [state](#state) of the graph
 2. `config`—A [`RunnableConfig`](https://reference.langchain.com/python/langchain-core/runnables/config/RunnableConfig) object that contains configuration information like `thread_id` and tracing information like `tags`
-3. `runtime`—A `Runtime` object that contains [runtime `context`](#runtime-context) and other information like `store`, `stream_writer`, `execution_info`, `server_info`, `heartbeat` (for idle timeout refresh), and `control` (for [graceful shutdown](/oss/python/langgraph/durable-execution#graceful-shutdown))
+3. `runtime`—A `Runtime` object that contains [runtime `context`](#runtime-context) and other information like `store`, `stream_writer`, `execution_info`, `server_info`, `heartbeat` (for idle timeout refresh), and `control` (for [graceful shutdown](/oss/python/langgraph/fault-tolerance#graceful-shutdown))
 
 Similar to `NetworkX`, you add these nodes to a graph using the [`add_node`](https://reference.langchain.com/python/langgraph/graph/state/StateGraph/add_node) method:
 
@@ -316,6 +320,36 @@ builder.add_node(my_node)
 # You can then create edges to/from this node by referencing it as `"my_node"`
 ```
 
+
+
+
+
+### Re-execution and idempotency
+
+When you compile with a [checkpointer](/oss/python/langgraph/persistence), LangGraph saves checkpoints at [super-step](#graphs) boundaries, not mid-function inside a node. If execution stops and later resumes (for example after an [interrupt](/oss/python/langgraph/interrupts) or a [retry](/oss/python/langgraph/fault-tolerance#retries)), the affected **node** runs again from the start of its function. Code and side effects before the pause run again.
+
+**Idempotency.** Design **node** logic so re-execution does not corrupt state. If a node inserts a database row, running it twice should not create duplicate rows unless that is intentional. Use idempotency keys, upserts, or read-before-write checks. For effects around `interrupt()`, see [Side effects called before `interrupt` must be idempotent](/oss/python/langgraph/interrupts#side-effects-called-before-interrupt-must-be-idempotent).
+
+**Graph changes.** [Determinism](/oss/python/langgraph/functional-api#determinism) rules about code changes do not apply to graph structure. You can add or remove **nodes** and edges without breaking resume for existing threads. Resumed runs use saved state and execute whatever graph you compile now.
+
+**Tasks and interrupts inside a node.** If a **node** calls [**tasks**](/oss/python/langgraph/functional-api#task) or [`interrupt`](https://reference.langchain.com/python/langgraph/types/interrupt), stricter determinism rules apply on resume. LangGraph restores completed **task** results from the checkpointer, but changing **task** or [`interrupt`](https://reference.langchain.com/python/langgraph/types/interrupt) order in code before the resume point can mismatch cached values. A [Functional API](/oss/python/langgraph/functional-api) **entrypoint** compiles to a single **node** that runs the whole entrypoint method this way. See [Determinism](/oss/python/langgraph/functional-api#determinism), [Idempotency](/oss/python/langgraph/functional-api#idempotency), and [Using tasks in nodes](#using-tasks-in-nodes).
+
+
+
+
+
+### Using tasks in nodes
+
+If a [node](#nodes) contains multiple operations, you may find it easier to implement each operation as a [**task**](/oss/python/langgraph/functional-api#task) instead of splitting the logic across multiple nodes. Task results are checkpointed when the graph uses a checkpointer, so resuming a thread can skip completed **task** work inside the node.
+
+<Tabs>
+    <Tab title="Original">
+    <GraphApiUsingTasksOriginalPy />
+    </Tab>
+    <Tab title="With task">
+    <GraphApiUsingTasksTaskPy />
+    </Tab>
+</Tabs>
 
 
 
