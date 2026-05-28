@@ -843,7 +843,18 @@
                     {
                       "group": "Deploy with Terraform",
                       "pages": [
-                        "langsmith/self-host-terraform"
+                        "langsmith/self-host-terraform",
+                        {
+                          "group": "AWS",
+                          "pages": [
+                            "langsmith/self-host-terraform-aws-prerequisites",
+                            "langsmith/self-host-terraform-aws-quickstart",
+                            "langsmith/self-host-terraform-aws-architecture",
+                            "langsmith/self-host-terraform-aws-quick-reference",
+                            "langsmith/self-host-terraform-aws-troubleshooting",
+                            "langsmith/self-host-terraform-aws-teardown"
+                          ]
+                        }
                       ]
                     },
                     {
