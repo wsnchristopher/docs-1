@@ -1,0 +1,155 @@
+---
+title: Azure Terraform teardown
+sidebarTitle: Teardown
+description: Remove a LangSmith self-hosted deployment on Azure AKS using the LangChain Terraform modules.
+---
+
+Teardown for a LangSmith deployment provisioned with the [Azure Terraform modules](https://github.com/langchain-ai/terraform/tree/main/modules/azure) happens in three `make` commands. All three are idempotent: safe to re-run if something fails partway through.
+
+```txt
+make uninstall   → removes Helm releases + LGP CRD + namespaces
+make destroy     → destroys all Azure infrastructure via terraform destroy
+make clean       → removes generated secrets, helm values, and tfstate lock
+```
+
+<Warning>
+Back up any traces or data you want to keep before destroying. PostgreSQL and Blob Storage are permanently deleted.
+</Warning>
+
+## Step 1 — Uninstall Helm and Kubernetes resources
+
+```bash
+cd terraform/modules/azure
+make uninstall
+```
+
+`uninstall.sh` does, in order:
+
+1. Deletes all `lgp` custom resources (LangSmith Deployment instances) and waits for operator-managed pods to terminate.
+2. Deletes the `lgps.apps.langchain.ai` CRD. The CRD has `helm.sh/resource-policy: keep` — Helm leaves it behind intentionally.
+3. Helm uninstalls `langsmith`, `ingress-nginx`, `cert-manager`, `keda`.
+4. Deletes namespaces: `langsmith`, `ingress-nginx`, `cert-manager`, `keda`.
+
+<Note>
+If `make uninstall` hangs on namespace deletion (stuck finalizers), force the deletion:
+
+```bash
+kubectl delete namespace langsmith --grace-period=0 --force
+```
+</Note>
+
+## Step 2 — Destroy Azure infrastructure
+
+```bash
+cd terraform/modules/azure
+make destroy
+```
+
+Runs `terraform destroy -auto-approve` from `infra/`. **Resources destroyed (~20 to 30 minutes):**
+
+- AKS cluster + all node pools
+- PostgreSQL Flexible Server + configuration + private DNS zone
+- Redis Cache Premium
+- Blob Storage account + container + managed identity + federated credentials
+- Azure Key Vault (enters soft-delete — see below)
+- VNet + subnets
+- Resource group
+
+## Step 3 — Clean up generated files
+
+```bash
+cd terraform/modules/azure
+make clean
+```
+
+Removes:
+
+- `infra/secrets/` — generated environment files with secrets
+- `helm/values/langsmith-values-*.yaml` — generated Helm override files
+- `infra/.terraform.tfstate.lock.info` — stale lock file (if Terraform was interrupted)
+
+Does not remove `terraform.tfstate` — that stays in place for state tracking.
+
+## Key Vault soft-delete
+
+Key Vault enters soft-delete after `terraform destroy`. The name is globally reserved for 90 days. A re-deploy with the same identifier fails:
+
+```txt
+A vault with the same name already exists in a deleted state.
+```
+
+### Purge protection disabled (default for dev/test)
+
+```bash
+az keyvault purge --name "langsmith-kv-<identifier>" --location <region>
+
+# Verify it is gone
+az keyvault list-deleted --query "[].name" -o table
+```
+
+### Purge protection enabled
+
+**Option A — Change the identifier:**
+
+```hcl
+# infra/terraform.tfvars
+identifier = "-demo2"   # any unused suffix
+```
+
+**Option B — Disable purge protection before next teardown:**
+
+```bash
+cd modules/azure/infra
+terraform apply -var="keyvault_purge_protection=false"
+cd ..
+make destroy
+az keyvault purge --name "langsmith-kv-<identifier>" --location <region>
+```
+
+**Option C — Wait 90 days** for the retention period to expire.
+
+## Verify clean state
+
+```bash
+# Resource group should be gone
+az group show --name "langsmith-rg-<identifier>"
+# Expected: ResourceGroupNotFound
+
+# Check for soft-deleted Key Vaults
+az keyvault list-deleted --query "[].name" -o table
+
+# kubectl context is now stale — cluster is gone
+kubectl cluster-info
+# Expected: connection refused or timeout
+
+# Terraform state should be empty (or just the backend config)
+cd modules/azure/infra && terraform state list
+```
+
+## Redeploy after teardown
+
+After a full teardown, redeploy with the standard `make` workflow:
+
+```bash
+cd terraform/modules/azure
+make setup-env          # set ARM_SUBSCRIPTION_ID, LANGSMITH_LICENSE_KEY, etc.
+make init               # terraform init
+make apply              # terraform apply → AKS + managed services
+make kubeconfig         # az aks get-credentials
+make k8s-secrets        # create langsmith-config-secret in the cluster
+make init-values        # generate helm override files from tfvars
+make deploy             # helm upgrade --install + DNS label + ClusterIssuer
+```
+
+See the [Azure quickstart](/langsmith/self-host-terraform-azure-quickstart) for the full sequence with prerequisites and per-pass details.
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/self-host-terraform-azure-teardown.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

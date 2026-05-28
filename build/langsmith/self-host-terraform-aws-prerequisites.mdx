@@ -1,0 +1,109 @@
+---
+title: AWS Terraform prerequisites
+sidebarTitle: Prerequisites
+description: Tools, IAM permissions, and AWS authentication required before deploying LangSmith self-hosted on EKS with the LangChain Terraform modules.
+---
+
+Complete the following before running the [AWS deployment](/langsmith/self-host-terraform-aws-quickstart). The full module source lives at [github.com/langchain-ai/terraform/tree/main/modules/aws](https://github.com/langchain-ai/terraform/tree/main/modules/aws).
+
+## Required tools
+
+| Tool | Version | Purpose |
+|---|---|---|
+| AWS CLI | v2 | Authenticate, query AWS resources, manage EKS kubeconfig |
+| Terraform | 1.5 | Run the infrastructure modules |
+| `kubectl` | 1.28 | Inspect the EKS cluster |
+| Helm | 3.12 | Install and manage the LangSmith chart |
+| `eksctl` | latest | Optional, handy for kubeconfig and debugging |
+
+Install on macOS:
+
+```bash
+brew install awscli kubectl helm eksctl
+brew tap hashicorp/tap && brew install hashicorp/tap/terraform
+```
+
+Verify each tool is on `PATH`:
+
+```bash
+aws --version
+terraform version
+kubectl version --client
+helm version
+```
+
+For Linux, follow the [AWS CLI install guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and use your distribution's package manager for the remaining tools.
+
+## Required AWS IAM permissions
+
+The IAM user or role running Terraform needs permission to create and manage the cloud foundation. The following managed policies cover the full surface area. Use them as a starting point and trim down to least-privilege once the deployment is stable.
+
+| Policy | Purpose |
+|---|---|
+| `AmazonEKSClusterPolicy` | Create and manage EKS clusters |
+| `AmazonVPCFullAccess` | Create VPC, subnets, route tables, and NAT |
+| `AmazonRDSFullAccess` | Create and manage RDS PostgreSQL instances |
+| `AmazonElastiCacheFullAccess` | Create ElastiCache Redis clusters |
+| `AmazonS3FullAccess` | Create S3 buckets and VPC endpoints |
+| `IAMFullAccess` | Create IRSA roles and policies |
+
+<Tip>
+Run `make preflight` from `modules/aws/` after authenticating. The preflight script confirms that the active credentials can perform each required action and reports the first missing permission, which is faster than discovering gaps mid-`terraform apply`.
+</Tip>
+
+## Authenticate
+
+Configure AWS credentials with the CLI:
+
+```bash
+aws configure
+```
+
+Or export environment variables:
+
+```bash
+export AWS_ACCESS_KEY_ID="..."
+export AWS_SECRET_ACCESS_KEY="..."
+export AWS_DEFAULT_REGION="us-west-2"
+```
+
+Confirm the credentials work and the target region is enabled in the account:
+
+```bash
+aws sts get-caller-identity
+aws ec2 describe-availability-zones --query 'AvailabilityZones[].ZoneName' --output table
+```
+
+## Cluster sizing reference
+
+The Terraform modules pick instance types and node counts based on `sizing_profile`. Plan capacity for the target tier before deploying.
+
+| Profile | EKS nodes | RDS instance | ElastiCache | Use case |
+|---|---|---|---|---|
+| `dev` | 2 × `m5.xlarge` | `db.t4g.medium` | `cache.t4g.small` | Demos, CI, short-lived POCs |
+| `production` | 3 × `m5.2xlarge` (HPA on) | `db.m6g.large` | `cache.m6g.large` | Standard production |
+| `production-large` | 6 × `m5.4xlarge` (HPA on) | `db.m6g.2xlarge` | `cache.m6g.xlarge` | High-volume, multi-tenant |
+
+<Note>
+For production and `production-large`, also plan to provision external [LangChain Managed ClickHouse](/langsmith/langsmith-managed-clickhouse) or a self-managed external ClickHouse cluster. In-cluster ClickHouse is supported for `dev` only.
+</Note>
+
+## License key and domain
+
+Two non-AWS items must be ready before `terraform apply`:
+
+- **LangSmith license key.** [Contact sales](https://www.langchain.com/contact-sales) to request one. The key is stored in AWS SSM Parameter Store by the setup script, not in `tfvars`.
+- **Domain or subdomain** that resolves to the AWS account, plus an ACM certificate covering it (or `letsencrypt` / `none` for the `tls_certificate_source` variable).
+
+Once these are in place, continue with the [AWS quickstart](/langsmith/self-host-terraform-aws-quickstart).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/self-host-terraform-aws-prerequisites.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

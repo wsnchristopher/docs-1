@@ -1,0 +1,111 @@
+---
+title: "Azure Pass 3: LangSmith Deployment"
+sidebarTitle: "Pass 3: LangSmith Deployment"
+description: "Enable LangSmith Deployment on Azure AKS to deploy and manage LangGraph graphs as API servers from the LangSmith UI."
+---
+
+Pass 3 enables [LangSmith Deployment](/langsmith/deploy-self-hosted-full-platform), which lets you deploy and manage LangGraph graphs as API servers directly from the LangSmith UI. Pass 3 adds three new pods to the cluster.
+
+**Duration:** ~5 minutes. **Required:** No.
+
+**Prerequisite:** [Pass 2](/langsmith/self-host-terraform-azure-pass-2-langsmith) running.
+
+## What pass 3 adds
+
+| Pod | Role | Workload Identity |
+|---|---|---|
+| `langsmith-host-backend` | LangSmith Deployment control plane API. Manages deployment lifecycle, stores state in shared PostgreSQL. | Yes |
+| `langsmith-listener` | Watches host-backend, creates and updates `LangGraphPlatform` CRDs in Kubernetes. | Yes |
+| `langsmith-operator` | Reconciles CRDs. Creates per-deployment Deployments, StatefulSets, and Services. | — |
+
+## Step 1 — Scale the node pool
+
+Before enabling, bump `default_node_pool_min_count` to at least 5. The operator spawns agent deployment pods on demand and needs node headroom:
+
+```hcl
+# infra/terraform.tfvars
+default_node_pool_min_count = 5      # operator pods need headroom
+enable_deployments          = true
+```
+
+<Warning>
+Without sufficient node capacity, operator-spawned agent pods stay in `Pending` state indefinitely. Scale the node pool first, then enable.
+</Warning>
+
+## Step 2 — Apply, regenerate values, deploy
+
+```bash
+cd terraform/modules/azure
+make apply          # scale up node pool (~5 min)
+make init-values    # picks up enable_deployments = true → generates add-on overlay
+make deploy         # rolls out host-backend + listener + operator
+```
+
+`make init-values` appends the LangSmith Deployment add-on overlay (`langsmith-values-agent-deploys.yaml`) to the values chain. It automatically injects:
+
+```yaml
+config:
+  deployment:
+    enabled: true                          # REQUIRED — without this, listener and operator are skipped silently
+    url: "https://<your-hostname>"         # must match config.hostname (with protocol)
+    tlsEnabled: true                       # set based on tls_certificate_source
+```
+
+<Warning>
+**`config.deployment.url` must include `https://`.** Missing the protocol causes operator-deployed agents to stay stuck in `DEPLOYING` state indefinitely. The URL is injected automatically by `make init-values` — do not set it manually in the overlay file; it will be overwritten.
+</Warning>
+
+<Warning>
+**`config.deployment.enabled: true` is required.** Setting only `config.deployment.url` without `enabled: true` causes the chart to silently skip creating `listener` and `operator`. No error — they just never appear.
+</Warning>
+
+## Step 3 — Verify
+
+```bash
+# All three pods Running
+kubectl get pods -n langsmith | grep -E "host-backend|listener|operator"
+
+# LangSmith Deployment CRDs registered
+kubectl get crd | grep langchain
+
+# List LangSmith Deployments (empty on first deploy — populated when you create a deployment)
+kubectl get lgp -n langsmith
+```
+
+Expected: `langsmith-host-backend`, `langsmith-listener`, and `langsmith-operator` all Running. Total pod count: ~20 Running + 3 Completed jobs.
+
+## KEDA scaling for deployment workers
+
+KEDA is already installed in Pass 1. With `enable_deployments = true`, the operator creates KEDA `ScaledObject` resources for each agent deployment's worker queue. Worker pods scale down to zero when idle and scale up based on Redis queue depth.
+
+No KEDA configuration is needed in `terraform.tfvars` — the operator manages it automatically when creating agent deployments.
+
+## Terraform path
+
+If using the Terraform Helm path (Pass 2 via `make apply-app`), enable LangSmith Deployment in `app/terraform.tfvars`:
+
+```hcl
+enable_agent_deploys = true
+```
+
+Then:
+
+```bash
+make init-app     # refresh infra outputs
+make apply-app    # update Helm release
+```
+
+## Next step
+
+Continue with [Pass 4 — Agent Builder](/langsmith/self-host-terraform-azure-pass-4-agent-builder) or skip to [Pass 5 — Insights and Polly](/langsmith/self-host-terraform-azure-pass-5-insights). Pass 4 and Pass 5 are independent; both require Pass 3.
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/self-host-terraform-azure-pass-3-deployments.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

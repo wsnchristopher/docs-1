@@ -1,0 +1,566 @@
+---
+title: AWS Terraform teardown
+sidebarTitle: Teardown
+description: Remove a LangSmith self-hosted deployment on AWS EKS, with and without Terraform state, in reverse dependency order.
+---
+
+This page covers two teardown scenarios for deployments provisioned with the [AWS Terraform modules](https://github.com/langchain-ai/terraform/tree/main/modules/aws):
+
+1. **With Terraform state** — the happy path using `terraform destroy`.
+2. **Without Terraform state** — manual cleanup with the AWS CLI when Terraform state isn't available.
+
+Both follow the same reverse-dependency order. Pick the section that matches your situation.
+
+<Warning>
+Teardown permanently deletes the RDS instance, S3 bucket contents, and SSM parameters. Export any data you need to keep before proceeding.
+</Warning>
+
+<Tip>
+Before destroying, review the [LangSmith self-hosted changelog](/langsmith/self-hosted-changelog) for data migration or export notes.
+</Tip>
+
+## Pre-teardown checklist
+
+```bash
+# Verify AWS identity and region
+aws sts get-caller-identity
+aws eks update-kubeconfig --name <name_prefix>-<environment>-eks --region <region>
+
+# Confirm kubectl points to the right cluster
+kubectl config current-context
+
+# Check what's running
+helm list -A
+kubectl get namespaces
+```
+
+## Option A — Teardown with Terraform state
+
+Use this when `terraform state list` returns resources. Teardown happens in reverse order of deployment:
+
+```txt
+Pass 3 (if enabled)  → Remove LangGraph deployments (LGP CRDs + pods)
+Pass 2               → Uninstall LangSmith Helm release
+Pass 1               → Destroy all AWS infrastructure (terraform destroy)
+```
+
+### A1 — Remove LangSmith Deployment resources
+
+Skip if Pass 3 was never enabled. The uninstall script in A2 cleans up LGP pods, services, and deployments automatically. The LGP CRD is kept by resource policy and must be deleted manually:
+
+```bash
+kubectl delete lgp --all -n langsmith
+kubectl get pods -n langsmith -w   # wait for the operator to finish
+kubectl delete crd lgps.apps.langchain.ai
+```
+
+### A2 — Uninstall the Helm release
+
+```bash
+cd modules/aws/helm
+./scripts/uninstall.sh
+```
+
+After the script completes:
+
+```bash
+kubectl delete namespace langsmith
+```
+
+### A3 — Remove Kubernetes bootstrap resources
+
+Uninstall in this order. The ALB controller must go last so it can deprovision any ingress-managed ALBs before its IAM permissions are removed.
+
+```bash
+helm uninstall keda -n keda
+kubectl delete namespace keda
+
+helm uninstall external-secrets -n external-secrets
+kubectl delete namespace external-secrets
+
+# ALB controller — last
+helm uninstall aws-load-balancer-controller -n kube-system
+```
+
+cert-manager is not installed by default. Skip it if `helm list -A` does not show it.
+
+Wait two minutes, then verify no ingress-provisioned ALBs remain:
+
+```bash
+aws elbv2 describe-load-balancers --region <region> \
+  --query "LoadBalancers[?contains(LoadBalancerName, '<name_prefix>')].[LoadBalancerName,State.Code]" \
+  --output table
+```
+
+If a stale ALB remains, delete it manually. It will block VPC subnet deletion during `terraform destroy`.
+
+### A4 — Unblock RDS before destroy
+
+Two settings cause `terraform destroy` to fail on RDS if not addressed first.
+
+#### Disable deletion protection
+
+```bash
+aws rds describe-db-instances \
+  --db-instance-identifier <name_prefix>-<environment>-pg \
+  --region <region> \
+  --query "DBInstances[0].DeletionProtection" \
+  --output text
+```
+
+If the output is `True`:
+
+```bash
+aws rds modify-db-instance \
+  --db-instance-identifier <name_prefix>-<environment>-pg \
+  --no-deletion-protection \
+  --region <region>
+```
+
+#### Enable `skip_final_snapshot`
+
+The `postgres` module does not set `skip_final_snapshot`, so the AWS provider defaults to `false`. Without a `final_snapshot_identifier`, `terraform destroy` fails immediately on the RDS step.
+
+In `modules/postgres/main.tf`, uncomment the line before destroying:
+
+```hcl
+# Uncomment before running terraform destroy
+# skip_final_snapshot = true
+```
+
+Apply the change before destroying:
+
+```bash
+cd modules/aws/infra
+source ./scripts/setup-env.sh
+terraform apply -target=module.postgres
+```
+
+### A5 — Destroy AWS infrastructure
+
+```bash
+cd modules/aws/infra
+source ./scripts/setup-env.sh
+
+terraform plan -destroy
+terraform destroy
+```
+
+Terraform destroys in dependency order: k8s-bootstrap, RDS, ElastiCache, S3, ALB, IAM roles (IRSA, ESO), EKS node groups and cluster, VPC, subnets, NAT gateway, and route tables.
+
+<Note>
+`source ./scripts/setup-env.sh` sets `TF_VAR_postgres_password` and `TF_VAR_redis_auth_token` from SSM. If those parameters no longer exist, the variables are unset and Terraform fails provider validation even during destroy. Set them manually before destroying:
+
+```bash
+export TF_VAR_postgres_password="any-placeholder"
+export TF_VAR_redis_auth_token=$(openssl rand -hex 16)
+```
+</Note>
+
+### A6 — Verify cleanup
+
+Replace `<name_prefix>` with the value from `terraform.tfvars`:
+
+```bash
+aws eks list-clusters --region <region>
+aws rds describe-db-instances \
+  --query "DBInstances[?contains(DBInstanceIdentifier, '<name_prefix>')].[DBInstanceIdentifier,DBInstanceStatus]" \
+  --output table
+aws elasticache describe-replication-groups \
+  --query "ReplicationGroups[?contains(ReplicationGroupId, '<name_prefix>')].[ReplicationGroupId,Status]" \
+  --output table
+aws s3 ls | grep <name_prefix>
+aws elbv2 describe-load-balancers --region <region> \
+  --query "LoadBalancers[?contains(LoadBalancerName, '<name_prefix>')].[LoadBalancerName,State.Code]" \
+  --output table
+aws ec2 describe-vpcs \
+  --filters "Name=tag:Name,Values=*<name_prefix>*" \
+  --region <region> \
+  --query "Vpcs[].VpcId" \
+  --output text
+```
+
+## Option B — Teardown without Terraform state
+
+Use this when Terraform state is lost (deleted, corrupted, or never configured with a remote backend). Everything must be deleted manually via the AWS CLI in reverse-dependency order.
+
+<Tip>
+State loss usually happens with a local backend (`terraform.tfstate` on disk) when the file is deleted during a directory restructure, or when a remote backend was never configured. Configure an S3 + DynamoDB backend on day one to avoid this entire scenario.
+</Tip>
+
+### B0 — Inventory what exists
+
+Build a complete inventory before deleting anything. The `<name_prefix>-<environment>-{resource}` naming convention makes this straightforward.
+
+```bash
+REGION="<region>"
+PREFIX="<name_prefix>-<environment>"
+
+echo "=== EKS ===" && aws eks list-clusters --region $REGION --output json
+echo "=== RDS ===" && aws rds describe-db-instances --region $REGION \
+  --query "DBInstances[?starts_with(DBInstanceIdentifier, \`$PREFIX\`)].DBInstanceIdentifier" --output json
+echo "=== ElastiCache ===" && aws elasticache describe-replication-groups --region $REGION \
+  --query "ReplicationGroups[?starts_with(ReplicationGroupId, \`$PREFIX\`)].ReplicationGroupId" --output json
+echo "=== S3 ===" && aws s3 ls | grep "$PREFIX"
+echo "=== SSM ===" && aws ssm describe-parameters --region $REGION \
+  --parameter-filters "Key=Name,Option=BeginsWith,Values=/langsmith/$PREFIX" \
+  --query 'Parameters[*].Name' --output json
+echo "=== ALBs ===" && aws elbv2 describe-load-balancers --region $REGION \
+  --query "LoadBalancers[*].[LoadBalancerName,State.Code]" --output table
+echo "=== IAM ===" && aws iam list-roles \
+  --query "Roles[?contains(RoleName, \`$PREFIX\`)].RoleName" --output json
+echo "=== VPC ===" && aws ec2 describe-vpcs --region $REGION \
+  --filters "Name=tag:Name,Values=*$PREFIX*" \
+  --query 'Vpcs[*].[VpcId,Tags[?Key==`Name`].Value|[0]]' --output table
+```
+
+Also use the tag API to catch anything missed:
+
+```bash
+aws resourcegroupstaggingapi get-resources --region $REGION \
+  --tag-filters "Key=name-prefix,Values=<name_prefix>" \
+  --query 'ResourceTagMappingList[*].ResourceARN' --output json
+```
+
+### B1 — Uninstall Helm releases
+
+**Critical ordering:** Delete ingress resources before uninstalling the ALB controller. Uninstall KEDA after deleting namespaces that contain `ScaledObjects`, or delete `ScaledObjects` first.
+
+```bash
+helm uninstall langsmith -n langsmith
+kubectl delete crd lgps.apps.langchain.ai 2>/dev/null
+
+# Delete ingress before uninstalling the controller
+kubectl delete ingress --all -n langsmith
+
+helm uninstall external-secrets -n external-secrets
+helm uninstall keda -n keda
+helm uninstall metrics-server -n kube-system
+helm uninstall cluster-autoscaler -n kube-system
+
+# Verify ingress-created ALBs are gone, then uninstall the controller
+aws elbv2 describe-load-balancers --region $REGION \
+  --query "LoadBalancers[?starts_with(LoadBalancerName, \`k8s-\`)].[LoadBalancerName]" --output text
+helm uninstall aws-load-balancer-controller -n kube-system
+
+kubectl delete namespace langsmith external-secrets keda
+```
+
+<a id="stuck-namespaces"></a>
+
+**Stuck namespaces — KEDA finalizers.** If the `langsmith` namespace gets stuck in `Terminating`, KEDA `ScaledObject` finalizers are likely the cause (the KEDA controller is gone so it cannot clear them):
+
+```bash
+for obj in $(kubectl get scaledobjects -n langsmith -o name 2>/dev/null); do
+  kubectl patch "$obj" -n langsmith --type=merge -p '{"metadata":{"finalizers":null}}'
+done
+```
+
+### B2 — Delete the EKS cluster
+
+```bash
+for ng in $(aws eks list-nodegroups --cluster-name $PREFIX-eks --region $REGION --query 'nodegroups[*]' --output text); do
+  echo "Deleting node group: $ng"
+  aws eks delete-nodegroup --cluster-name $PREFIX-eks --nodegroup-name "$ng" --region $REGION
+  aws eks wait nodegroup-deleted --cluster-name $PREFIX-eks --nodegroup-name "$ng" --region $REGION 2>/dev/null
+done
+
+aws eks delete-cluster --name $PREFIX-eks --region $REGION
+```
+
+### B3 — Delete the RDS instance
+
+```bash
+DELETION_PROTECTION=$(aws rds describe-db-instances \
+  --db-instance-identifier $PREFIX-pg --region $REGION \
+  --query 'DBInstances[0].DeletionProtection' --output text)
+
+if [ "$DELETION_PROTECTION" = "True" ]; then
+  aws rds modify-db-instance --db-instance-identifier $PREFIX-pg \
+    --no-deletion-protection --region $REGION
+  aws rds wait db-instance-available --db-instance-identifier $PREFIX-pg --region $REGION
+fi
+
+aws rds delete-db-instance --db-instance-identifier $PREFIX-pg \
+  --skip-final-snapshot --region $REGION
+```
+
+### B4 — Delete ElastiCache
+
+```bash
+aws elasticache delete-replication-group \
+  --replication-group-id $PREFIX-redis --region $REGION
+```
+
+<Note>
+ElastiCache has no `--no-final-snapshot-identifier` flag. Omit `--final-snapshot-identifier` to skip the final snapshot.
+</Note>
+
+### B5 — Empty and delete the S3 bucket
+
+```bash
+aws s3 rm s3://$PREFIX-traces --recursive
+aws s3 rb s3://$PREFIX-traces
+```
+
+### B6 — Delete SSM parameters
+
+```bash
+aws ssm describe-parameters --region $REGION \
+  --parameter-filters "Key=Name,Option=BeginsWith,Values=/langsmith/$PREFIX" \
+  --query 'Parameters[*].Name' --output json
+
+aws ssm delete-parameters --region $REGION --names \
+  "/langsmith/$PREFIX/agent-builder-encryption-key" \
+  "/langsmith/$PREFIX/insights-encryption-key" \
+  "/langsmith/$PREFIX/langsmith-admin-password" \
+  "/langsmith/$PREFIX/langsmith-api-key-salt" \
+  "/langsmith/$PREFIX/langsmith-jwt-secret" \
+  "/langsmith/$PREFIX/langsmith-license-key" \
+  "/langsmith/$PREFIX/postgres-password" \
+  "/langsmith/$PREFIX/redis-auth-token"
+```
+
+### B7 — Delete ALBs and target groups
+
+```bash
+ALB_ARN=$(aws elbv2 describe-load-balancers --names $PREFIX-alb --region $REGION \
+  --query 'LoadBalancers[0].LoadBalancerArn' --output text)
+
+# Delete listeners first
+for listener_arn in $(aws elbv2 describe-listeners --load-balancer-arn "$ALB_ARN" --region $REGION \
+  --query 'Listeners[*].ListenerArn' --output text); do
+  aws elbv2 delete-listener --listener-arn "$listener_arn" --region $REGION
+done
+
+aws elbv2 delete-load-balancer --load-balancer-arn "$ALB_ARN" --region $REGION
+
+# Orphaned target groups from ingress-created ALBs
+for tg_arn in $(aws elbv2 describe-target-groups --region $REGION \
+  --query "TargetGroups[?contains(TargetGroupName, \`k8s-langsmit\`)].TargetGroupArn" --output text); do
+  echo "Deleting target group: $tg_arn"
+  aws elbv2 delete-target-group --target-group-arn "$tg_arn" --region $REGION
+done
+```
+
+### B8 — Delete IAM roles and policies
+
+Each role needs its policies detached or deleted before the role itself can go. Use this helper:
+
+```bash
+delete_iam_role() {
+  local ROLE="$1"
+  echo "=== Deleting role: $ROLE ==="
+
+  for ip in $(aws iam list-instance-profiles-for-role --role-name "$ROLE" \
+    --query 'InstanceProfiles[*].InstanceProfileName' --output text 2>/dev/null); do
+    aws iam remove-role-from-instance-profile --instance-profile-name "$ip" --role-name "$ROLE"
+    aws iam delete-instance-profile --instance-profile-name "$ip"
+  done
+
+  for policy_arn in $(aws iam list-attached-role-policies --role-name "$ROLE" \
+    --query 'AttachedPolicies[*].PolicyArn' --output text 2>/dev/null); do
+    aws iam detach-role-policy --role-name "$ROLE" --policy-arn "$policy_arn"
+  done
+
+  for policy_name in $(aws iam list-role-policies --role-name "$ROLE" \
+    --query 'PolicyNames[*]' --output text 2>/dev/null); do
+    aws iam delete-role-policy --role-name "$ROLE" --policy-name "$policy_name"
+  done
+
+  aws iam delete-role --role-name "$ROLE"
+}
+```
+
+Roles to delete (find exact names with `aws iam list-roles --query "Roles[?contains(RoleName, '<prefix>')]"`):
+
+```bash
+delete_iam_role "$PREFIX-eso"
+delete_iam_role "$PREFIX-eks-irsa-role"
+delete_iam_role "$(aws iam list-roles --query "Roles[?starts_with(RoleName, \`$PREFIX-eks-cluster\`)].RoleName" --output text)"
+delete_iam_role "AmazonEKSTFEBSCSIRole-$PREFIX-eks"
+delete_iam_role "$(aws iam list-roles --query "Roles[?starts_with(RoleName, \`node-group-default-eks-node-group\`)].RoleName" --output text)"
+
+# Customer-managed policies
+for policy_arn in $(aws iam list-policies --scope Local \
+  --query "Policies[?contains(PolicyName, \`$PREFIX\`)].Arn" --output text); do
+  aws iam delete-policy --policy-arn "$policy_arn"
+done
+
+# OIDC provider
+for oidc_arn in $(aws iam list-open-id-connect-providers \
+  --query "OpenIDConnectProviderList[*].Arn" --output text); do
+  tags=$(aws iam get-open-id-connect-provider --open-id-connect-provider-arn "$oidc_arn" \
+    --query "Tags[?Key=='name-prefix' && Value=='<name_prefix>']" --output text 2>/dev/null)
+  if [ -n "$tags" ]; then
+    aws iam delete-open-id-connect-provider --open-id-connect-provider-arn "$oidc_arn"
+  fi
+done
+```
+
+### B9 — Delete VPC and networking
+
+<Warning>
+Must be done last. Order matters — dependencies must be removed before their parents.
+</Warning>
+
+```bash
+VPC_ID="<vpc-id>"
+
+# 1. VPC endpoints
+for vpce in $(aws ec2 describe-vpc-endpoints --filters "Name=vpc-id,Values=$VPC_ID" --region $REGION \
+  --query 'VpcEndpoints[*].VpcEndpointId' --output text); do
+  aws ec2 delete-vpc-endpoints --vpc-endpoint-ids "$vpce" --region $REGION
+done
+
+# 2. NAT gateways (wait before releasing EIPs)
+for nat_id in $(aws ec2 describe-nat-gateways --filter "Name=vpc-id,Values=$VPC_ID" --region $REGION \
+  --query 'NatGateways[?State!=`deleted`].NatGatewayId' --output text); do
+  aws ec2 delete-nat-gateway --nat-gateway-id "$nat_id" --region $REGION
+done
+until [ -z "$(aws ec2 describe-nat-gateways --filter "Name=vpc-id,Values=$VPC_ID" --region $REGION --query 'NatGateways[?State!=`deleted`].State' --output text)" ]; do
+  sleep 10
+done
+
+# 3. Elastic IPs
+for alloc_id in $(aws ec2 describe-addresses --region $REGION \
+  --filters "Name=tag:Name,Values=*$PREFIX*" \
+  --query 'Addresses[*].AllocationId' --output text); do
+  aws ec2 release-address --allocation-id "$alloc_id" --region $REGION
+done
+
+# 4. Subnets
+for subnet_id in $(aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC_ID" --region $REGION \
+  --query 'Subnets[*].SubnetId' --output text); do
+  aws ec2 delete-subnet --subnet-id "$subnet_id" --region $REGION
+done
+
+# 5. Internet gateway
+for igw_id in $(aws ec2 describe-internet-gateways \
+  --filters "Name=attachment.vpc-id,Values=$VPC_ID" --region $REGION \
+  --query 'InternetGateways[*].InternetGatewayId' --output text); do
+  aws ec2 detach-internet-gateway --internet-gateway-id "$igw_id" --vpc-id $VPC_ID --region $REGION
+  aws ec2 delete-internet-gateway --internet-gateway-id "$igw_id" --region $REGION
+done
+
+# 6. Security groups — revoke rules first to break circular references
+for sg_id in $(aws ec2 describe-security-groups --filters "Name=vpc-id,Values=$VPC_ID" --region $REGION \
+  --query 'SecurityGroups[?GroupName!=`default`].GroupId' --output text); do
+  for rule_id in $(aws ec2 describe-security-group-rules --filters "Name=group-id,Values=$sg_id" --region $REGION \
+    --query 'SecurityGroupRules[?!IsEgress].SecurityGroupRuleId' --output text); do
+    aws ec2 revoke-security-group-ingress --group-id "$sg_id" --security-group-rule-ids "$rule_id" --region $REGION 2>/dev/null
+  done
+  for rule_id in $(aws ec2 describe-security-group-rules --filters "Name=group-id,Values=$sg_id" --region $REGION \
+    --query 'SecurityGroupRules[?IsEgress].SecurityGroupRuleId' --output text); do
+    aws ec2 revoke-security-group-egress --group-id "$sg_id" --security-group-rule-ids "$rule_id" --region $REGION 2>/dev/null
+  done
+done
+for sg_id in $(aws ec2 describe-security-groups --filters "Name=vpc-id,Values=$VPC_ID" --region $REGION \
+  --query 'SecurityGroups[?GroupName!=`default`].GroupId' --output text); do
+  aws ec2 delete-security-group --group-id "$sg_id" --region $REGION
+done
+
+# 7. Custom route tables
+for rtb_id in $(aws ec2 describe-route-tables --filters "Name=vpc-id,Values=$VPC_ID" --region $REGION \
+  --query 'RouteTables[?Associations[0].Main!=`true`].RouteTableId' --output text); do
+  aws ec2 delete-route-table --route-table-id "$rtb_id" --region $REGION
+done
+
+# 8. VPC
+aws ec2 delete-vpc --vpc-id $VPC_ID --region $REGION
+```
+
+<Note>
+EKS creates node and cluster security groups that reference each other. You must revoke all rules from both before either can be deleted, which is why the script above revokes rules in a separate pass before deleting.
+</Note>
+
+### B10 — Clean up remaining resources
+
+Easy to miss. Use the tag API output from B0 to find them.
+
+```bash
+# RDS and ElastiCache subnet groups
+aws rds delete-db-subnet-group --db-subnet-group-name $PREFIX-pg-subnet-group --region $REGION 2>/dev/null
+aws elasticache delete-cache-subnet-group --cache-subnet-group-name $PREFIX-redis-subnet-group --region $REGION 2>/dev/null
+
+# CloudWatch log group
+aws logs delete-log-group --log-group-name "/aws/eks/$PREFIX-eks/cluster" --region $REGION 2>/dev/null
+
+# Secrets Manager
+aws secretsmanager delete-secret --secret-id $PREFIX-langsmith --force-delete-without-recovery --region $REGION 2>/dev/null
+
+# CloudFormation stacks (EKS VPC CNI addon)
+for stack in $(aws cloudformation list-stacks --region $REGION \
+  --query "StackSummaries[?contains(StackName, \`$PREFIX\`) && StackStatus!='DELETE_COMPLETE'].StackName" --output text); do
+  aws cloudformation delete-stack --stack-name "$stack" --region $REGION
+done
+
+# Launch templates — review and delete the one matching your deploy
+aws ec2 describe-launch-templates --region $REGION \
+  --query "LaunchTemplates[*].[LaunchTemplateId,LaunchTemplateName]" --output table
+
+# KMS keys — 7-day minimum deletion window enforced by AWS
+for alias in $(aws kms list-aliases --region $REGION \
+  --query "Aliases[?contains(AliasName, \`$PREFIX\`)].TargetKeyId" --output text); do
+  aws kms schedule-key-deletion --key-id "$alias" --pending-window-in-days 7 --region $REGION
+done
+
+# Local sensitive files
+rm -f .admin_password .api_key_salt .jwt_secret .license_key .pg_password
+```
+
+### B11 — Verify cleanup
+
+```bash
+aws eks list-clusters --region $REGION --query "clusters[?contains(@, \`$PREFIX\`)]"
+aws rds describe-db-instances --region $REGION \
+  --query "DBInstances[?starts_with(DBInstanceIdentifier, \`$PREFIX\`)].DBInstanceIdentifier"
+aws elasticache describe-replication-groups --region $REGION \
+  --query "ReplicationGroups[?starts_with(ReplicationGroupId, \`$PREFIX\`)].ReplicationGroupId"
+aws s3 ls | grep "$PREFIX"
+aws ssm describe-parameters --region $REGION \
+  --parameter-filters "Key=Name,Option=BeginsWith,Values=/langsmith/$PREFIX" \
+  --query 'Parameters[*].Name'
+aws elbv2 describe-load-balancers --region $REGION \
+  --query "LoadBalancers[?starts_with(LoadBalancerName, \`$PREFIX\`)].LoadBalancerName"
+aws ec2 describe-vpcs --filters "Name=tag:Name,Values=*$PREFIX*" --region $REGION \
+  --query 'Vpcs[*].VpcId'
+aws iam list-roles --query "Roles[?contains(RoleName, \`$PREFIX\`)].RoleName"
+
+# Catch-all via tags
+aws resourcegroupstaggingapi get-resources --region $REGION \
+  --tag-filters "Key=name-prefix,Values=<name_prefix>" \
+  --query 'ResourceTagMappingList[*].ResourceARN'
+```
+
+## Parallelization
+
+Several resources have no dependencies on each other and can be deleted in parallel:
+
+| Can run in parallel | Wait required before |
+|---|---|
+| RDS, ElastiCache, S3, SSM | Independent — start all at once |
+| EKS node groups | Must complete before cluster deletion |
+| NAT gateway | Must complete before EIP release and subnet deletion |
+| EKS cluster | Must complete before VPC networking cleanup |
+
+## Lessons learned
+
+- Configure a remote backend (S3 + DynamoDB) before `terraform apply`. Local state is fragile and easily lost during directory restructuring.
+- KEDA finalizers block namespace deletion when the KEDA controller is uninstalled first. Delete `ScaledObjects` before uninstalling KEDA, or patch out the finalizers.
+- Delete ingress resources before the ALB controller. Otherwise ingress-created ALBs become orphaned.
+- EKS security groups cross-reference each other. Revoke all rules before either can be deleted.
+- ElastiCache has no `--no-final-snapshot-identifier` flag. Omit `--final-snapshot-identifier` entirely.
+- `aws resourcegroupstaggingapi get-resources` is essential for finding orphaned resources (subnet groups, log groups, launch templates) that do not appear in service-specific queries.
+- KMS keys have a mandatory 7-day deletion window. Schedule deletion, do not wait for it.
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/self-host-terraform-aws-teardown.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>
