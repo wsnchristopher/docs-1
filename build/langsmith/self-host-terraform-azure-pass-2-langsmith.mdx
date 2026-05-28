@@ -1,0 +1,199 @@
+---
+title: "Azure Pass 2: LangSmith"
+sidebarTitle: "Pass 2: LangSmith"
+description: "Deploy LangSmith with Helm using Key Vault secrets for traces, prompts, evaluations, and org management."
+---
+
+Pass 2 installs the LangSmith Helm chart. It reads all secrets from `langsmith-config-secret` (created in Pass 1.5) and all infrastructure configuration from Terraform outputs.
+
+**Duration:** ~10 minutes. **Required:** Yes.
+
+**Prerequisites:** [Pass 1](/langsmith/self-host-terraform-azure-pass-1-infrastructure) complete (`make apply`) and Pass 1.5 complete (`make kubeconfig && make k8s-secrets`).
+
+## Two deployment paths
+
+| Path | Command | When to use |
+|---|---|---|
+| Helm path _(default)_ | `make init-values && make deploy` | Interactive output, kubeconfig refresh, preflight checks. Best for first-time deploys and day-2 re-deploys. |
+| Terraform path | `make init-app && make apply-app` | Helm release + Kubernetes Secrets + Workload Identity SA managed in Terraform state. Best for GitOps and CI/CD pipelines. |
+
+## Helm path (recommended)
+
+### Step 1 — Generate Helm values
+
+```bash
+cd terraform/modules/azure
+make init-values
+```
+
+`make init-values` reads `terraform output` and `terraform.tfvars` and generates `helm/values/values-overrides.yaml` with all fields populated:
+
+- `config.hostname` — your FQDN (from `dns_label` or `langsmith_domain`).
+- `config.initialOrgAdminEmail` — the first org admin account.
+- `config.existingSecretName: langsmith-config-secret` — secrets reference.
+- `config.blobStorage` — storage account name + container + Workload Identity client ID.
+- Workload Identity annotations for 5 ServiceAccounts (backend, platform-backend, queue, ingest-queue, host-backend).
+- Ingress + TLS block (cert-manager annotation, TLS secret name).
+- Postgres and Redis external secret references (when `postgres_source = "external"` / `redis_source = "external"`).
+
+Also copies the sizing overlay and any enabled add-on overlays from `helm/values/examples/` into `helm/values/`.
+
+<Info>
+The admin email is read from `langsmith_admin_email` in `terraform.tfvars` (set during `make setup-env`) and written into `values-overrides.yaml` automatically. No manual editing needed.
+</Info>
+
+### Step 2 — Deploy LangSmith
+
+```bash
+make deploy   # ~10 min
+```
+
+`make deploy` handles:
+
+1. Validates `values-overrides.yaml` exists.
+2. Refreshes kubeconfig via `az aks get-credentials`.
+3. Annotates the LoadBalancer service with `service.beta.kubernetes.io/azure-dns-label-name` — required for Azure to assign the DNS label to the public IP.
+4. Creates the `letsencrypt-prod` cert-manager `ClusterIssuer` if `tls_certificate_source = "letsencrypt"` (idempotent).
+5. Runs preflight checks (tools, cluster connectivity, Helm repo).
+6. Verifies `langsmith-config-secret` exists; auto-creates from Key Vault if missing.
+7. Builds and logs the values chain.
+8. Auto-recovers any stuck `pending-upgrade` Helm release before proceeding.
+9. Runs `helm upgrade --install langsmith langchain/langsmith --timeout 20m`.
+10. Waits for core deployments to roll out.
+11. Annotates the `langsmith-ksa` ServiceAccount with the Workload Identity client ID.
+12. Prints the access URL and login credentials location.
+
+Or run Pass 1.5 + Pass 2 in one shot after `make apply`:
+
+```bash
+make deploy-all   # kubeconfig → k8s-secrets → init-values → deploy
+```
+
+<Info>
+Why `--timeout 20m`? The `langsmith-backend-auth-bootstrap` Job runs DB migrations and org initialization as a post-install hook. This takes up to 5 minutes on first install. Without a long timeout, Helm may report failure even though the install eventually succeeds.
+</Info>
+
+<Tip>
+**Watch pods in a second terminal:**
+
+```bash
+# macOS
+brew install watch
+watch kubectl get pods -n langsmith
+
+# Without watch
+while true; do clear; kubectl get pods -n langsmith; sleep 3; done
+```
+</Tip>
+
+## Terraform path (alternative)
+
+Use this path when you want the Helm release, Kubernetes Secrets, and Workload Identity ServiceAccount managed in Terraform state.
+
+```bash
+# Copy and configure app vars
+cp app/terraform.tfvars.example app/terraform.tfvars
+vi app/terraform.tfvars   # set admin_email at minimum
+
+# Pull infra outputs into app/infra.auto.tfvars.json + terraform init
+make init-app
+
+# Deploy Helm release + K8s Secrets + WI ServiceAccount via Terraform
+make apply-app
+```
+
+Feature flags in `app/terraform.tfvars`:
+
+```hcl
+sizing                = "production"   # minimum | dev | production | production-large
+enable_agent_deploys  = true           # Pass 3 — LangSmith Deployment
+enable_agent_builder  = true           # Pass 4 — Agent Builder (requires agent_deploys)
+enable_insights       = true           # Pass 5 — Insights / ClickHouse
+enable_polly          = true           # Pass 5 — Polly (requires agent_deploys)
+```
+
+End-to-end via Terraform (Pass 1 + Pass 2):
+
+```bash
+make deploy-all-tf   # apply → init-values → init-app → apply-app
+```
+
+## Verify Pass 2
+
+```bash
+# All pods Running or Completed (~17 pods)
+kubectl get pods -n langsmith
+
+# Ingress host + TLS assigned
+kubectl get ingress -n langsmith
+
+# TLS certificate issued
+kubectl get certificate -n langsmith   # READY: True
+
+# Helm release status
+helm list -n langsmith
+```
+
+Expected pod state (all Running after ~5 minutes):
+
+```txt
+langsmith-ace-backend-xxxxx              1/1   Running     0   5m
+langsmith-backend-xxxxx                  1/1   Running     0   5m
+langsmith-backend-auth-bootstrap-xxxxx   0/1   Completed   0   5m
+langsmith-backend-ch-migrations-xxxxx    0/1   Completed   0   5m
+langsmith-backend-migrations-xxxxx       0/1   Completed   0   5m
+langsmith-clickhouse-0                   1/1   Running     0   5m
+langsmith-frontend-xxxxx                 1/1   Running     0   5m
+langsmith-ingest-queue-xxxxx             1/1   Running     0   5m
+langsmith-platform-backend-xxxxx         1/1   Running     0   5m
+langsmith-playground-xxxxx               1/1   Running     0   5m
+langsmith-queue-xxxxx                    1/1   Running     0   5m
+```
+
+Open `https://<HOSTNAME>` and log in with the admin email and password from Key Vault:
+
+```bash
+az keyvault secret show \
+  --vault-name $(terraform -chdir=infra output -raw keyvault_name) \
+  --name langsmith-admin-password \
+  --query value -o tsv
+```
+
+## Values chain
+
+`make deploy` applies Helm values files in this order (last file wins on conflicts):
+
+```txt
+1. helm/values/values.yaml                              ← Azure base (NGINX, Blob WI, no Istio)
+2. helm/values/values-overrides.yaml                    ← hostname, WI client-id, auth, postgres/redis
+3. helm/values/langsmith-values-sizing-<profile>.yaml   ← resource requests + HPA settings
+4. (add-on files when enable_* flags are set)
+```
+
+All files in `helm/values/` are gitignored (generated or contain live secrets). Source templates live in `helm/values/examples/` and are copied by `make init-values`.
+
+## Day-2 operations
+
+```bash
+make status         # 10-section health check
+make status-quick   # skip Key Vault + K8s secret queries (faster)
+make deploy         # re-deploy after any Helm value changes
+make init-values    # re-generate values after Terraform changes
+make kubeconfig     # refresh cluster credentials
+make k8s-secrets    # re-create langsmith-config-secret from Key Vault
+```
+
+## Next step
+
+Continue with [Pass 3 — LangSmith Deployment](/langsmith/self-host-terraform-azure-pass-3-deployments) to enable agent deployment from the LangSmith UI.
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/self-host-terraform-azure-pass-2-langsmith.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

@@ -1,0 +1,106 @@
+---
+title: "Azure Pass 4: Agent Builder"
+sidebarTitle: "Pass 4: Agent Builder"
+description: Enable the Agent Builder on Azure AKS for visual AI-assisted creation and management of LangGraph agents.
+---
+
+Pass 4 enables Agent Builder, which provides visual AI-assisted creation and management of LangGraph agents from the LangSmith UI. This pass needs no `terraform apply`; just run `make init-values && make deploy`.
+
+**Duration:** ~10 minutes. **Required:** No.
+
+**Prerequisite:** [Pass 3](/langsmith/self-host-terraform-azure-pass-3-deployments) (`enable_deployments = true`). Enabling Agent Builder without Pass 3 causes a preflight error.
+
+## What pass 4 adds
+
+| Pod | Type | Role |
+|---|---|---|
+| `langsmith-agent-builder-tool-server` | Static | MCP tool execution server — code/file editing tools for the AI |
+| `langsmith-agent-builder-trigger-server` | Static | Webhook receiver and scheduled trigger engine |
+| `langsmith-agent-bootstrap` | Job (Completed) | Registers the bundled Agent Builder agent through the operator — runs once |
+| `agent-builder-<hash>` + queue + redis + `lg-<hash>-0` | Dynamic (operator-managed) | Agent Builder deployment — created by the operator when the bootstrap Job runs |
+
+## Step 1 — Enable in `terraform.tfvars`
+
+```hcl
+# infra/terraform.tfvars
+enable_deployments   = true    # Pass 3 — required prerequisite
+enable_agent_builder = true    # Pass 4
+```
+
+## Step 2 — Regenerate values and deploy
+
+```bash
+cd terraform/modules/azure
+make init-values    # appends langsmith-values-agent-builder.yaml to values chain
+make deploy         # rolling update — ~10 min for bootstrap Job to complete
+```
+
+`make init-values` appends the Agent Builder add-on overlay (`langsmith-values-agent-builder.yaml`) to the values chain. The overlay:
+
+- Enables the Agent Builder UI and its two supporting services.
+- Sets `backend.agentBootstrap: true` — a post-install job that registers Agent Builder as a LangSmith Deployment and creates the required ConfigMap.
+- Sets conservative agent worker pod resources (1 CPU / 1 Gi) instead of the chart's default 4 CPU / 8 Gi.
+
+## Step 3 — Verify
+
+```bash
+# Static pods Running, bootstrap Job Completed
+kubectl get pods -n langsmith | grep -E "tool-server|trigger-server|Bootstrap"
+
+# Operator-managed dynamic pods (4 pods — api-server, queue, redis, postgres StatefulSet)
+kubectl get pods -n langsmith | grep agent-builder
+
+# Operator-managed LangSmith Deployment for Agent Builder
+kubectl get lgp -n langsmith
+```
+
+Expected: 3 static pods (tool-server, trigger-server, bootstrap Job) + 4 dynamic pods. Total: ~26 pods. After `make deploy`, an **Agent Builder** section appears in the LangSmith UI navigation.
+
+<Warning>
+**Roll the frontend after `agentBootstrap` completes.** The `agentBootstrap` Job creates the `langsmith-polly-config` ConfigMap that the frontend reads for the Polly UI. If the frontend was running when bootstrap completed, Polly shows "Unable to connect to LangGraph server". Fix:
+
+```bash
+kubectl rollout restart deployment langsmith-frontend -n langsmith
+```
+</Warning>
+
+<Warning>
+**Encryption key is read from `langsmith-config-secret`.** Do not set `config.agentBuilder.encryptionKey` inline in `values-overrides.yaml`. The chart reads it from `langsmith-config-secret` via `existingSecretName`. Setting it inline overrides the secret reference and creates a mismatch.
+</Warning>
+
+## Workload Identity for Agent Builder
+
+Both `langsmith-agent-builder-tool-server` and `langsmith-agent-builder-trigger-server` need Workload Identity to access Azure Blob Storage. Their federated credentials are pre-registered in `modules/k8s-cluster/main.tf`; no additional setup is needed.
+
+If you add a new pod that needs Blob access, update `service_accounts_for_workload_identity` in `modules/k8s-cluster/variables.tf` and run `terraform apply -target=module.aks`.
+
+## Terraform path
+
+If using the Terraform Helm path, enable in `app/terraform.tfvars`:
+
+```hcl
+enable_agent_deploys  = true   # required prerequisite
+enable_agent_builder  = true
+```
+
+Then:
+
+```bash
+make init-app
+make apply-app
+```
+
+## Next step
+
+Continue with [Pass 5 — Insights and Polly](/langsmith/self-host-terraform-azure-pass-5-insights).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/self-host-terraform-azure-pass-4-agent-builder.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

@@ -1,0 +1,161 @@
+---
+title: Azure Terraform variables reference
+sidebarTitle: Variables
+description: Complete reference of Terraform variables for LangSmith self-hosted on Azure AKS.
+---
+
+Reference for every input variable exposed by the [Azure Terraform modules](https://github.com/langchain-ai/terraform/tree/main/modules/azure). Set non-sensitive variables in `infra/terraform.tfvars`. For sensitive variables (license key, passwords, encryption keys), `make setup-env` writes them to `infra/secrets.auto.tfvars` and Terraform stores them in Azure Key Vault.
+
+## Core
+
+| Variable | Default | Description |
+|---|---|---|
+| `subscription_id` | — | Azure subscription ID. Required. |
+| `location` | `eastus` | Azure region. |
+| `identifier` | `""` | Suffix appended to all resource names (for example, `-prod`, `-dev-dz`). Must start with a hyphen or be empty. |
+| `environment` | `dev` | Environment tag on all resources. |
+| `owner` | `""` | Owner tag applied to all resources. |
+| `cost_center` | `""` | Cost center tag for billing attribution. |
+
+## Deployment tier
+
+| Variable | Default | Description |
+|---|---|---|
+| `postgres_source` | `external` | `external` — Azure DB for PostgreSQL (private VNet). `in-cluster` — Helm chart manages its own Postgres pod (dev/demo only). |
+| `redis_source` | `external` | `external` — Azure Cache for Redis (private VNet). `in-cluster` — Helm chart manages its own Redis pod (dev/demo only). |
+| `clickhouse_source` | `in-cluster` | `in-cluster` — ClickHouse deployed as a Helm pod (dev/POC only). `external` — [LangChain Managed ClickHouse](/langsmith/langsmith-managed-clickhouse), recommended for production. |
+
+## PostgreSQL
+
+| Variable | Default | Description |
+|---|---|---|
+| `postgres_admin_username` | `langsmith` | PostgreSQL admin username. |
+| `postgres_admin_password` | `""` | PostgreSQL admin password (sensitive). Set with `setup-env.sh`. |
+| `postgres_subnet_address_prefix` | `["10.0.32.0/20"]` | CIDR for the PostgreSQL subnet. |
+| `postgres_deletion_protection` | `true` | Prevent accidental PostgreSQL server deletion. Set `false` for dev/test. |
+| `database_name` | `langsmith` | PostgreSQL database to create. Used in the `connection_url` output. |
+
+## Redis
+
+| Variable | Default | Description |
+|---|---|---|
+| `redis_subnet_address_prefix` | `["10.0.48.0/20"]` | CIDR for the Redis subnet. |
+| `redis_capacity` | `2` | Redis Cache tier (P2 = 13 GB). |
+
+## AKS node pools
+
+| Variable | Default | Description |
+|---|---|---|
+| `default_node_pool_vm_size` | `Standard_D8s_v3` | AKS node VM size (8 vCPU, 32 GB). Use `Standard_D4s_v3` for light/demo only. |
+| `default_node_pool_min_count` | `1` | Min nodes for the default pool. Set to 3 for production. Set to 5 before enabling Pass 3. |
+| `default_node_pool_max_count` | `10` | Max nodes for the autoscaler. |
+| `additional_node_pools` | `large: D16s_v3 0–2` | Extra node pools. Default includes a `large` pool (`Standard_D16s_v3`, 16 vCPU, 64 GB) scaled to zero when idle. Required for ClickHouse (15GB RAM request). |
+| `aks_service_cidr` | `10.0.64.0/20` | Kubernetes ClusterIP range. Must not overlap the VNet. |
+| `aks_dns_service_ip` | `10.0.64.10` | CoreDNS service IP. Must be within `aks_service_cidr`. |
+| `aks_deletion_protection` | `true` | Prevent accidental AKS cluster deletion. Set `false` for dev/test. |
+| `availability_zones` | `["1"]` | Availability zones for AKS node pools (for example, `["1", "2", "3"]`). Set to `[]` to disable zone pinning. |
+
+## Ingress controller
+
+| Variable | Default | Description |
+|---|---|---|
+| `ingress_controller` | `nginx` | Ingress controller: `nginx` \| `istio-addon` \| `istio` \| `agic` \| `envoy-gateway`. See `INGRESS_CONTROLLERS.md` in the [module repo](https://github.com/langchain-ai/terraform/blob/main/modules/azure/INGRESS_CONTROLLERS.md) for the full TLS compatibility matrix. |
+
+## DNS and TLS
+
+| Variable | Default | Description |
+|---|---|---|
+| `dns_label` | `""` | Azure Public IP DNS label for the ingress LoadBalancer. Results in `<label>.<region>.cloudapp.azure.com`. Works with nginx, istio, istio-addon, envoy-gateway. |
+| `langsmith_domain` | `""` | Custom hostname for LangSmith (for example, `langsmith.example.com`). Takes priority over `dns_label`. |
+| `tls_certificate_source` | `letsencrypt` | `letsencrypt` — HTTP-01 with cert-manager. `dns01` — DNS-01 with Azure DNS + Workload Identity. `none` — no TLS. |
+| `letsencrypt_email` | `""` | Email for Let's Encrypt notifications. Required when `tls_certificate_source` is `letsencrypt` or `dns01`. |
+| `cert_manager_identity_client_id` | `""` | Client ID of the cert-manager Managed Identity. Wired automatically from the `k8s-cluster` output. Required when `tls_certificate_source = "dns01"`. |
+| `create_dns_zone` | `false` | Enable Azure DNS zone + A record. Required for DNS-01 cert issuance. |
+| `dns_zone_name` | `""` | Azure DNS zone name (for example, `langsmith.mycompany.com`). Required when `tls_certificate_source = "dns01"`. |
+| `dns_resource_group_name` | `""` | Resource group containing the Azure DNS zone. Required when `tls_certificate_source = "dns01"`. |
+
+## LangSmith application
+
+| Variable | Default | Description |
+|---|---|---|
+| `langsmith_namespace` | `langsmith` | Kubernetes namespace for LangSmith workloads. |
+| `langsmith_release_name` | `langsmith` | Helm release name (used for Workload Identity federated credential subjects). |
+| `langsmith_helm_chart_version` | `""` | Pin a specific Helm chart version. Empty = use latest. |
+| `sizing_profile` | `production` | Helm sizing overlay: `minimum` \| `dev` \| `production` \| `production-large`. Read by `init-values.sh`; Terraform ignores this value. |
+
+## Blob Storage
+
+| Variable | Default | Description |
+|---|---|---|
+| `blob_ttl_enabled` | `true` | Enable lifecycle TTL rules on the blob container. |
+| `blob_ttl_short_days` | `14` | TTL for short-lived trace blobs. |
+| `blob_ttl_long_days` | `400` | TTL for long-lived trace blobs. |
+
+## Key Vault
+
+| Variable | Default | Description |
+|---|---|---|
+| `keyvault_name` | `""` | Override Key Vault name (default: `langsmith-kv<identifier>`). |
+| `keyvault_purge_protection` | `true` | Enable Key Vault purge protection. Set `false` for dev/test to allow immediate name reuse after destroy. |
+
+## Network (BYO VNet)
+
+| Variable | Default | Description |
+|---|---|---|
+| `create_vnet` | `true` | Create a new VNet. Set `false` to bring your own. |
+| `vnet_id` | `""` | Existing VNet resource ID. Required when `create_vnet = false`. |
+
+## High availability
+
+| Variable | Default | Description |
+|---|---|---|
+| `postgres_high_availability_mode` | `""` | PostgreSQL HA mode (for example, `ZoneRedundant`). Requires `GeneralPurpose` or `MemoryOptimized` SKU. |
+| `postgres_standby_availability_zone` | `""` | Zone for the PostgreSQL standby replica. Set when enabling zone-redundant HA. |
+
+## Optional modules
+
+| Variable | Default | Description |
+|---|---|---|
+| `create_waf` | `false` | Enable Azure WAF policy (OWASP 3.2 + bot protection). Safe to add post-deploy. |
+| `create_diagnostics` | `false` | Enable Log Analytics workspace + diagnostic settings for AKS, Key Vault, and PostgreSQL. Recommended for production. |
+| `enable_aks_diag` | `true` | Create the AKS diagnostic setting inside the diagnostics module. |
+| `enable_keyvault_diag` | `true` | Create the Key Vault diagnostic setting inside the diagnostics module. |
+| `enable_postgres_diag` | `false` | Create the PostgreSQL diagnostic setting. Set `true` when `postgres_source = "external"`. |
+| `create_bastion` | `false` | Enable a jump VM for private AKS cluster access with `az ssh vm`. No public IP required. |
+
+## Add-on pass flags
+
+`init-values.sh` and `deploy.sh` read these flags; Terraform ignores them. The flags affect which Helm add-on overlay files the scripts generate.
+
+| Variable | Default | Description |
+|---|---|---|
+| `enable_deployments` | `false` | [Pass 3](/langsmith/self-host-terraform-azure-pass-3-deployments): enables LangSmith Deployment (host-backend, listener, operator). Scale `default_node_pool_min_count` to 5 first. |
+| `enable_agent_builder` | `false` | [Pass 4](/langsmith/self-host-terraform-azure-pass-4-agent-builder) — enable Agent Builder UI. Requires `enable_deployments = true`. |
+| `enable_insights` | `false` | [Pass 5](/langsmith/self-host-terraform-azure-pass-5-insights) — enable Insights / Clio analytics. Requires `enable_deployments = true`. |
+| `enable_polly` | `false` | [Pass 5](/langsmith/self-host-terraform-azure-pass-5-insights) — enable Polly AI eval agent. Requires `enable_deployments = true`. |
+
+## Sensitive variables (set with `setup-env.sh`)
+
+`make setup-env` writes these to `secrets.auto.tfvars` and Terraform stores them in Azure Key Vault. Never set these inline in `terraform.tfvars`.
+
+| Variable | Description |
+|---|---|
+| `langsmith_license_key` | LangSmith enterprise license key. |
+| `langsmith_admin_password` | Initial org admin password. |
+| `langsmith_api_key_salt` | Salt for hashing API keys. Must stay stable after first deploy. |
+| `langsmith_jwt_secret` | JWT secret for Basic Auth sessions. |
+| `langsmith_deployments_encryption_key` | Fernet key for LangSmith Deployment (Pass 3). Must never change. |
+| `langsmith_agent_builder_encryption_key` | Fernet key for Agent Builder (Pass 4). Must never change. |
+| `langsmith_insights_encryption_key` | Fernet key for Insights (Pass 5). Must never change. |
+| `langsmith_polly_encryption_key` | Fernet key for Polly. Must never change. |
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/self-host-terraform-azure-variables.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

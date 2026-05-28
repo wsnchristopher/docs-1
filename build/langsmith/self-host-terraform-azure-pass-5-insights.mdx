@@ -1,0 +1,118 @@
+---
+title: "Azure Pass 5: Insights and Polly"
+sidebarTitle: "Pass 5: Insights + Polly"
+description: Enable LangSmith Insights (Clio) and the Polly AI evaluation agent on Azure AKS.
+---
+
+Pass 5 enables two features, Insights and Polly, both of which require [Pass 3](/langsmith/self-host-terraform-azure-pass-3-deployments). They are independent of each other: enable either one without the other.
+
+**Duration:** ~5 minutes. **Required:** No.
+
+- **Insights:** AI-powered trace analytics (Clio). Surfaces patterns and anomalies in LangSmith traces. Clio deploys as a dynamic LangGraph deployment through the operator on first UI invocation. Pass 5 adds no new static pods.
+- **Polly:** AI-powered evaluation and monitoring agent. Runs as a dynamic LangGraph deployment. Sets resource limits for the Polly worker (2 CPU / 4 Gi request, 4 CPU / 8 Gi limit, scales 1 to 5 replicas).
+
+Pass 5 needs no `terraform apply`; just run `make init-values && make deploy`.
+
+**Prerequisite:** Pass 3 (`enable_deployments = true`). Pass 4 and Pass 5 are independent; both require Pass 3 but not each other.
+
+## Step 1 — Enable in `terraform.tfvars`
+
+```hcl
+# infra/terraform.tfvars
+enable_deployments = true    # Pass 3 — required prerequisite
+enable_insights    = true    # Pass 5 — Insights / Clio analytics
+enable_polly       = true    # Pass 5 — Polly AI evaluation agent
+```
+
+Enable just one:
+
+```hcl
+enable_insights = true    # Insights only
+# or
+enable_polly    = true    # Polly only
+```
+
+## Step 2 — Regenerate values and deploy
+
+```bash
+cd terraform/modules/azure
+make init-values    # appends insights + polly add-on overlays to the values chain
+make deploy         # rolling update — ~5 min
+```
+
+`make init-values` appends the add-on overlays based on `clickhouse_source` in `terraform.tfvars`:
+
+- `clickhouse_source = "in-cluster"` — generates a minimal overlay (`config.insights.enabled: true` only). The Helm chart manages ClickHouse internally.
+- `clickhouse_source = "external"` — generates a full overlay with `clickhouse.external.enabled: true` and a `langsmith-clickhouse` secret reference. Create this secret with the ClickHouse host and credentials before deploying.
+
+<Warning>
+**Do not manually copy the Insights example file for in-cluster ClickHouse.** The example `helm/values/examples/langsmith-values-insights.yaml` has `clickhouse.external.enabled: true` and `existingSecretName: langsmith-clickhouse`. Copying it manually when using in-cluster ClickHouse causes `CreateContainerConfigError` because the secret does not exist. Always use `make init-values` to generate the correct file.
+</Warning>
+
+## Step 3 — Verify
+
+```bash
+# ClickHouse already running from Pass 2
+# Insights and Polly deploy as dynamic pods when first invoked from the UI
+kubectl get pods -n langsmith | grep -E "clickhouse|polly|clio"
+
+# Watch for dynamic pods on first Insights use
+kubectl get pods -n langsmith -w
+
+# Confirm Insights is enabled in Helm values
+helm get values langsmith -n langsmith | grep -A3 insights
+# Expected: enabled: true
+```
+
+Pod count after Pass 5 is identical to Pass 4 at rest (~22 running). Clio and Polly appear as dynamic pods when invoked from the UI.
+
+<Warning>
+**Encryption keys must never change after first enable.** `insights_encryption_key` and `polly_encryption_key` must never change after first enable. Changing either permanently corrupts all existing encrypted data. There is no recovery path. These keys live in Key Vault and never rotate automatically.
+</Warning>
+
+<Warning>
+**Roll the frontend after first Polly enable.** If the Polly UI shows "Unable to connect to LangGraph server" after enabling, the frontend started before the bootstrap ConfigMap was ready. Fix:
+
+```bash
+kubectl rollout restart deployment langsmith-frontend -n langsmith
+```
+</Warning>
+
+## Terraform path
+
+If using the Terraform Helm path, enable in `app/terraform.tfvars`:
+
+```hcl
+enable_agent_deploys = true   # required prerequisite
+enable_insights      = true
+enable_polly         = true
+```
+
+Then:
+
+```bash
+make init-app
+make apply-app
+```
+
+## All 5 passes summary
+
+After completing all passes, the deployment runs:
+
+| Pass | New pods | Total ~running |
+|---|---|---|
+| Pass 2 | Core LangSmith (backend, frontend, queue, ingest-queue, clickhouse, etc.) | ~17 |
+| Pass 3 | `host-backend`, `listener`, `operator` | ~20 |
+| Pass 4 | `tool-server`, `trigger-server`, `bootstrap` Job + 4 dynamic Agent Builder pods | ~26 |
+| Pass 5 | No new static pods (Clio + Polly appear dynamically on first use) | ~22 at rest |
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/self-host-terraform-azure-pass-5-insights.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>

@@ -1,0 +1,323 @@
+---
+title: Azure Terraform quickstart
+sidebarTitle: Quickstart
+description: End-to-end walkthrough for deploying LangSmith self-hosted on Azure AKS using the LangChain Terraform modules.
+---
+
+This page walks through a complete LangSmith deployment on Azure Kubernetes Service (AKS) using the public Terraform modules at [github.com/langchain-ai/terraform/tree/main/modules/azure](https://github.com/langchain-ai/terraform/tree/main/modules/azure). Plan for 40 to 50 minutes end to end on a clean subscription.
+
+## Deployment passes
+
+Azure deploys in five passes. Pass 1 plus 2 is the base set; Passes 3 to 5 are opt-in add-ons.
+
+| Pass | What | How | Time |
+|---|---|---|---|
+| 1 | AKS cluster, Postgres, Redis, Blob, Key Vault, cert-manager, KEDA, ingress | `make apply` | 15 to 20 min |
+| 1.5 | Cluster credentials + Kubernetes Secrets from Key Vault | `make kubeconfig && make k8s-secrets` | ~2 min |
+| 2 | LangSmith Helm chart (~17 to 25 pods) | `make init-values && make deploy` | ~10 min |
+| 3 | LangSmith Deployment (`enable_deployments = true`) — scale nodes first | `make apply && make init-values && make deploy` | ~5 min |
+| 4 | Agent Builder (`enable_agent_builder = true`) | `make init-values && make deploy` | ~5 min |
+| 5 | Insights + Polly (`enable_insights = true`, `enable_polly = true`) | `make init-values && make deploy` | ~5 min |
+
+Each pass gets its own page with details. The walkthrough below covers Pass 1 and Pass 2 to get a working LangSmith UI; jump to [Pass 3](/langsmith/self-host-terraform-azure-pass-3-deployments), [Pass 4](/langsmith/self-host-terraform-azure-pass-4-agent-builder), or [Pass 5](/langsmith/self-host-terraform-azure-pass-5-insights) for the add-ons.
+
+## Prerequisites
+
+### Required tools
+
+| Tool | Version | Purpose |
+|---|---|---|
+| Azure CLI (`az`) | 2.50 | Authenticate, query Azure resources, manage AKS credentials |
+| Terraform | 1.5 | Run the infrastructure modules |
+| `kubectl` | 1.28 | Inspect the AKS cluster |
+| Helm | 3.12 | Install and manage the LangSmith chart |
+
+```bash
+brew install azure-cli kubectl helm
+brew tap hashicorp/tap && brew install hashicorp/tap/terraform
+
+az --version
+terraform version
+kubectl version --client
+helm version
+```
+
+### Required Azure RBAC
+
+The identity running Terraform needs the following roles on the subscription:
+
+| Role | Purpose |
+|---|---|
+| `Contributor` | Create and manage all Azure resources |
+| `User Access Administrator` | Create role assignments for Key Vault, Blob, cert-manager managed identities |
+
+`Owner` includes both. `Contributor` alone is insufficient — role assignments require User Access Administrator.
+
+### Authenticate
+
+```bash
+az login
+az account set --subscription <your-subscription-id>
+az account show
+```
+
+You also need a LangSmith license key ([contact sales](https://www.langchain.com/contact-sales)) and either a `dns_label` (Azure subdomain, no DNS setup needed) or a custom `langsmith_domain`.
+
+## Clone the repo
+
+```bash
+git clone https://github.com/langchain-ai/terraform.git
+cd terraform/modules/azure
+```
+
+All subsequent commands run from `modules/azure/`. Run `make help` for the full target list.
+
+## Pass 1 — Infrastructure
+
+### Generate `terraform.tfvars`
+
+```bash
+make quickstart
+```
+
+The interactive wizard runs a 10-section questionnaire covering profile, subscription, naming, networking, AKS sizing, ingress controller, DNS/TLS, backend services, Key Vault, sizing profile, and security add-ons. Each section has explanatory context — cost estimates, compatibility notes, trade-offs.
+
+Re-running is safe: existing values are pre-selected at each prompt; press Enter to keep them.
+
+Prefer manual editing:
+
+```bash
+cp infra/terraform.tfvars.example infra/terraform.tfvars
+vi infra/terraform.tfvars
+```
+
+Minimum required values:
+
+```hcl
+subscription_id = "<your-azure-subscription-id>"
+location        = "eastus"
+identifier      = "-prod"
+environment     = "prod"
+
+# Production tier
+postgres_source   = "external"   # Azure DB for PostgreSQL
+redis_source      = "external"   # Azure Cache for Redis Premium
+clickhouse_source = "in-cluster" # use "external" + LangChain Managed for production
+
+# DNS + TLS (HTTPS via Let's Encrypt on a free Azure subdomain)
+dns_label              = "langsmith-prod"   # → langsmith-prod.eastus.cloudapp.azure.com
+tls_certificate_source = "letsencrypt"
+letsencrypt_email      = "ops@example.com"
+
+# Sizing
+sizing_profile = "production"
+```
+
+For all variables, see [Azure variables reference](/langsmith/self-host-terraform-azure-variables).
+
+### Bootstrap secrets
+
+```bash
+make setup-env
+```
+
+`setup-env.sh` writes `infra/secrets.auto.tfvars` (gitignored, `chmod 600`). Terraform picks this file up automatically — no shell exports needed.
+
+- **First run:** prompts for PostgreSQL password, LangSmith license key, admin password, and admin email. Generates `api_key_salt`, `jwt_secret`, and four Fernet encryption keys locally.
+- **Subsequent runs:** reads everything silently from Azure Key Vault.
+
+<Warning>
+Never commit `secrets.auto.tfvars`. It is gitignored. Regenerate on any machine by running `make setup-env`.
+</Warning>
+
+### Preflight
+
+```bash
+make preflight
+```
+
+Validates Azure CLI auth, the active subscription, 11 required resource providers, RBAC (Contributor + User Access Administrator), `terraform.tfvars` and `secrets.auto.tfvars` presence, and `terraform`/`kubectl`/`helm` on PATH.
+
+### Provision infrastructure
+
+```bash
+make init
+make apply
+```
+
+<Note>
+Skip `make plan` on a fresh deploy. `kubernetes_manifest` resources require a live cluster API during plan, which does not exist yet. `make apply` handles resource ordering in three internal stages: Azure resources → AKS → Kubernetes bootstrap.
+</Note>
+
+Expect 15 to 20 minutes for a clean run. Subsequent applies (for example, enabling Pass 3) are much faster.
+
+### Pass 1.5 — Cluster credentials and Kubernetes Secrets
+
+```bash
+make kubeconfig
+make k8s-secrets
+```
+
+`make k8s-secrets` reads 8 secrets from Key Vault and creates or updates `langsmith-config-secret` in the `langsmith` namespace. Safe to re-run; uses `kubectl apply --dry-run=client | kubectl apply` to update in place.
+
+Verify Pass 1:
+
+```bash
+kubectl get nodes
+kubectl get pods -n cert-manager
+kubectl get pods -n keda
+kubectl get pods -n ingress-nginx    # if using nginx
+kubectl get svc ingress-nginx-controller -n ingress-nginx
+```
+
+For the full Pass 1 walkthrough, see [Pass 1 — Infrastructure](/langsmith/self-host-terraform-azure-pass-1-infrastructure).
+
+## Pass 2 — LangSmith application
+
+Two paths are available — Helm path (recommended) and Terraform path.
+
+### Helm path (recommended)
+
+```bash
+make init-values
+make deploy
+```
+
+`make init-values` reads Terraform outputs and `terraform.tfvars`, generates `helm/values/values-overrides.yaml` with the hostname, Workload Identity annotations, ingress block, and external secret references, and copies the matching sizing and add-on overlays from `helm/values/examples/`.
+
+`make deploy` runs `helm/scripts/deploy.sh`, which:
+
+1. Validates `values-overrides.yaml` exists.
+2. Refreshes kubeconfig.
+3. Annotates the LoadBalancer service with the Azure DNS label.
+4. Creates the `letsencrypt-prod` cert-manager `ClusterIssuer` if `tls_certificate_source = "letsencrypt"`.
+5. Runs preflight checks (tools, cluster connectivity, Helm repo).
+6. Verifies `langsmith-config-secret` exists (auto-creates from Key Vault if missing).
+7. Builds and logs the values chain.
+8. Auto-recovers any stuck `pending-upgrade` state.
+9. Runs `helm upgrade --install langsmith langchain/langsmith --timeout 20m`.
+10. Waits for core deployments to roll out.
+11. Annotates the `langsmith-ksa` ServiceAccount with the Workload Identity client ID.
+
+Or chain Pass 1.5 + Pass 2 after `make apply`:
+
+```bash
+make deploy-all   # kubeconfig → k8s-secrets → init-values → deploy
+```
+
+### Terraform path (alternative)
+
+Use this path to manage the Helm release, Kubernetes Secrets, and Workload Identity ServiceAccount in Terraform state.
+
+```bash
+cp app/terraform.tfvars.example app/terraform.tfvars
+vi app/terraform.tfvars   # set admin_email at minimum
+
+make init-app    # pulls infra outputs → app/infra.auto.tfvars.json + terraform init
+make apply-app   # helm release + K8s secrets + WI SA via Terraform
+```
+
+End-to-end via Terraform (Pass 1 + Pass 2):
+
+```bash
+make deploy-all-tf   # apply → init-values → init-app → apply-app
+```
+
+### Verify Pass 2
+
+```bash
+kubectl get pods -n langsmith        # ~17 pods Running or Completed
+kubectl get ingress -n langsmith
+kubectl get certificate -n langsmith # READY: True after cert issues
+helm list -n langsmith
+```
+
+Open `https://<HOSTNAME>` and log in with the admin email and password:
+
+```bash
+az keyvault secret show \
+  --vault-name $(terraform -chdir=infra output -raw keyvault_name) \
+  --name langsmith-admin-password \
+  --query value -o tsv
+```
+
+For details, see [Pass 2 — LangSmith](/langsmith/self-host-terraform-azure-pass-2-langsmith).
+
+## Ingress controllers
+
+Set `ingress_controller` in `terraform.tfvars` before `make apply`. For the full TLS compatibility matrix, see `INGRESS_CONTROLLERS.md` in the [Azure module repo](https://github.com/langchain-ai/terraform/blob/main/modules/azure/INGRESS_CONTROLLERS.md).
+
+| Value | What Terraform installs | Best for |
+|---|---|---|
+| `nginx` _(default)_ | `ingress-nginx` Helm chart with Azure LB | Standard deployments. Simplest setup. |
+| `istio-addon` | AKS Service Mesh add-on (Azure-managed Istio) | Azure-managed Istio mesh, multi-dataplane, mTLS. |
+| `istio` | `istio-base` + `istiod` + `istio-ingressgateway` | Self-managed Istio. Full mesh and sidecar injection. |
+| `agic` | Azure Application Gateway v2 + AGIC Helm chart | Enterprise Azure, native L7 WAF, HTTP-only or dns01 + custom domain. |
+| `envoy-gateway` | `gateway-helm` OCI chart, Kubernetes Gateway API | Gateway API native, modern alternative to Ingress. |
+
+<Warning>
+`letsencrypt` (HTTP-01) only works with `nginx`, `istio` (self-managed), and `envoy-gateway`. `istio-addon` and `agic` do not create an IngressClass, so the ACME solver cannot receive traffic. For those controllers, use `dns01` with a custom domain, or `none` for HTTP-only.
+</Warning>
+
+## DNS and TLS
+
+`dns_label` gives you a free Azure subdomain — `<label>.<region>.cloudapp.azure.com` — with no domain registration or DNS zone needed. `deploy.sh` annotates the correct LoadBalancer service automatically.
+
+**Quickstart default (HTTP, zero setup):**
+
+```hcl
+dns_label              = "langsmith-prod"
+tls_certificate_source = "none"
+```
+
+**Add HTTPS with Let's Encrypt (nginx only):**
+
+```hcl
+dns_label              = "langsmith-prod"
+tls_certificate_source = "letsencrypt"
+letsencrypt_email      = "you@example.com"
+```
+
+**Custom domain + DNS-01 (all controllers, works behind firewalls):**
+
+```hcl
+langsmith_domain       = "langsmith.mycompany.com"
+tls_certificate_source = "dns01"
+letsencrypt_email      = "you@example.com"
+create_dns_zone        = true
+# After deploy: add ingress_ip = "<lb-ip>" and re-run make apply (creates A record)
+```
+
+**dns01 flow:**
+
+1. `make apply` creates the Azure DNS zone and outputs 4 nameservers.
+2. At your registrar, add NS records for the subdomain pointing to those 4 nameservers.
+3. Verify: `dig NS langsmith.mycompany.com @8.8.8.8`.
+4. `make deploy` issues the cert via DNS-01 automatically (Workload Identity writes the TXT record to Azure DNS).
+5. Get the LB IP, add `ingress_ip = "<ip>"` to `terraform.tfvars`, then `make apply` (creates the A record).
+6. `make status` shows exactly what NS and A records to add at each stage.
+
+<Note>
+**Why NS records, not CNAME:** cert-manager must write TXT records to the zone to prove ownership. That requires Azure DNS to be authoritative for the subdomain, and NS delegation grants that authority. A CNAME only aliases traffic and does not transfer DNS authority; the DNS-01 challenge will fail.
+</Note>
+
+## Next steps
+
+- **Add LangSmith Deployment:** [Pass 3](/langsmith/self-host-terraform-azure-pass-3-deployments) installs the host-backend, listener, and operator.
+- **Add Agent Builder:** [Pass 4](/langsmith/self-host-terraform-azure-pass-4-agent-builder) enables the visual agent builder.
+- **Add Insights + Polly:** [Pass 5](/langsmith/self-host-terraform-azure-pass-5-insights) enables analytics and AI evaluation.
+- **Day-2 operations:** [Azure quick reference](/langsmith/self-host-terraform-azure-quick-reference).
+- **Architecture deep dive:** [Azure architecture](/langsmith/self-host-terraform-azure-architecture).
+- **Troubleshooting:** [Azure troubleshooting](/langsmith/self-host-terraform-azure-troubleshooting).
+- **Remove the deployment:** [Azure teardown](/langsmith/self-host-terraform-azure-teardown).
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/self-host-terraform-azure-quickstart.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>
