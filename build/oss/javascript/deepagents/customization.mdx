@@ -257,22 +257,55 @@ agent = create_deep_agent(
 
 ## Middleware
 
-Deep Agents support any [middleware](/oss/javascript/langchain/middleware/overview), including the built-in middleware listed below, prebuilt middleware from LangChain, provider-specific middleware, and custom middleware you write yourself. Pass middleware to the `middleware` argument of `create_deep_agent`.
+Deep Agents support any [middleware](/oss/javascript/langchain/middleware/overview), including the built-in middleware listed below, prebuilt middleware from LangChain, provider-specific middleware, and custom middleware you write yourself.
+
+
+
+Pass middleware to the `middleware` argument of `createDeepAgent`.
+
 
 By default, Deep Agents have access to the following middleware:
 
-- [`TodoListMiddleware`](https://reference.langchain.com/javascript/langchain/index/todoListMiddleware): Tracks and manages todo lists for organizing agent tasks and work
-- [`FilesystemMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createFilesystemMiddleware): Handles file system operations such as reading, writing, and navigating directories
-- [`SubAgentMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createSubAgentMiddleware): Spawns and coordinates subagents for delegating tasks to specialized agents
-- [`SummarizationMiddleware`](https://reference.langchain.com/javascript/langchain/index/summarizationMiddleware): Condenses message history to stay within context limits when conversations grow long
-- [`AnthropicPromptCachingMiddleware`](https://reference.langchain.com/javascript/langchain/index/anthropicPromptCachingMiddleware): Automatic reduction of redundant token processing when using Anthropic models
-- [`PatchToolCallsMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createPatchToolCallsMiddleware): Automatic message history fixes when tool calls are interrupted or cancelled before receiving results
+### Default stack (main agent)
 
-If you are using memory, skills, or human-in-the-loop, the following middleware is also included:
+From first to last:
 
-- [`MemoryMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createMemoryMiddleware): Persists and retrieves conversation context across sessions when the `memory` argument is provided
-- [`SkillsMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createSkillsMiddleware): Enables custom skills when the `skills` argument is provided
-- `HumanInTheLoopMiddleware`: Pauses for human approval or input at specified points when the `interruptOn` argument is provided
+
+
+1. [`TodoListMiddleware`](https://reference.langchain.com/javascript/langchain/index/todoListMiddleware): Tracks and manages todo lists for organizing agent tasks and work.
+2. [`SkillsMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createSkillsMiddleware): Only when you pass `skills`. Injected **immediately after** the todo middleware and **before** filesystem middleware so skill metadata is available before file tools run.
+3. [`FilesystemMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createFilesystemMiddleware): Handles file system operations such as reading, writing, and navigating directories. When you pass `permissions`, filesystem permissions enforcement is included here so it can evaluate every tool the agent might call.
+4. [`SubAgentMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createSubAgentMiddleware): Spawns and coordinates subagents for delegating tasks to specialized agents.
+5. [`SummarizationMiddleware`](https://reference.langchain.com/javascript/langchain/index/summarizationMiddleware): Condenses message history to stay within context limits when conversations grow long (via [createSummarizationMiddleware](https://reference.langchain.com/javascript/deepagents/middleware/createSummarizationMiddleware)).
+6. [`PatchToolCallsMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createPatchToolCallsMiddleware): Automatic message history fixes when tool calls are interrupted or cancelled before receiving results. Runs **before** Anthropic prompt caching and the tail stack below.
+7. [`AsyncSubAgentMiddleware`](https://reference.langchain.com/javascript/deepagents/agent/createDeepAgent): Only when you configure async subagents.
+8. **Your middleware argument**: Optional middleware you pass as the `middleware` argument is appended here (after Patch, before the tail stack).
+9. **Harness profile extras**: Provider-specific middleware from the resolved model profile, if any.
+tools from the agent.
+10. [`AnthropicPromptCachingMiddleware`](https://reference.langchain.com/javascript/langchain/index/anthropicPromptCachingMiddleware): Automatically added when you are using an Anthropic mode. Runs **after** Patch and after your middleware so the cached prefix matches what is actually sent to the model.
+11. [`MemoryMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createMemoryMiddleware): Only when you pass `memory`.
+
+    <Note>
+    `MemoryMiddleware` is placed **after** profile extras and Anthropic prompt caching so updates to injected memory are less likely to invalidate the Anthropic cache prefix. The same ordering concern is called out in the `createDeepAgent` implementation comments.
+    </Note>
+
+12. `HumanInTheLoopMiddleware`: Only when you pass `interruptOn`. Pauses for human approval or input at configured tool calls.
+13. **Excluded-tool filtering**: When the harness profile lists excluded tools, middleware removes those ```
+
+
+
+### Default stack (synchronous subagents)
+
+
+
+The built-in **general-purpose** subagent and each declarative synchronous `SubAgent` graph use a stack that `createDeepAgent` builds in code. It matches the main agent in broad shape (todo list, filesystem, summarization, Patch, profile extras, Anthropic caching, optional permissions) but differs in two ways:
+
+- **Skills run after** [`PatchToolCallsMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createPatchToolCallsMiddleware) on these inner agents (on the main agent, skills run **before** filesystem middleware when `skills` is set).
+- There is **no** [`SubAgentMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createSubAgentMiddleware) inside a subagent graph (only the parent agent exposes the `task` tool).
+
+When a declarative subagent sets `interruptOn`, that value is forwarded to `createAgent` for the subagent, which wires up human-in-the-loop handling for the configured tool calls.
+
+
 
 ### Prebuilt middleware
 
