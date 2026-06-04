@@ -128,6 +128,8 @@ for subgraph in stream.subgraphs:
 
 
 
+`subgraph.graph_name` is the `name` of the compiled graph or agent. A named agent dispatched from a tool (for example, a `create_agent(name=...)` invoked through the Deep Agents `task` tool) surfaces here under that name, and the `lifecycle` event that opens the scope carries a `cause` linking back to the dispatching tool call. See [Lifecycle](#lifecycle) for more information.
+
 For product-specific streams, see [Deep Agents streaming](/oss/python/deepagents/event-streaming) for subagent streams and [LangChain agent streaming](/oss/python/langchain/streaming) for tool calls and middleware events.
 
 ## Stream state
