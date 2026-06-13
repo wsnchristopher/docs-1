@@ -38,7 +38,7 @@ A harness is everything around that loop: the model, its prompt, its tools, and 
 ```typescript
 import { createAgent } from "langchain";
 
-const agent = createAgent({ model: "openai:gpt-5.4", tools });
+const agent = createAgent({ model: "openai:gpt-5.5", tools });
 ```
 
 
@@ -54,7 +54,7 @@ Pass a model identifier string (`"provider:model"`) or an initialized model inst
 ```typescript
 import { createAgent } from "langchain";
 
-const agent = createAgent({ model: "openai:gpt-5.4", tools });
+const agent = createAgent({ model: "openai:gpt-5.5", tools });
 ```
 
 
@@ -73,7 +73,7 @@ const search = tool(({ query }) => `Results for: ${query}`, {
   schema: z.object({ query: z.string() }),
 });
 
-const agent = createAgent({ model: "openai:gpt-5.4", tools: [search] });
+const agent = createAgent({ model: "openai:gpt-5.5", tools: [search] });
 ```
 
 
@@ -84,7 +84,7 @@ Shape how the agent approaches tasks. Accepts a string or `SystemMessage`. For d
 
 ```typescript
 const agent = createAgent({
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.5",
   tools,
   systemPrompt: "You are a helpful assistant. Be concise and accurate.",
 });
@@ -101,7 +101,7 @@ import * as z from "zod";
 
 const Answer = z.object({ summary: z.string(), confidence: z.number() });
 
-const agent = createAgent({ model: "openai:gpt-5.4", tools, responseFormat: Answer });
+const agent = createAgent({ model: "openai:gpt-5.5", tools, responseFormat: Answer });
 const result = await agent.invoke({ messages: [{ role: "user", content: "Summarize AI trends" }] });
 result.structuredResponse; // { summary: ..., confidence: ... }
 ```
@@ -113,7 +113,7 @@ Optional identifier used as the node name when embedding this agent as a subgrap
 
 
 ```typescript
-const agent = createAgent({ model: "openai:gpt-5.4", tools, name: "research_assistant" });
+const agent = createAgent({ model: "openai:gpt-5.5", tools, name: "research_assistant" });
 ```
 
 

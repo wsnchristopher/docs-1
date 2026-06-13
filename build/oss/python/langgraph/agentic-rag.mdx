@@ -145,7 +145,7 @@ Note that the components will operate on the [`MessagesState`](/oss/python/langg
   from langgraph.graph import MessagesState
   from langchain.chat_models import init_chat_model
 
-  response_model = init_chat_model("gpt-5.4", temperature=0)
+  response_model = init_chat_model("gpt-5.5", temperature=0)
 
 
   def generate_query_or_respond(state: MessagesState):
@@ -220,7 +220,7 @@ Note that the components will operate on the [`MessagesState`](/oss/python/langg
       )
 
 
-  grader_model = init_chat_model("gpt-5.4", temperature=0)
+  grader_model = init_chat_model("gpt-5.5", temperature=0)
 
 
   def grade_documents(

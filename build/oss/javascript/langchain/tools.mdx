@@ -137,7 +137,7 @@ const saveUserInfo = tool(
 );
 
 const agent = createAgent({
-  model: new ChatOpenAI({ model: "gpt-5.4" }),
+  model: new ChatOpenAI({ model: "gpt-5.5" }),
   tools: [getUserInfo, saveUserInfo],
   store,
 });

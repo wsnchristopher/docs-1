@@ -51,7 +51,7 @@ function searchWeb(query: string): string {
 }
 
 const agent = createAgent({
-    model: "gpt-5.4",
+    model: "gpt-5.5",
     tools: [sendEmail, searchWeb],
     systemPrompt: "You are a helpful assistant that can send emails and search the web."
 });

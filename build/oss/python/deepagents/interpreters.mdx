@@ -83,7 +83,7 @@ from deepagents import create_deep_agent
 from langchain_quickjs import CodeInterpreterMiddleware
 
 agent = create_deep_agent(
-    model="openai:gpt-5.4",
+    model="openai:gpt-5.5",
     middleware=[CodeInterpreterMiddleware()],
 )
 ```
@@ -160,7 +160,7 @@ from deepagents import create_deep_agent
 from langchain_quickjs import CodeInterpreterMiddleware
 
 agent = create_deep_agent(
-    model="openai:gpt-5.4",
+    model="openai:gpt-5.5",
     middleware=[CodeInterpreterMiddleware(ptc=["task"])],
 )
 ```
@@ -303,7 +303,7 @@ from langgraph.checkpoint.memory import MemorySaver
 checkpointer = MemorySaver()
 
 agent = create_deep_agent(
-    model="openai:gpt-5.4",
+    model="openai:gpt-5.5",
     checkpointer=checkpointer,
     middleware=[
         CodeInterpreterMiddleware(

@@ -37,7 +37,7 @@ A harness is everything around that loop: the model, its prompt, its tools, and 
 ```python
 from langchain.agents import create_agent
 
-agent = create_agent("openai:gpt-5.4", tools=tools)
+agent = create_agent("openai:gpt-5.5", tools=tools)
 ```
 
 
@@ -53,7 +53,7 @@ Pass a model identifier string (`"provider:model"`) or an initialized model inst
 ```python
 from langchain.agents import create_agent
 
-agent = create_agent("openai:gpt-5.4", tools=tools)
+agent = create_agent("openai:gpt-5.5", tools=tools)
 ```
 
 
@@ -70,7 +70,7 @@ def search(query: str) -> str:
     """Search for information."""
     return f"Results for: {query}"
 
-agent = create_agent("openai:gpt-5.4", tools=[search])
+agent = create_agent("openai:gpt-5.5", tools=[search])
 ```
 
 
@@ -81,7 +81,7 @@ Shape how the agent approaches tasks. Accepts a string or `SystemMessage`. For d
 
 ```python
 agent = create_agent(
-    "openai:gpt-5.4",
+    "openai:gpt-5.5",
     tools=tools,
     system_prompt="You are a helpful assistant. Be concise and accurate.",
 )
@@ -101,7 +101,7 @@ class Answer(BaseModel):
     summary: str
     confidence: float
 
-agent = create_agent("openai:gpt-5.4", tools=tools, response_format=Answer)
+agent = create_agent("openai:gpt-5.5", tools=tools, response_format=Answer)
 result = agent.invoke({"messages": [{"role": "user", "content": "Summarize AI trends"}]})
 result["structured_response"]  # Answer(summary=..., confidence=...)
 ```
@@ -113,7 +113,7 @@ result["structured_response"]  # Answer(summary=..., confidence=...)
 Optional identifier used as the node name when embedding this agent as a subgraph in [multi-agent](/oss/python/langchain/multi-agent) systems.
 
 ```python
-agent = create_agent("openai:gpt-5.4", tools=tools, name="research_assistant")
+agent = create_agent("openai:gpt-5.5", tools=tools, name="research_assistant")
 ```
 
 
