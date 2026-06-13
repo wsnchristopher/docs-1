@@ -1496,7 +1496,6 @@
                   "langsmith/use-remote-graph",
                   "langsmith/semantic-search",
                   "langsmith/configure-ttl",
-                  "langsmith/configure-checkpointer",
                   "langsmith/agent-server-scale",
                   "langsmith/cicd-pipeline-example"
                 ]
@@ -1541,6 +1540,7 @@
                 "pages": [
                   "langsmith/caching",
                   "langsmith/custom-store",
+                  "langsmith/configure-checkpointer",
                   "langsmith/custom-checkpointer",
                   "langsmith/custom-lifespan",
                   "langsmith/custom-middleware",
