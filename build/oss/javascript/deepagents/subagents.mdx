@@ -161,17 +161,17 @@ const agent = createDeepAgent({
 ## Streaming
 
 Deep Agents support streaming updates from both the coordinator and every delegated subagent.
+
+
+
 Use [`streamEvents`](/oss/javascript/deepagents/event-streaming) to get typed projections—separate iterators for subagents, messages, tool calls, and values—so you can consume each independently.
+
 
 ### Stream subagent progress
 
 The simplest pattern is to iterate `stream.subagents` to track each delegated task as it starts, runs, and completes. Each subagent handle exposes `.name`, `.messages`, `.tool_calls`, and `.output`.
 
-python
 
-<SubagentStreamProgressPy />
-
-:::
 
 <SubagentStreamProgressJs />
 
