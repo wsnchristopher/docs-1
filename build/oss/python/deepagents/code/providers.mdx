@@ -50,6 +50,7 @@ Using a provider not listed here? See [Arbitrary providers](/oss/python/deepagen
 | Provider | Package | Credential env var | Model profiles |
 | --- | --- | --- | --- |
 | OpenAI | [`langchain-openai`](/oss/python/integrations/chat/openai) | `OPENAI_API_KEY` | ✅ |
+| OpenAI (Codex) | [`langchain-openai`](/oss/python/integrations/chat/openai) | None — [sign in with ChatGPT](#sign-in-with-chatgpt) | ✅ |
 | Azure OpenAI | [`langchain-openai`](/oss/python/integrations/chat/azure_chat_openai) | `AZURE_OPENAI_API_KEY` | ✅ |
 | Anthropic | [`langchain-anthropic`](/oss/python/integrations/chat/anthropic) | `ANTHROPIC_API_KEY` | ✅ |
 | Google Gemini API | [`langchain-google-genai`](/oss/python/integrations/chat/google_generative_ai) | `GOOGLE_API_KEY` | ✅ |
@@ -79,6 +80,34 @@ Using a provider not listed here? See [Arbitrary providers](/oss/python/deepagen
 <Tip>
     [Model profiles](/oss/python/langchain/models#model-profiles) provide model metadata used by the interactive `/model` switcher. If a model is missing from the switcher, pass the model name directly or add it via `config.toml`.
 </Tip>
+
+### Sign in with ChatGPT
+
+The `openai_codex` provider lets you use OpenAI's Codex models with your paid **ChatGPT** subscription instead of an `OPENAI_API_KEY`. You sign in with your ChatGPT account, and it shows up as its own provider in both `/auth` and the `/model` switcher, separate from the API-key-based `openai` provider.
+
+<Steps>
+    <Step title="Start the sign-in">
+        Run `/auth` in any session and select **`openai_codex`**. Because ChatGPT signs you in through your browser, this starts a browser sign-in instead of asking for an API key.
+    </Step>
+
+    <Step title="Authorize in your browser">
+        Deep Agents Code opens your browser to the ChatGPT sign-in page. If it can't open a browser (for example, over SSH), it also shows the sign-in URL on screen so you can copy it to a browser on another device.
+    </Step>
+
+    <Step title="Select a Codex model">
+        Once signed in, the Codex models appear in the `/model` switcher under the `openai_codex` provider. Switch to one directly with its spec:
+
+        ```txt
+        /model openai_codex:gpt-5.5
+        ```
+    </Step>
+</Steps>
+
+Your sign-in persists across sessions. To check your status or sign out, run `/auth`, select `openai_codex`, and choose to re-authenticate or sign out.
+
+<Note>
+    `openai_codex` is separate from `openai`. To use OpenAI models with a standard API key instead, use the regular `openai` provider (e.g. `/model openai:gpt-5.5`).
+</Note>
 
 
 
