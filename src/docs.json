@@ -1827,6 +1827,15 @@
                   "langsmith/rules",
                   "langsmith/webhooks"
                 ]
+              },
+              {
+                "group": "Online evaluators",
+                "pages": [
+                  "langsmith/online-evaluations-llm-as-judge",
+                  "langsmith/online-evaluations-multi-turn",
+                  "langsmith/online-evaluations-code",
+                  "langsmith/online-evaluations-composite"
+                ]
               }
             ]
           }
