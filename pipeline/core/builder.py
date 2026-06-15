@@ -775,6 +775,7 @@ class DocumentationBuilder:
             "index.mdx",
             "use-these-docs.mdx",
             "playground.mdx",
+            "agent-lifecycle.mdx",
         }:
             return True
 
