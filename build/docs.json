@@ -1632,6 +1632,7 @@
               "langsmith/sandbox-snapshots",
               "langsmith/sandbox-service-urls",
               "langsmith/sandbox-auth-proxy",
+              "langsmith/sandbox-mounts",
               "langsmith/sandbox-permissions",
               "langsmith/sandbox-cli",
               "langsmith/sandbox-sdk",
