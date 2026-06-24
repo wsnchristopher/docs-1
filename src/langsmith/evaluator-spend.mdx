@@ -56,7 +56,7 @@ Navigate to the **Evaluators** page from the left sidebar. The top of the page s
 
 - **Daily evaluator spend**: Stacked bar chart of spend per day. Toggle between **Evaluator** and **Project / Dataset** breakdowns.
 - **Evaluator spend this week**: Total USD spend across all evaluators, with the change versus the previous week.
-- **Evaluator runs this week**: Total run count across all evaluators, with the change versus the previous week.
+- **Evaluator traces this week**: Total trace count across all evaluators, with the change versus the previous week.
 - **Weekly evaluator spend limit monitoring**: Sorted list of top spenders with a per project or dataset progress bar against its `$ spent / $ limit`. The header surfaces the count of projects or datasets that have hit their limit (**Limit hit**) or are **on pace to hit limit**.
 
 Use the **Prev week** and **Next week** controls in the page header to move the weekly view.
@@ -67,19 +67,20 @@ The tracing project or dataset view has an **Evaluators** tab that mirrors these
 
 The Evaluators table on the same page includes:
 
-- **Spend (this week)**: Total LLM cost for the evaluator across all attached projects and datasets since Monday 12AM UTC. Sortable. Evaluators that do not call an LLM (for example, code evaluators) show no value.
+- **Spend (this week)**: Total LLM cost for the evaluator across all attached projects and datasets since Monday 12AM UTC. Evaluators that do not call an LLM (for example, code evaluators), disabled evaluators, and evaluators without an attached project or dataset show no value.
 - **Spend Status**: One of the following:
     - **Under limits**: At least one attached project or dataset has a limit, and none are at the cap.
     - **N limit hit**: The evaluator has reached its limit in one or more projects or datasets it is attached to. The number reflects how many are paused.
     - **Unlimited**: No limits have been set.
+    - No value is shown for evaluators that do not call an LLM (for example, code evaluators) and evaluators without an attached project or dataset.
 
 ### Projects & Datasets tab on an evaluator
 
 Open an evaluator and select the **Projects & Datasets** tab to see per-project or dataset spend and limits:
 
 - **Spend (this week)**: Total LLM cost for the evaluator on that project or dataset since Monday 12AM UTC.
-- **Current spend**: Progress bar showing spend against the limit since Monday 12AM UTC.
-- **Weekly limit**: Effective weekly limit for that project or dataset, either the organization default or a custom override.
+- **Percent of Spend Limit**: Progress bar showing spend against the limit since Monday 12AM UTC.
+- **Weekly Limit**: Effective weekly limit for that project or dataset, either the organization default or a custom override.
 
 For attachment management, refer to [Manage evaluators](/langsmith/evaluators).
 
@@ -89,8 +90,8 @@ Organization admins set a single weekly cap that applies to every evaluator's at
 
 <Note>Setting and editing the organization default requires the `organization:manage` [permission](/langsmith/rbac).</Note>
 
-1. Open organization **Settings** and navigate to the evaluator spend limit entry under **Usage Configuration**.
-1. Enter a USD amount. The unit is `/ week`. Leave blank for no limit.
+1. Open organization **Settings** and navigate to **Usage Configuration**.
+1. For **Evaluator spend limit**, enter a USD amount. The unit is `/ week`. Leave blank for no limit.
 1. Click **Save**.
 
 If no organization default is set, attached projects and datasets are unlimited unless a custom override is configured. Clearing the default removes the cap from every attached project or dataset that currently inherits it.
