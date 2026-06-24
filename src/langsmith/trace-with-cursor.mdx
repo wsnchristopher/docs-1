@@ -1,0 +1,132 @@
+---
+title: Trace Cursor agent interactions
+sidebarTitle: Cursor
+description: Capture Cursor agent turns, tool calls, shell commands, file operations, and thinking steps in LangSmith.
+---
+
+The [`Cursor-LangSmith-Integration`](https://github.com/langchain-ai/Cursor-LangSmith-Integration) repository provides a hook handler that sends [Cursor](https://cursor.com) agent activity to LangSmith. Use it to inspect Cursor prompts, responses, MCP tool calls, shell commands, file operations, and thinking steps in a LangSmith tracing project.
+
+Tracing is opt in. The hook handler sends data only when `TRACE_TO_LANGSMITH=true`, and errors in the handler do not block Cursor.
+
+<Warning>
+This integration uploads Cursor agent interaction content to LangSmith, including prompts, responses, tool calls, shell commands, file operations, and thinking steps. Do not enable tracing for sessions that contain data you do not want stored in LangSmith.
+</Warning>
+
+## Prerequisites
+
+Before setting up tracing, ensure you have:
+
+- [Cursor](https://cursor.com) installed.
+- Python 3.10 or later.
+- The `langsmith` Python package installed:
+
+  ```bash
+  pip install langsmith
+  ```
+
+- A [LangSmith API key](/langsmith/create-account-api-key).
+
+## Install the hook handler
+
+Download the hook handler to Cursor's global hooks directory:
+
+```bash
+mkdir -p ~/.cursor/hooks
+curl -o ~/.cursor/hooks/hook_handler.py https://raw.githubusercontent.com/langchain-ai/Cursor-LangSmith-Integration/main/hook_handler.py
+```
+
+Review scripts before running them, especially when downloading them with `curl`.
+
+## Configure Cursor hooks
+
+Create or edit `~/.cursor/hooks.json`:
+
+```json
+{
+  "version": 1,
+  "hooks": {
+    "beforeSubmitPrompt": [{ "command": "python3 \"$HOME/.cursor/hooks/hook_handler.py\"" }],
+    "afterAgentResponse": [{ "command": "python3 \"$HOME/.cursor/hooks/hook_handler.py\"" }],
+    "afterAgentThought": [{ "command": "python3 \"$HOME/.cursor/hooks/hook_handler.py\"" }],
+    "beforeShellExecution": [{ "command": "python3 \"$HOME/.cursor/hooks/hook_handler.py\"" }],
+    "afterShellExecution": [{ "command": "python3 \"$HOME/.cursor/hooks/hook_handler.py\"" }],
+    "beforeMCPExecution": [{ "command": "python3 \"$HOME/.cursor/hooks/hook_handler.py\"" }],
+    "afterMCPExecution": [{ "command": "python3 \"$HOME/.cursor/hooks/hook_handler.py\"" }],
+    "beforeReadFile": [{ "command": "python3 \"$HOME/.cursor/hooks/hook_handler.py\"" }],
+    "afterFileEdit": [{ "command": "python3 \"$HOME/.cursor/hooks/hook_handler.py\"" }],
+    "stop": [{ "command": "python3 \"$HOME/.cursor/hooks/hook_handler.py\"" }],
+    "beforeTabFileRead": [{ "command": "python3 \"$HOME/.cursor/hooks/hook_handler.py\"" }],
+    "afterTabFileEdit": [{ "command": "python3 \"$HOME/.cursor/hooks/hook_handler.py\"" }]
+  }
+}
+```
+
+## Configure tracing
+
+Set the environment variables in your shell configuration file, such as `~/.zshrc`, `~/.bashrc`, or `~/.bash_profile`:
+
+```bash
+export TRACE_TO_LANGSMITH="true"
+export LANGSMITH_API_KEY="<your-langsmith-api-key>"
+export LANGCHAIN_PROJECT="cursor-agent"
+```
+
+`LANGCHAIN_PROJECT` controls the LangSmith project name. If you do not set it, traces are sent to `cursor-agent`.
+
+The hook handler also accepts `LANGCHAIN_API_KEY` for the API key.
+
+### Project-level configuration
+
+To enable tracing for one project, create a `.env` file in the project root:
+
+```env
+TRACE_TO_LANGSMITH=true
+LANGSMITH_API_KEY=<your-langsmith-api-key>
+LANGCHAIN_PROJECT=my-cursor-project
+```
+
+If you use a `.env` file, install `python-dotenv` in the Python environment that runs the hook handler:
+
+```bash
+pip install python-dotenv
+```
+
+Keep files that contain API keys out of version control.
+
+## View traces in LangSmith
+
+Send a message in Cursor, then open the configured LangSmith project. You should see:
+
+- Each Cursor message turn as its own trace.
+- Turns from the same Cursor conversation grouped as a [thread](/langsmith/threads) using `metadata.conversation_id`.
+- MCP and shell calls as child runs with inputs and outputs merged from their before and after hook events.
+- A completion feedback score attached to each trace.
+
+## Troubleshooting
+
+If traces do not appear in LangSmith:
+
+- Confirm `TRACE_TO_LANGSMITH=true` is visible to the Cursor process.
+- Confirm `LANGSMITH_API_KEY` or `LANGCHAIN_API_KEY` is set and valid.
+- Confirm the `langsmith` package is installed:
+
+  ```bash
+  python3 -c "import langsmith; print(langsmith.__version__)"
+  ```
+
+- Test the hook handler manually:
+
+  ```bash
+  echo '{"hook_event_name":"stop","conversation_id":"test","generation_id":"test","status":"completed","loop_count":0}' \
+    | TRACE_TO_LANGSMITH=true python3 ~/.cursor/hooks/hook_handler.py
+  ```
+
+  The command should print `{}` with no errors.
+
+- If Cursor was launched from the Dock, launch it from a terminal with `cursor .`, or use a project-level `.env` file. Cursor inherits environment variables from the process that launched it.
+
+## See also
+
+- [LangSmith integrations](/langsmith/integrations)
+- [Threads](/langsmith/threads)
+- [Log traces to a specific project](/langsmith/log-traces-to-project)
