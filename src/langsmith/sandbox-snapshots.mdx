@@ -53,22 +53,43 @@ Register the private registry first, then pass its `registry_id` / `registryId` 
 <CodeGroup>
 
 ```python Python
+import os
+
+registry = client.create_registry(
+    "internal-registry",
+    url="https://registry.example.com",
+    username="me",
+    password=os.environ["REGISTRY_PASSWORD"],
+)
+
 snapshot = client.create_snapshot(
     "internal-python",
     docker_image="registry.example.com/internal/python:3.12",
     fs_capacity_bytes=2 * 1024**3,
-    registry_id="550e8400-e29b-41d4-a716-446655440000",
+    registry_id=registry.id,
     timeout=600,
 )
 ```
 
 ```ts TypeScript
+const registryPassword = process.env.REGISTRY_PASSWORD;
+if (!registryPassword) {
+  throw new Error("REGISTRY_PASSWORD is required");
+}
+
+const registry = await client.createRegistry(
+  "internal-registry",
+  "https://registry.example.com",
+  "me",
+  registryPassword,
+);
+
 const snapshot = await client.createSnapshot(
   "internal-python",
   "registry.example.com/internal/python:3.12",
   2_147_483_648,
   {
-    registryId: "550e8400-e29b-41d4-a716-446655440000",
+    registryId: registry.id,
     timeout: 600,
   },
 );
