@@ -1690,6 +1690,9 @@
                       },
                       {
                         "group": "Headless Fleet API",
+                        "pages": [
+                          "langsmith/headless-fleet-api-overview"
+                        ],
                         "openapi": {
                           "source": "langsmith/headless-fleet-openapi.json",
                           "directory": "langsmith/headless-fleet-api"

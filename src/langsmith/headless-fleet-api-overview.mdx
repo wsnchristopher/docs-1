@@ -1,0 +1,39 @@
+---
+title: Headless Fleet API reference
+sidebarTitle: Overview
+description: REST API reference for building and running agents with the LangSmith Headless Fleet API.
+---
+
+The Headless Fleet API is a headless interface for building and running agents: create and configure agents, manage their connections and secrets, run threads, and wire up triggers.
+
+<Info>
+This overview is in progress. For full request and response details, use the generated endpoint references in this section.
+</Info>
+
+## Set the base path
+
+Paths are service-native, such as `/v1/fleet/agents`. Self-hosted deployments reach them through the gateway under an `/api` prefix, such as `/api/v1/fleet/agents`.
+
+## Authenticate requests
+
+Every request must carry one credential:
+
+- **`X-Api-Key`**: A LangSmith API key (`lsv2_...`).
+- **`Authorization`**: A session JWT, sent as `Bearer <token>`.
+
+Workspace-scoped endpoints also require the **`X-Tenant-Id`** header, set to the workspace (tenant) UUID the request operates in. Organization- and identity-scoped endpoints omit it.
+
+## Browse resource groups
+
+The API is organized into the following resource groups:
+
+- Agents
+- Agent connections
+- Threads
+- Skills
+- Auth
+- Integrations
+- Secrets
+- Models
+- Tenants
+- Users
