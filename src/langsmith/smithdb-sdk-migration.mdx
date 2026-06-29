@@ -77,8 +77,9 @@ Migrate `list_runs` to `runs.query`. Field selection is now required via `select
     async def main():
         client = Client()
 
+        project = await asyncio.to_thread(client.read_project, project_name="my-project")
         async for run in client.runs.query(
-            project_name="my-project",
+            project_ids=[str(project.id)],
             run_type="LLM",
             filter='and(eq(status, "success"), gt(total_tokens, 100))',
             selects=["ID", "NAME", "STATUS"],
@@ -116,9 +117,10 @@ Migrate `list_runs` to `runs.query`. Field selection is now required via `select
 
     const client = new Client();
 
+    const project = await client.readProject({ projectName: "my-project" });
     const page = await client.runs.query({
-      projectName: "my-project",
-      runType: "LLM",
+      project_ids: [String(project.id)],
+      run_type: "LLM",
       filter: 'and(eq(status, "success"), gt(total_tokens, 100))',
       selects: ["ID", "NAME", "STATUS"],
     });
