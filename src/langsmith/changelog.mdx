@@ -24,11 +24,11 @@ If you use self-hosted LangSmith, see the [self-hosted changelog](/langsmith/sel
 
 ### Engine
 
-- Engine now retries model-actionable subtask failures and transient provider or network errors before failing a run, so issue scans continue through recoverable failures while hard auth, configuration, and code errors still stop the run.
+- [Engine](/langsmith/engine) now retries model-actionable subtask failures and transient provider or network errors before failing a run, so issue scans continue through recoverable failures while hard auth, configuration, and code errors still stop the run.
 
 ### Datasets and experiments
 
-- Evaluators linked to Hub prompts now load correctly for flat and playground-shaped prompt commits, so editing existing evaluators no longer crashes.
+- [Evaluators](/langsmith/evaluators) linked to Hub prompts now load correctly for flat and playground-shaped prompt commits, so editing existing evaluators no longer crashes.
 - Correcting evaluator-generated feedback scores now saves successfully instead of failing with "Failed to add feedback correction".
 - The canonical v2 dataset experiment-runs API now supports paginated experiment comparison, and the legacy comparison helpers are removed from the public OpenAPI spec and generated SDKs.
 
@@ -38,19 +38,19 @@ If you use self-hosted LangSmith, see the [self-hosted changelog](/langsmith/sel
 
 ## Deployment
 
-- Standby minutes for LangGraph Platform deployments now deduplicate across usage-reporting runs, so each minute is billed at most once.
+- Standby minutes for [LangSmith Deployment](/langsmith/deployment) deployments now deduplicate across usage-reporting runs, so each minute is billed at most once.
 
 ## Sandboxes
 
-- The SDKs now support creating, listing, updating, and deleting sandbox registries for pulling private container images alongside existing sandbox and snapshot operations.
-- Sandbox snapshot builds now support XFS root filesystems for sandbox-host-based environments.
+- The [sandbox SDKs](/langsmith/sandbox-sdk) now support creating, listing, updating, and deleting sandbox registries for pulling private container images alongside existing sandbox and snapshot operations.
+- [Sandbox snapshots](/langsmith/sandbox-snapshots) now support XFS root filesystems for sandbox-host-based environments.
 
 ## Admin and billing
 
 ### Administration
 
-- API keys now default to a 90-day expiration, or to your organization's shorter maximum when one is enforced.
-- The Usage limits page now shows each workspace's configured total and extended trace limits, including caps that were previously hidden while spend limit showed Unlimited.
+- [API keys](/langsmith/create-account-api-key) now default to a 90-day expiration, or to your organization's shorter maximum when one is enforced.
+- The [Usage limits page](/langsmith/billing#enforce-spend-limits) now shows each workspace's configured total and extended trace limits, including caps that were previously hidden while spend limit showed Unlimited.
 
 ## Fixes
 
