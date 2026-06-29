@@ -132,7 +132,51 @@ Migrate `list_runs` to `runs.query`. Field selection is now required via `select
   <Tab title="Java">
     <Note>Requires `langsmith-java` 0.1.0-beta.8.</Note>
 
-    Java examples coming soon.
+    <CodeGroup>
+    ```kotlin Before
+    import com.langchain.smith.client.LangsmithClient
+    import com.langchain.smith.client.okhttp.LangsmithOkHttpClient
+    import com.langchain.smith.models.runs.RunQueryV1Params
+    import com.langchain.smith.models.runs.RunTypeEnum
+
+    val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
+
+    val params = RunQueryV1Params.builder()
+        .addSession("<project-id>")
+        .runType(RunTypeEnum.LLM)
+        .filter("""and(eq(status, "success"), gt(total_tokens, 100))""")
+        .addSelect(RunQueryV1Params.Select.ID)
+        .addSelect(RunQueryV1Params.Select.NAME)
+        .addSelect(RunQueryV1Params.Select.STATUS)
+        .limit(100L)
+        .build()
+
+    client.runs().queryV1(params).runs().forEach { run ->
+        println("${run.id()} ${run.name()} ${run.status()}")
+    }
+    ```
+
+    ```kotlin After
+    import com.langchain.smith.client.LangsmithClient
+    import com.langchain.smith.client.okhttp.LangsmithOkHttpClient
+    import com.langchain.smith.models.runs.RunQueryV2Params
+
+    val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
+
+    val params = RunQueryV2Params.builder()
+        .addProjectId("<project-id>")
+        .runType(RunQueryV2Params.RunType.LLM)
+        .filter("""and(eq(status, "success"), gt(total_tokens, 100))""")
+        .addSelect(RunQueryV2Params.Select.ID)
+        .addSelect(RunQueryV2Params.Select.NAME)
+        .addSelect(RunQueryV2Params.Select.STATUS)
+        .build()
+
+    client.runs().queryV2(params).autoPager().forEach { run ->
+        println("${run.id()} ${run.name()} ${run.status()}")
+    }
+    ```
+    </CodeGroup>
   </Tab>
   <Tab title="Go">
     <Note>Requires `langsmith-go` v0.16.0.</Note>
@@ -1993,7 +2037,38 @@ Migrate `read_run` to `runs.retrieve`. The API returns only the run ID by defaul
   <Tab title="Java">
     <Note>Requires `langsmith-java` 0.1.0-beta.8.</Note>
 
-    Java examples coming soon.
+    <CodeGroup>
+    ```kotlin Before
+    import com.langchain.smith.client.LangsmithClient
+    import com.langchain.smith.client.okhttp.LangsmithOkHttpClient
+
+    val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
+
+    val run = client.runs().retrieveV1("<run-id>")
+    println("${run.name()} ${run.status()} ${run.totalTokens()}")
+    ```
+
+    ```kotlin After
+    import com.langchain.smith.client.LangsmithClient
+    import com.langchain.smith.client.okhttp.LangsmithOkHttpClient
+    import com.langchain.smith.models.runs.RunRetrieveV2Params
+    import java.time.OffsetDateTime
+
+    val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
+
+    val run = client.runs().retrieveV2(
+        "<run-id>",
+        RunRetrieveV2Params.builder()
+            .projectId("<project-id>")
+            .startTime(OffsetDateTime.parse("<run-start-time-rfc3339>"))
+            .addSelect(RunRetrieveV2Params.Select.NAME)
+            .addSelect(RunRetrieveV2Params.Select.STATUS)
+            .addSelect(RunRetrieveV2Params.Select.TOTAL_TOKENS)
+            .build()
+    )
+    println("${run.name()} ${run.status()} ${run.totalTokens()}")
+    ```
+    </CodeGroup>
   </Tab>
   <Tab title="Go">
     <Note>Requires `langsmith-go` v0.16.0.</Note>
