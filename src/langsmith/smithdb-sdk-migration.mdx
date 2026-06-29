@@ -83,7 +83,7 @@ Migrate `list_runs` to `runs.query`. Field selection is now required via `select
             filter='and(eq(status, "success"), gt(total_tokens, 100))',
             selects=["ID", "NAME", "STATUS"],
         ):
-            print(run["ID"], run["NAME"], run["STATUS"])
+            print(run.id, run.name, run.status)
 
 
     asyncio.run(main())
@@ -124,7 +124,7 @@ Migrate `list_runs` to `runs.query`. Field selection is now required via `select
     });
 
     for await (const run of page) {
-      console.log(run["ID"], run["NAME"], run["STATUS"]);
+      console.log(run.id, run.name, run.status);
     }
     ```
     </CodeGroup>
@@ -190,7 +190,7 @@ Migrate `list_runs` to `runs.query`. Field selection is now required via `select
     })
     for pager.Next() {
     	run := pager.Current()
-    	fmt.Println(run["ID"], run["NAME"], run["STATUS"])
+    	fmt.Println(run.ID, run.Name, run.Status)
     }
     if err := pager.Err(); err != nil {
     	panic(err.Error())
@@ -1814,7 +1814,112 @@ cURL examples coming soon.
 
 #### Reponse fields rename
 
-TODO ‼️
+v1 `list_runs` returns `Run` objects with attribute access (`run.name`). v2 `runs.query` returns `QueryRunResponse` objects with the same snake_case attribute access—no dict-key indexing. Pass SCREAMING_SNAKE_CASE strings to `selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; only selected fields are non-`None` on returned objects.
+
+<Tabs>
+  <Tab title="Python">
+    | Before (`Run` attribute) | After (`QueryRunResponse` attribute) | Notes |
+    |---|---|---|
+    | `run.id` | `run.id` | Unchanged; returned by default when `selects` is omitted |
+    | `run.name` | `run.name` | Unchanged |
+    | `run.run_type` | `run.run_type` | Values are now uppercase Literals: `"LLM"`, `"CHAIN"`, etc. |
+    | `run.status` | `run.status` | Values: `"SUCCESS"`, `"ERROR"`, `"PENDING"` |
+    | `run.start_time` | `run.start_time` | Unchanged |
+    | `run.end_time` | `run.end_time` | Unchanged |
+    | `run.error` | `run.error` | Unchanged |
+    | `run.inputs` | `run.inputs` | Unchanged |
+    | `run.outputs` | `run.outputs` | Unchanged |
+    | `run.tags` | `run.tags` | Unchanged |
+    | `run.extra` | `run.extra` | Unchanged |
+    | `run.metadata` (property) | `run.metadata` | Was derived from `extra["metadata"]`; now an explicit field |
+    | `run.events` | `run.events` | Unchanged |
+    | `run.reference_example_id` | `run.reference_example_id` | Unchanged |
+    | `run.trace_id` | `run.trace_id` | Unchanged |
+    | `run.dotted_order` | `run.dotted_order` | Unchanged |
+    | `run.parent_run_id` | *(removed)* | Use `run.parent_run_ids` (list of all ancestor UUIDs, root first) |
+    | `run.parent_run_ids` | `run.parent_run_ids` | Unchanged |
+    | `run.session_id` | `run.project_id` | Renamed; `session_id` was the project UUID |
+    | `run.feedback_stats` | `run.feedback_stats` | Unchanged |
+    | `run.app_path` | `run.app_path` | Unchanged |
+    | `run.attachments` | `run.attachments` | v2 returns pre-signed download URLs instead of raw bytes |
+    | `run.total_tokens` | `run.total_tokens` | Unchanged |
+    | `run.prompt_tokens` | `run.prompt_tokens` | Unchanged |
+    | `run.completion_tokens` | `run.completion_tokens` | Unchanged |
+    | `run.total_cost` | `run.total_cost` | Unchanged |
+    | `run.prompt_cost` | `run.prompt_cost` | Unchanged |
+    | `run.completion_cost` | `run.completion_cost` | Unchanged |
+    | `run.first_token_time` | `run.first_token_time` | Unchanged |
+    | `run.latency` (property) | `run.latency_seconds` | Renamed; was a computed `timedelta` property, now a native `float` field |
+    | `run.in_dataset` | `run.is_in_dataset` | Renamed |
+    | `run.child_run_ids` | *(removed)* | No equivalent |
+    | `run.child_runs` | *(removed)* | No equivalent |
+    | `run.serialized` | *(removed)* | Use `run.manifest` |
+    | `run.manifest_id` | *(removed)* | Use `run.manifest` |
+    | *(not available)* | `run.is_root` | New |
+    | *(not available)* | `run.manifest` | New: full manifest object (replaces `serialized` and `manifest_id`) |
+    | *(not available)* | `run.error_preview` | New: truncated error snippet |
+    | *(not available)* | `run.inputs_preview` | New: truncated inputs preview |
+    | *(not available)* | `run.outputs_preview` | New: truncated outputs preview |
+    | *(not available)* | `run.thread_id` | New: conversation thread UUID |
+    | *(not available)* | `run.reference_dataset_id` | New: dataset UUID for the reference example |
+    | *(not available)* | `run.share_url` | New: public share URL (only set when the run has been shared) |
+    | *(not available)* | `run.prompt_token_details` | New: per-category prompt token breakdown |
+    | *(not available)* | `run.completion_token_details` | New: per-category completion token breakdown |
+    | *(not available)* | `run.prompt_cost_details` | New: per-category prompt cost breakdown |
+    | *(not available)* | `run.completion_cost_details` | New: per-category completion cost breakdown |
+  </Tab>
+  <Tab title="TypeScript">
+    TypeScript `QueryRunResponse` uses the same snake_case attribute access as Python (`run.name`, `run.status`). Field names, renames, and removed fields are identical to the Python table above.
+  </Tab>
+  <Tab title="Java">
+    Java `QueryRunResponse` uses camelCase method accessors. Pass `SCREAMING_SNAKE_CASE` strings to `selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; unselected fields return empty `Optional` values.
+
+    | Before (`RunSchema` method) | After (`QueryRunResponse` method) | Notes |
+    |---|---|---|
+    | `run.id()` | `run.id()` | Unchanged |
+    | `run.name()` | `run.name()` | Unchanged |
+    | `run.runType()` | `run.runType()` | Unchanged |
+    | `run.status()` | `run.status()` | Unchanged |
+    | `run.traceId()` | `run.traceId()` | Unchanged |
+    | `run.totalTokens()` | `run.totalTokens()` | Unchanged |
+    | `run.sessionId()` | `run.projectId()` | Renamed |
+    | `run.inDataset()` | `run.isInDataset()` | Renamed |
+    | `run.shareToken()` | *(removed)* | Use `run.shareUrl()` (full URL, only set when the run has been shared) |
+    | `run.parentRunId()` | *(removed)* | Use `run.parentRunIds()` |
+    | `run.childRunIds()` | *(removed)* | No equivalent |
+    | `run.serialized()` | *(removed)* | Use `run.manifest()` |
+    | `run.manifestId()` | *(removed)* | Use `run.manifest()` |
+    | *(not available)* | `run.latencySeconds()` | New: wall-clock duration in seconds |
+    | *(not available)* | `run.isRoot()` | New |
+    | *(not available)* | `run.errorPreview()` | New: truncated error snippet |
+    | *(not available)* | `run.manifest()` | New: full manifest object (replaces `serialized()` and `manifestId()`) |
+    | *(not available)* | `run.shareUrl()` | New: public share URL (only set when the run has been shared) |
+  </Tab>
+  <Tab title="Go">
+    Go `QueryRunResponse` uses PascalCase struct field access. Pass `SCREAMING_SNAKE_CASE` strings to `Selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; unselected fields are zero-valued on returned structs.
+
+    | Before (`RunSchema` field) | After (`QueryRunResponse` field) | Notes |
+    |---|---|---|
+    | `run.ID` | `run.ID` | Unchanged |
+    | `run.Name` | `run.Name` | Unchanged |
+    | `run.RunType` | `run.RunType` | Unchanged |
+    | `run.Status` | `run.Status` | Unchanged |
+    | `run.TraceID` | `run.TraceID` | Unchanged |
+    | `run.TotalTokens` | `run.TotalTokens` | Unchanged |
+    | `run.SessionID` | `run.ProjectID` | Renamed |
+    | `run.InDataset` | `run.IsInDataset` | Renamed |
+    | `run.ShareToken` | *(removed)* | Use `run.ShareURL` (full URL, only set when the run has been shared) |
+    | `run.ParentRunID` | *(removed)* | Use `run.ParentRunIDs` |
+    | `run.ChildRunIDs` | *(removed)* | No equivalent |
+    | `run.Serialized` | *(removed)* | Use `run.Manifest` |
+    | `run.ManifestID` | *(removed)* | Use `run.Manifest` |
+    | *(not available)* | `run.LatencySeconds` | New: wall-clock duration in seconds |
+    | *(not available)* | `run.IsRoot` | New |
+    | *(not available)* | `run.ErrorPreview` | New: truncated error snippet |
+    | *(not available)* | `run.Manifest` | New: full manifest object (replaces `Serialized` and `ManifestID`) |
+    | *(not available)* | `run.ShareURL` | New: public share URL (only set when the run has been shared) |
+  </Tab>
+</Tabs>
 
 ### Retrieve a run
 
@@ -1853,7 +1958,7 @@ Migrate `read_run` to `runs.retrieve`. The API returns only the run ID by defaul
             run_id="<run-id>",
             select=["NAME", "STATUS", "TOTAL_TOKENS"],
         )
-        print(run["NAME"], run["STATUS"], run["TOTAL_TOKENS"])
+        print(run.name, run.status, run.total_tokens)
 
 
     asyncio.run(main())
@@ -1870,7 +1975,7 @@ Migrate `read_run` to `runs.retrieve`. The API returns only the run ID by defaul
     const client = new Client();
 
     const run = await client.readRun("<run-id>");
-    console.log(run.name, run.status, run.totalTokens);
+    console.log(run.name, run.status, run.total_tokens);
     ```
 
     ```typescript After
@@ -1881,7 +1986,7 @@ Migrate `read_run` to `runs.retrieve`. The API returns only the run ID by defaul
     const run = await client.runs.retrieve("<run-id>", {
       select: ["NAME", "STATUS", "TOTAL_TOKENS"],
     });
-    console.log(run["NAME"], run["STATUS"], run["TOTAL_TOKENS"]);
+    console.log(run.name, run.status, run.total_tokens);
     ```
     </CodeGroup>
   </Tab>
@@ -2139,4 +2244,109 @@ cURL examples coming soon.
 
 #### Reponse fields rename
 
-TODO ‼️
+v1 `read_run` returns a `Run` object with attribute access (`run.name`). v2 `runs.retrieve` returns a `QueryRunResponse` object with the same snake_case attribute access—no dict-key indexing. Pass SCREAMING_SNAKE_CASE strings to `selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; only selected fields are non-`None` on the returned object. Field names and renamed/removed fields are identical to the query response table above.
+
+<Tabs>
+  <Tab title="Python">
+    | Before (`Run` attribute) | After (`QueryRunResponse` attribute) | Notes |
+    |---|---|---|
+    | `run.id` | `run.id` | Unchanged; returned by default when `selects` is omitted |
+    | `run.name` | `run.name` | Unchanged |
+    | `run.run_type` | `run.run_type` | Values are now uppercase Literals: `"LLM"`, `"CHAIN"`, etc. |
+    | `run.status` | `run.status` | Values: `"SUCCESS"`, `"ERROR"`, `"PENDING"` |
+    | `run.start_time` | `run.start_time` | Unchanged |
+    | `run.end_time` | `run.end_time` | Unchanged |
+    | `run.error` | `run.error` | Unchanged |
+    | `run.inputs` | `run.inputs` | Unchanged |
+    | `run.outputs` | `run.outputs` | Unchanged |
+    | `run.tags` | `run.tags` | Unchanged |
+    | `run.extra` | `run.extra` | Unchanged |
+    | `run.metadata` (property) | `run.metadata` | Was derived from `extra["metadata"]`; now an explicit field |
+    | `run.events` | `run.events` | Unchanged |
+    | `run.reference_example_id` | `run.reference_example_id` | Unchanged |
+    | `run.trace_id` | `run.trace_id` | Unchanged |
+    | `run.dotted_order` | `run.dotted_order` | Unchanged |
+    | `run.parent_run_id` | *(removed)* | Use `run.parent_run_ids` (list of all ancestor UUIDs, root first) |
+    | `run.parent_run_ids` | `run.parent_run_ids` | Unchanged |
+    | `run.session_id` | `run.project_id` | Renamed; `session_id` was the project UUID |
+    | `run.feedback_stats` | `run.feedback_stats` | Unchanged |
+    | `run.app_path` | `run.app_path` | Unchanged |
+    | `run.attachments` | `run.attachments` | v2 returns pre-signed download URLs instead of raw bytes |
+    | `run.total_tokens` | `run.total_tokens` | Unchanged |
+    | `run.prompt_tokens` | `run.prompt_tokens` | Unchanged |
+    | `run.completion_tokens` | `run.completion_tokens` | Unchanged |
+    | `run.total_cost` | `run.total_cost` | Unchanged |
+    | `run.prompt_cost` | `run.prompt_cost` | Unchanged |
+    | `run.completion_cost` | `run.completion_cost` | Unchanged |
+    | `run.first_token_time` | `run.first_token_time` | Unchanged |
+    | `run.latency` (property) | `run.latency_seconds` | Renamed; was a computed `timedelta` property, now a native `float` field |
+    | `run.in_dataset` | `run.is_in_dataset` | Renamed |
+    | `run.child_run_ids` | *(removed)* | No equivalent |
+    | `run.child_runs` | *(removed)* | No equivalent |
+    | `run.serialized` | *(removed)* | Use `run.manifest` |
+    | `run.manifest_id` | *(removed)* | Use `run.manifest` |
+    | *(not available)* | `run.is_root` | New |
+    | *(not available)* | `run.manifest` | New: full manifest object (replaces `serialized` and `manifest_id`) |
+    | *(not available)* | `run.error_preview` | New: truncated error snippet |
+    | *(not available)* | `run.inputs_preview` | New: truncated inputs preview |
+    | *(not available)* | `run.outputs_preview` | New: truncated outputs preview |
+    | *(not available)* | `run.thread_id` | New: conversation thread UUID |
+    | *(not available)* | `run.reference_dataset_id` | New: dataset UUID for the reference example |
+    | *(not available)* | `run.share_url` | New: public share URL (only set when the run has been shared) |
+    | *(not available)* | `run.prompt_token_details` | New: per-category prompt token breakdown |
+    | *(not available)* | `run.completion_token_details` | New: per-category completion token breakdown |
+    | *(not available)* | `run.prompt_cost_details` | New: per-category prompt cost breakdown |
+    | *(not available)* | `run.completion_cost_details` | New: per-category completion cost breakdown |
+  </Tab>
+  <Tab title="TypeScript">
+    TypeScript `QueryRunResponse` uses the same snake_case attribute access as Python (`run.name`, `run.status`). Field names, renames, and removed fields are identical to the Python table above.
+  </Tab>
+  <Tab title="Java">
+    Java `QueryRunResponse` uses camelCase method accessors. Pass `SCREAMING_SNAKE_CASE` strings to `selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; unselected fields return empty `Optional` values.
+
+    | Before (`RunSchema` method) | After (`QueryRunResponse` method) | Notes |
+    |---|---|---|
+    | `run.id()` | `run.id()` | Unchanged |
+    | `run.name()` | `run.name()` | Unchanged |
+    | `run.runType()` | `run.runType()` | Unchanged |
+    | `run.status()` | `run.status()` | Unchanged |
+    | `run.traceId()` | `run.traceId()` | Unchanged |
+    | `run.totalTokens()` | `run.totalTokens()` | Unchanged |
+    | `run.sessionId()` | `run.projectId()` | Renamed |
+    | `run.inDataset()` | `run.isInDataset()` | Renamed |
+    | `run.shareToken()` | *(removed)* | Use `run.shareUrl()` (full URL, only set when the run has been shared) |
+    | `run.parentRunId()` | *(removed)* | Use `run.parentRunIds()` |
+    | `run.childRunIds()` | *(removed)* | No equivalent |
+    | `run.serialized()` | *(removed)* | Use `run.manifest()` |
+    | `run.manifestId()` | *(removed)* | Use `run.manifest()` |
+    | *(not available)* | `run.latencySeconds()` | New: wall-clock duration in seconds |
+    | *(not available)* | `run.isRoot()` | New |
+    | *(not available)* | `run.errorPreview()` | New: truncated error snippet |
+    | *(not available)* | `run.manifest()` | New: full manifest object (replaces `serialized()` and `manifestId()`) |
+    | *(not available)* | `run.shareUrl()` | New: public share URL (only set when the run has been shared) |
+  </Tab>
+  <Tab title="Go">
+    Go `QueryRunResponse` uses PascalCase struct field access. Pass `SCREAMING_SNAKE_CASE` strings to `Selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; unselected fields are zero-valued on returned structs.
+
+    | Before (`RunSchema` field) | After (`QueryRunResponse` field) | Notes |
+    |---|---|---|
+    | `run.ID` | `run.ID` | Unchanged |
+    | `run.Name` | `run.Name` | Unchanged |
+    | `run.RunType` | `run.RunType` | Unchanged |
+    | `run.Status` | `run.Status` | Unchanged |
+    | `run.TraceID` | `run.TraceID` | Unchanged |
+    | `run.TotalTokens` | `run.TotalTokens` | Unchanged |
+    | `run.SessionID` | `run.ProjectID` | Renamed |
+    | `run.InDataset` | `run.IsInDataset` | Renamed |
+    | `run.ShareToken` | *(removed)* | Use `run.ShareURL` (full URL, only set when the run has been shared) |
+    | `run.ParentRunID` | *(removed)* | Use `run.ParentRunIDs` |
+    | `run.ChildRunIDs` | *(removed)* | No equivalent |
+    | `run.Serialized` | *(removed)* | Use `run.Manifest` |
+    | `run.ManifestID` | *(removed)* | Use `run.Manifest` |
+    | *(not available)* | `run.LatencySeconds` | New: wall-clock duration in seconds |
+    | *(not available)* | `run.IsRoot` | New |
+    | *(not available)* | `run.ErrorPreview` | New: truncated error snippet |
+    | *(not available)* | `run.Manifest` | New: full manifest object (replaces `Serialized` and `ManifestID`) |
+    | *(not available)* | `run.ShareURL` | New: public share URL (only set when the run has been shared) |
+  </Tab>
+</Tabs>
