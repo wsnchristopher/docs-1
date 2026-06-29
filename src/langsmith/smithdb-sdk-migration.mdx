@@ -137,7 +137,66 @@ Migrate `list_runs` to `runs.query`. Field selection is now required via `select
   <Tab title="Go">
     <Note>Requires `langsmith-go` v0.16.0.</Note>
 
-    Go examples coming soon.
+    <CodeGroup>
+    ```go Before
+    import (
+    	"context"
+
+    	"github.com/langchain-ai/langsmith-go"
+    )
+
+    ctx := context.Background()
+    client := langsmith.NewClient()
+
+    response, err := client.Runs.Query(ctx, langsmith.RunQueryParams{
+    	Session: langsmith.F([]string{"<project-id>"}),
+    	RunType: langsmith.F(langsmith.RunTypeEnumLlm),
+    	Filter:  langsmith.F(`and(eq(status, "success"), gt(total_tokens, 100))`),
+    	Select: langsmith.F([]langsmith.RunQueryParamsSelect{
+    		langsmith.RunQueryParamsSelectID,
+    		langsmith.RunQueryParamsSelectName,
+    		langsmith.RunQueryParamsSelectStatus,
+    	}),
+    	Limit: langsmith.F(int64(100)),
+    })
+    if err != nil {
+    	panic(err.Error())
+    }
+    for _, run := range response.Runs {
+    	_ = run
+    }
+    ```
+
+    ```go After
+    import (
+    	"context"
+    	"fmt"
+
+    	"github.com/langchain-ai/langsmith-go"
+    )
+
+    ctx := context.Background()
+    client := langsmith.NewClient()
+
+    pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
+    	ProjectIDs: langsmith.F([]string{"<project-id>"}),
+    	RunType:    langsmith.F(langsmith.RunQueryV2ParamsRunTypeLLM),
+    	Filter:     langsmith.F(`and(eq(status, "success"), gt(total_tokens, 100))`),
+    	Selects: langsmith.F([]langsmith.RunQueryV2ParamsSelect{
+    		langsmith.RunQueryV2ParamsSelectID,
+    		langsmith.RunQueryV2ParamsSelectName,
+    		langsmith.RunQueryV2ParamsSelectStatus,
+    	}),
+    })
+    for pager.Next() {
+    	run := pager.Current()
+    	fmt.Println(run["ID"], run["NAME"], run["STATUS"])
+    }
+    if err := pager.Err(); err != nil {
+    	panic(err.Error())
+    }
+    ```
+    </CodeGroup>
   </Tab>
   <Tab title="cURL">
     <CodeGroup>
@@ -239,7 +298,52 @@ Java support is planned.
   </Tab>
   <Tab title="Go">
 
-Go support is planned.
+<CodeGroup>
+
+```go Before
+import (
+	"context"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+response, err := client.Runs.Query(ctx, langsmith.RunQueryParams{
+	Session: langsmith.F([]string{"<project-id>"}),
+})
+if err != nil {
+	panic(err.Error())
+}
+for _, run := range response.Runs {
+	_ = run
+}
+```
+
+```go After
+import (
+	"context"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
+	ProjectIDs: langsmith.F([]string{"<project-id>"}),
+})
+for pager.Next() {
+	run := pager.Current()
+	_ = run
+}
+if err := pager.Err(); err != nil {
+	panic(err.Error())
+}
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="cURL">
@@ -335,7 +439,63 @@ Java support is planned.
   </Tab>
   <Tab title="Go">
 
-Go support is planned.
+<CodeGroup>
+
+```go Before
+import (
+	"context"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+// returns a default set of fields; no explicit selection needed
+response, err := client.Runs.Query(ctx, langsmith.RunQueryParams{
+	Session: langsmith.F([]string{"<project-id>"}),
+})
+if err != nil {
+	panic(err.Error())
+}
+for _, run := range response.Runs {
+	_ = run
+}
+```
+
+```go After
+import (
+	"context"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+// must explicitly list every field needed; default returns only id
+pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
+	ProjectIDs: langsmith.F([]string{"<project-id>"}),
+	Selects: langsmith.F([]langsmith.RunQueryV2ParamsSelect{
+		langsmith.RunQueryV2ParamsSelectID,
+		langsmith.RunQueryV2ParamsSelectName,
+		langsmith.RunQueryV2ParamsSelectRunType,
+		langsmith.RunQueryV2ParamsSelectStatus,
+		langsmith.RunQueryV2ParamsSelectStartTime,
+		langsmith.RunQueryV2ParamsSelectInputs,
+		langsmith.RunQueryV2ParamsSelectError,
+	}),
+})
+for pager.Next() {
+	run := pager.Current()
+	_ = run
+}
+if err := pager.Err(); err != nil {
+	panic(err.Error())
+}
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="cURL">
@@ -439,7 +599,58 @@ Java support is planned.
   </Tab>
   <Tab title="Go">
 
-Go support is planned.
+<CodeGroup>
+
+```go Before
+import (
+	"context"
+	"time"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+response, err := client.Runs.Query(ctx, langsmith.RunQueryParams{
+	Session:   langsmith.F([]string{"<project-id>"}),
+	StartTime: langsmith.F(time.Now().Add(-24 * time.Hour)),
+	RunType:   langsmith.F(langsmith.RunTypeEnumLlm),
+})
+if err != nil {
+	panic(err.Error())
+}
+for _, run := range response.Runs {
+	_ = run
+}
+```
+
+```go After
+import (
+	"context"
+	"time"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
+	ProjectIDs:   langsmith.F([]string{"<project-id>"}),
+	MinStartTime: langsmith.F(time.Now().Add(-24 * time.Hour)),
+	RunType:      langsmith.F(langsmith.RunQueryV2ParamsRunTypeLLM),
+})
+for pager.Next() {
+	run := pager.Current()
+	_ = run
+}
+if err := pager.Err(); err != nil {
+	panic(err.Error())
+}
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="cURL">
@@ -529,7 +740,54 @@ Java support is planned.
   </Tab>
   <Tab title="Go">
 
-Go support is planned.
+<CodeGroup>
+
+```go Before
+import (
+	"context"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+response, err := client.Runs.Query(ctx, langsmith.RunQueryParams{
+	Session: langsmith.F([]string{"<project-id>"}),
+	IsRoot:  langsmith.F(true),
+})
+if err != nil {
+	panic(err.Error())
+}
+for _, run := range response.Runs {
+	_ = run
+}
+```
+
+```go After
+import (
+	"context"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
+	ProjectIDs: langsmith.F([]string{"<project-id>"}),
+	IsRoot:     langsmith.F(true),
+})
+for pager.Next() {
+	run := pager.Current()
+	_ = run
+}
+if err := pager.Err(); err != nil {
+	panic(err.Error())
+}
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="cURL">
@@ -621,7 +879,53 @@ Java support is planned.
   </Tab>
   <Tab title="Go">
 
-Go support is planned.
+<CodeGroup>
+
+```go Before
+import (
+	"context"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+response, err := client.Runs.Query(ctx, langsmith.RunQueryParams{
+	ID: langsmith.F([]string{"<run-id-1>", "<run-id-2>"}),
+})
+if err != nil {
+	panic(err.Error())
+}
+for _, run := range response.Runs {
+	_ = run
+}
+```
+
+```go After
+import (
+	"context"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
+	ProjectIDs: langsmith.F([]string{"<project-id>"}),
+	IDs:        langsmith.F([]string{"<run-id-1>", "<run-id-2>"}),
+})
+for pager.Next() {
+	run := pager.Current()
+	_ = run
+}
+if err := pager.Err(); err != nil {
+	panic(err.Error())
+}
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="cURL">
@@ -721,7 +1025,64 @@ Java support is planned.
   </Tab>
   <Tab title="Go">
 
-Go support is planned.
+<CodeGroup>
+
+```go Before
+import (
+	"context"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+var runs []langsmith.RunSchema
+response, err := client.Runs.Query(ctx, langsmith.RunQueryParams{
+	Session: langsmith.F([]string{"<project-id>"}),
+	Select: langsmith.F([]langsmith.RunQueryParamsSelect{
+		langsmith.RunQueryParamsSelectID,
+		langsmith.RunQueryParamsSelectName,
+	}),
+	Limit: langsmith.F(int64(100)),
+})
+if err != nil {
+	panic(err.Error())
+}
+runs = append(runs, response.Runs...)
+// fetch next pages manually using response.Cursor
+```
+
+```go After
+import (
+	"context"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+var runs []langsmith.RunSchemaV2
+pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
+	ProjectIDs: langsmith.F([]string{"<project-id>"}),
+	Selects: langsmith.F([]langsmith.RunQueryV2ParamsSelect{
+		langsmith.RunQueryV2ParamsSelectID,
+		langsmith.RunQueryV2ParamsSelectName,
+	}),
+})
+for pager.Next() {
+	runs = append(runs, pager.Current())
+	if len(runs) >= 150 {
+		break
+	}
+}
+if err := pager.Err(); err != nil {
+	panic(err.Error())
+}
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="cURL">
@@ -811,7 +1172,54 @@ Java support is planned.
   </Tab>
   <Tab title="Go">
 
-Go support is planned.
+<CodeGroup>
+
+```go Before
+import (
+	"context"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+response, err := client.Runs.Query(ctx, langsmith.RunQueryParams{
+	Session: langsmith.F([]string{"<project-id>"}),
+	Error:   langsmith.F(true),
+})
+if err != nil {
+	panic(err.Error())
+}
+for _, run := range response.Runs {
+	_ = run
+}
+```
+
+```go After
+import (
+	"context"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
+	ProjectIDs: langsmith.F([]string{"<project-id>"}),
+	HasError:   langsmith.F(true),
+})
+for pager.Next() {
+	run := pager.Current()
+	_ = run
+}
+if err := pager.Err(); err != nil {
+	panic(err.Error())
+}
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="cURL">
@@ -905,7 +1313,56 @@ Java support is planned.
   </Tab>
   <Tab title="Go">
 
-Go support is planned.
+<CodeGroup>
+
+```go Before
+import (
+	"context"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+filterStr := "and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))"
+response, err := client.Runs.Query(ctx, langsmith.RunQueryParams{
+	Session: langsmith.F([]string{"<project-id>"}),
+	Filter:  langsmith.F(filterStr),
+})
+if err != nil {
+	panic(err.Error())
+}
+for _, run := range response.Runs {
+	_ = run
+}
+```
+
+```go After
+import (
+	"context"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+filterStr := "and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))"
+pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
+	ProjectIDs: langsmith.F([]string{"<project-id>"}),
+	Filter:     langsmith.F(filterStr),
+})
+for pager.Next() {
+	run := pager.Current()
+	_ = run
+}
+if err := pager.Err(); err != nil {
+	panic(err.Error())
+}
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="cURL">
@@ -1013,7 +1470,60 @@ Java support is planned.
   </Tab>
   <Tab title="Go">
 
-Go support is planned.
+<CodeGroup>
+
+```go Before
+import (
+	"context"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+filterStr := `and(gt(start_time, "2023-07-15T12:34:56Z"),` +
+	` or(neq(status, "error"),` +
+	`    and(eq(feedback_key, "Correctness"), eq(feedback_score, 0.0))))`
+response, err := client.Runs.Query(ctx, langsmith.RunQueryParams{
+	Session: langsmith.F([]string{"<project-id>"}),
+	Filter:  langsmith.F(filterStr),
+})
+if err != nil {
+	panic(err.Error())
+}
+for _, run := range response.Runs {
+	_ = run
+}
+```
+
+```go After
+import (
+	"context"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+filterStr := `and(gt(start_time, "2023-07-15T12:34:56Z"),` +
+	` or(neq(status, "error"),` +
+	`    and(eq(feedback_key, "Correctness"), eq(feedback_score, 0.0))))`
+pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
+	ProjectIDs: langsmith.F([]string{"<project-id>"}),
+	Filter:     langsmith.F(filterStr),
+})
+for pager.Next() {
+	run := pager.Current()
+	_ = run
+}
+if err := pager.Err(); err != nil {
+	panic(err.Error())
+}
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="cURL">
@@ -1117,7 +1627,58 @@ Java support is planned.
   </Tab>
   <Tab title="Go">
 
-Go support is planned.
+<CodeGroup>
+
+```go Before
+import (
+	"context"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+response, err := client.Runs.Query(ctx, langsmith.RunQueryParams{
+	Session:     langsmith.F([]string{"<project-id>"}),
+	Filter:      langsmith.F(`eq(name, "RetrieveDocs")`),
+	TraceFilter: langsmith.F(`and(eq(feedback_key, "user_score"), eq(feedback_score, 1))`),
+	TreeFilter:  langsmith.F(`eq(name, "ExpandQuery")`),
+})
+if err != nil {
+	panic(err.Error())
+}
+for _, run := range response.Runs {
+	_ = run
+}
+```
+
+```go After
+import (
+	"context"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
+	ProjectIDs:  langsmith.F([]string{"<project-id>"}),
+	Filter:      langsmith.F(`eq(name, "RetrieveDocs")`),
+	TraceFilter: langsmith.F(`and(eq(feedback_key, "user_score"), eq(feedback_score, 1))`),
+	TreeFilter:  langsmith.F(`eq(name, "ExpandQuery")`),
+})
+for pager.Next() {
+	run := pager.Current()
+	_ = run
+}
+if err := pager.Err(); err != nil {
+	panic(err.Error())
+}
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="cURL">
@@ -1220,7 +1781,31 @@ cURL examples coming soon.
     | *(not available)* | `referenceDatasetId()` | Alternative to `projectIds()` |
   </Tab>
   <Tab title="Go">
-    Go SmithDB v2 support is planned. Check back for updates.
+    All parameters use `PascalCase` field names on the params struct.
+
+    | Before (`RunQueryParams`) | After (`RunQueryV2Params`) | Notes |
+    |---|---|---|
+    | `Session` | `ProjectIDs` | Renamed; now takes explicit project UUIDs |
+    | `RunType` | `RunType` | Values must now be uppercase: `RunQueryV2ParamsRunTypeLLM`, `RunQueryV2ParamsRunTypeChain`, etc. |
+    | `Trace` | `TraceID` | Renamed |
+    | `ReferenceExample` | `ReferenceExamples` | Renamed to plural |
+    | `Query` | *(removed)* | No equivalent |
+    | `Filter` | `Filter` | Unchanged |
+    | `TraceFilter` | `TraceFilter` | Unchanged |
+    | `TreeFilter` | `TreeFilter` | Unchanged |
+    | `IsRoot` | `IsRoot` | Unchanged |
+    | `ParentRun` | *(removed)* | No equivalent |
+    | `StartTime` | `MinStartTime` | Renamed; defaults to 1 day ago—see warning above |
+    | `Error` | `HasError` | Renamed |
+    | `ID` | `IDs` | Renamed |
+    | `Select` | `Selects` | Field name constants are now uppercase (e.g., `RunQueryV2ParamsSelectName`) |
+    | `Limit` | *(removed)* | Use `PageSize` |
+    | `Order` | *(removed)* | No equivalent |
+    | `ExecutionOrder` | *(removed)* | No equivalent |
+    | `Cursor` | `Cursor` | Unchanged |
+    | *(not available)* | `MaxStartTime` | Upper bound for start time; defaults to now |
+    | *(not available)* | `PageSize` | Per-request result count (default 100, max 1000) |
+    | *(not available)* | `ReferenceDatasetID` | Alternative to `ProjectIDs` |
   </Tab>
   <Tab title="cURL">
     JSON body field names match the Python `snake_case` names exactly.
@@ -1308,7 +1893,49 @@ Migrate `read_run` to `runs.retrieve`. The API returns only the run ID by defaul
   <Tab title="Go">
     <Note>Requires `langsmith-go` v0.16.0.</Note>
 
-    Go examples coming soon.
+    <CodeGroup>
+    ```go Before
+    import (
+    	"context"
+
+    	"github.com/langchain-ai/langsmith-go"
+    )
+
+    ctx := context.Background()
+    client := langsmith.NewClient()
+
+    run, err := client.Runs.Get(ctx, "<run-id>", langsmith.RunGetParams{})
+    if err != nil {
+    	panic(err.Error())
+    }
+    _ = run
+    ```
+
+    ```go After
+    import (
+    	"context"
+
+    	"github.com/langchain-ai/langsmith-go"
+    )
+
+    ctx := context.Background()
+    client := langsmith.NewClient()
+
+    run, err := client.Runs.RetrieveV2(ctx, "<run-id>", langsmith.RunRetrieveV2Params{
+    	ProjectID: langsmith.F("<project-id>"),
+    	StartTime: langsmith.F("<run-start-time-rfc3339>"),
+    	Selects: langsmith.F([]langsmith.RunRetrieveV2ParamsSelect{
+    		langsmith.RunRetrieveV2ParamsSelectName,
+    		langsmith.RunRetrieveV2ParamsSelectStatus,
+    		langsmith.RunRetrieveV2ParamsSelectTotalTokens,
+    	}),
+    })
+    if err != nil {
+    	panic(err.Error())
+    }
+    _ = run
+    ```
+    </CodeGroup>
   </Tab>
   <Tab title="cURL">
     <CodeGroup>
@@ -1399,7 +2026,46 @@ Java support is planned.
   </Tab>
   <Tab title="Go">
 
-Go support is planned.
+<CodeGroup>
+
+```go Before
+import (
+	"context"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+run, err := client.Runs.Get(ctx, "<run-id>", langsmith.RunGetParams{})
+if err != nil {
+	panic(err.Error())
+}
+_ = run
+```
+
+```go After
+import (
+	"context"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+run, err := client.Runs.RetrieveV2(ctx, "<run-id>", langsmith.RunRetrieveV2Params{
+	ProjectID: langsmith.F("<project-id>"),
+	StartTime: langsmith.F("2025-01-01T12:00:00Z"),
+})
+if err != nil {
+	panic(err.Error())
+}
+_ = run
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="cURL">
@@ -1453,7 +2119,18 @@ cURL examples coming soon.
     | *(all fields returned by default)* | `selects()` | Field projection; defaults to `["ID"]` only; field names are uppercase |
   </Tab>
   <Tab title="Go">
-    Go SmithDB v2 support is planned. Check back for updates.
+    All parameters use `PascalCase` field names on the params struct.
+
+    | Before (`RunGetParams`) | After (`RunRetrieveV2Params`) | Notes |
+    |---|---|---|
+    | `runID` (positional) | `runID` (positional) | Unchanged |
+    | `ExcludeS3StoredAttributes` | *(removed)* | No equivalent |
+    | `ExcludeSerialized` | *(removed)* | No equivalent |
+    | `IncludeMessages` | *(removed)* | No equivalent |
+    | `SessionID` | *(removed)* | Replaced by `ProjectID` |
+    | `StartTime` | `StartTime` | Now **required**; used with `ProjectID` to locate the run in SmithDB |
+    | *(not available)* | `ProjectID` | **Required**—UUID of the project that owns the run |
+    | *(all fields returned by default)* | `Selects` | Field projection; defaults to `["ID"]` only; field name constants are uppercase (e.g., `RunRetrieveV2ParamsSelectName`) |
   </Tab>
   <Tab title="cURL">
     Query parameter names match the Python `snake_case` names exactly.
