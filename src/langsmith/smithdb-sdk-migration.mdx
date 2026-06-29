@@ -185,6 +185,7 @@ Migrate `list_runs` to `runs.query`. Field selection is now required via `select
     ```go Before
     import (
     	"context"
+    	"fmt"
 
     	"github.com/langchain-ai/langsmith-go"
     )
@@ -207,7 +208,7 @@ Migrate `list_runs` to `runs.query`. Field selection is now required via `select
     	panic(err.Error())
     }
     for _, run := range response.Runs {
-    	_ = run
+    	fmt.Println(run.ID, run.Name, run.Status)
     }
     ```
 
@@ -292,7 +293,7 @@ async def main():
 
     project = await asyncio.to_thread(client.read_project, project_name="my-project")
     async for run in client.runs.query(project_ids=[str(project.id)]):
-        ...
+        print(run.id, run.name, run.status)
 
 
 asyncio.run(main())
@@ -347,6 +348,7 @@ Java support is planned.
 ```go Before
 import (
 	"context"
+	"fmt"
 
 	"github.com/langchain-ai/langsmith-go"
 )
@@ -361,13 +363,14 @@ if err != nil {
 	panic(err.Error())
 }
 for _, run := range response.Runs {
-	_ = run
+	fmt.Println(run.ID, run.Name, run.Status)
 }
 ```
 
 ```go After
 import (
 	"context"
+	"fmt"
 
 	"github.com/langchain-ai/langsmith-go"
 )
@@ -380,7 +383,7 @@ pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
 })
 for pager.Next() {
 	run := pager.Current()
-	_ = run
+	fmt.Println(run.ID, run.Name, run.Status)
 }
 if err := pager.Err(); err != nil {
 	panic(err.Error())
@@ -430,7 +433,7 @@ async def main():
         project_ids=[str(project.id)],
         selects=["ID", "NAME", "RUN_TYPE", "STATUS", "START_TIME", "INPUTS", "ERROR"],
     ):
-        ...
+        print(run.id, run.name, run.status)
 
 
 asyncio.run(main())
@@ -488,6 +491,7 @@ Java support is planned.
 ```go Before
 import (
 	"context"
+	"fmt"
 
 	"github.com/langchain-ai/langsmith-go"
 )
@@ -503,13 +507,14 @@ if err != nil {
 	panic(err.Error())
 }
 for _, run := range response.Runs {
-	_ = run
+	fmt.Println(run.ID, run.Name, run.Status)
 }
 ```
 
 ```go After
 import (
 	"context"
+	"fmt"
 
 	"github.com/langchain-ai/langsmith-go"
 )
@@ -532,7 +537,7 @@ pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
 })
 for pager.Next() {
 	run := pager.Current()
-	_ = run
+	fmt.Println(run.ID, run.Name, run.Status)
 }
 if err := pager.Err(); err != nil {
 	panic(err.Error())
@@ -588,7 +593,7 @@ async def main():
         min_start_time=datetime.now() - timedelta(days=1),
         run_type="LLM",
     ):
-        ...
+        print(run.id, run.name, run.status)
 
 
 asyncio.run(main())
@@ -648,6 +653,7 @@ Java support is planned.
 ```go Before
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/langchain-ai/langsmith-go"
@@ -665,13 +671,14 @@ if err != nil {
 	panic(err.Error())
 }
 for _, run := range response.Runs {
-	_ = run
+	fmt.Println(run.ID, run.Name, run.Status)
 }
 ```
 
 ```go After
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/langchain-ai/langsmith-go"
@@ -687,7 +694,7 @@ pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
 })
 for pager.Next() {
 	run := pager.Current()
-	_ = run
+	fmt.Println(run.ID, run.Name, run.Status)
 }
 if err := pager.Err(); err != nil {
 	panic(err.Error())
@@ -732,7 +739,7 @@ async def main():
 
     project = await asyncio.to_thread(client.read_project, project_name="my-project")
     async for run in client.runs.query(project_ids=[str(project.id)], is_root=True):
-        ...
+        print(run.id, run.name, run.status)
 
 
 asyncio.run(main())
@@ -789,6 +796,7 @@ Java support is planned.
 ```go Before
 import (
 	"context"
+	"fmt"
 
 	"github.com/langchain-ai/langsmith-go"
 )
@@ -804,13 +812,14 @@ if err != nil {
 	panic(err.Error())
 }
 for _, run := range response.Runs {
-	_ = run
+	fmt.Println(run.ID, run.Name, run.Status)
 }
 ```
 
 ```go After
 import (
 	"context"
+	"fmt"
 
 	"github.com/langchain-ai/langsmith-go"
 )
@@ -824,7 +833,7 @@ pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
 })
 for pager.Next() {
 	run := pager.Current()
-	_ = run
+	fmt.Println(run.ID, run.Name, run.Status)
 }
 if err := pager.Err(); err != nil {
 	panic(err.Error())
@@ -872,7 +881,7 @@ async def main():
         project_ids=[str(project.id)],
         ids=["<run-id-1>", "<run-id-2>"],
     ):
-        ...
+        print(run.id, run.name, run.status)
 
 
 asyncio.run(main())
@@ -928,6 +937,7 @@ Java support is planned.
 ```go Before
 import (
 	"context"
+	"fmt"
 
 	"github.com/langchain-ai/langsmith-go"
 )
@@ -942,13 +952,14 @@ if err != nil {
 	panic(err.Error())
 }
 for _, run := range response.Runs {
-	_ = run
+	fmt.Println(run.ID, run.Name, run.Status)
 }
 ```
 
 ```go After
 import (
 	"context"
+	"fmt"
 
 	"github.com/langchain-ai/langsmith-go"
 )
@@ -962,7 +973,7 @@ pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
 })
 for pager.Next() {
 	run := pager.Current()
-	_ = run
+	fmt.Println(run.ID, run.Name, run.Status)
 }
 if err := pager.Err(); err != nil {
 	panic(err.Error())
@@ -1164,7 +1175,7 @@ async def main():
 
     project = await asyncio.to_thread(client.read_project, project_name="my-project")
     async for run in client.runs.query(project_ids=[str(project.id)], has_error=True):
-        ...
+        print(run.id, run.name, run.status)
 
 
 asyncio.run(main())
@@ -1221,6 +1232,7 @@ Java support is planned.
 ```go Before
 import (
 	"context"
+	"fmt"
 
 	"github.com/langchain-ai/langsmith-go"
 )
@@ -1236,13 +1248,14 @@ if err != nil {
 	panic(err.Error())
 }
 for _, run := range response.Runs {
-	_ = run
+	fmt.Println(run.ID, run.Name, run.Status)
 }
 ```
 
 ```go After
 import (
 	"context"
+	"fmt"
 
 	"github.com/langchain-ai/langsmith-go"
 )
@@ -1256,7 +1269,7 @@ pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
 })
 for pager.Next() {
 	run := pager.Current()
-	_ = run
+	fmt.Println(run.ID, run.Name, run.Status)
 }
 if err := pager.Err(); err != nil {
 	panic(err.Error())
@@ -1303,7 +1316,7 @@ async def main():
     filter_str = "and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))"
     project = await asyncio.to_thread(client.read_project, project_name="my-project")
     async for run in client.runs.query(project_ids=[str(project.id)], filter=filter_str):
-        ...
+        print(run.id, run.name, run.status)
 
 
 asyncio.run(main())
@@ -1362,6 +1375,7 @@ Java support is planned.
 ```go Before
 import (
 	"context"
+	"fmt"
 
 	"github.com/langchain-ai/langsmith-go"
 )
@@ -1378,13 +1392,14 @@ if err != nil {
 	panic(err.Error())
 }
 for _, run := range response.Runs {
-	_ = run
+	fmt.Println(run.ID, run.Name, run.Status)
 }
 ```
 
 ```go After
 import (
 	"context"
+	"fmt"
 
 	"github.com/langchain-ai/langsmith-go"
 )
@@ -1399,7 +1414,7 @@ pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
 })
 for pager.Next() {
 	run := pager.Current()
-	_ = run
+	fmt.Println(run.ID, run.Name, run.Status)
 }
 if err := pager.Err(); err != nil {
 	panic(err.Error())
@@ -1454,7 +1469,7 @@ async def main():
     )
     project = await asyncio.to_thread(client.read_project, project_name="my-project")
     async for run in client.runs.query(project_ids=[str(project.id)], filter=filter_str):
-        ...
+        print(run.id, run.name, run.status)
 
 
 asyncio.run(main())
@@ -1519,6 +1534,7 @@ Java support is planned.
 ```go Before
 import (
 	"context"
+	"fmt"
 
 	"github.com/langchain-ai/langsmith-go"
 )
@@ -1537,13 +1553,14 @@ if err != nil {
 	panic(err.Error())
 }
 for _, run := range response.Runs {
-	_ = run
+	fmt.Println(run.ID, run.Name, run.Status)
 }
 ```
 
 ```go After
 import (
 	"context"
+	"fmt"
 
 	"github.com/langchain-ai/langsmith-go"
 )
@@ -1560,7 +1577,7 @@ pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
 })
 for pager.Next() {
 	run := pager.Current()
-	_ = run
+	fmt.Println(run.ID, run.Name, run.Status)
 }
 if err := pager.Err(); err != nil {
 	panic(err.Error())
@@ -1615,7 +1632,7 @@ async def main():
         trace_filter='and(eq(feedback_key, "user_score"), eq(feedback_score, 1))',
         tree_filter='eq(name, "ExpandQuery")',
     ):
-        ...
+        print(run.id, run.name, run.status)
 
 
 asyncio.run(main())
@@ -1676,6 +1693,7 @@ Java support is planned.
 ```go Before
 import (
 	"context"
+	"fmt"
 
 	"github.com/langchain-ai/langsmith-go"
 )
@@ -1693,13 +1711,14 @@ if err != nil {
 	panic(err.Error())
 }
 for _, run := range response.Runs {
-	_ = run
+	fmt.Println(run.ID, run.Name, run.Status)
 }
 ```
 
 ```go After
 import (
 	"context"
+	"fmt"
 
 	"github.com/langchain-ai/langsmith-go"
 )
@@ -1715,7 +1734,7 @@ pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
 })
 for pager.Next() {
 	run := pager.Current()
-	_ = run
+	fmt.Println(run.ID, run.Name, run.Status)
 }
 if err := pager.Err(); err != nil {
 	panic(err.Error())
@@ -2077,6 +2096,7 @@ Migrate `read_run` to `runs.retrieve`. The API returns only the run ID by defaul
     ```go Before
     import (
     	"context"
+    	"fmt"
 
     	"github.com/langchain-ai/langsmith-go"
     )
@@ -2088,12 +2108,13 @@ Migrate `read_run` to `runs.retrieve`. The API returns only the run ID by defaul
     if err != nil {
     	panic(err.Error())
     }
-    _ = run
+    fmt.Println(run.ID)
     ```
 
     ```go After
     import (
     	"context"
+    	"fmt"
 
     	"github.com/langchain-ai/langsmith-go"
     )
@@ -2113,7 +2134,7 @@ Migrate `read_run` to `runs.retrieve`. The API returns only the run ID by defaul
     if err != nil {
     	panic(err.Error())
     }
-    _ = run
+    fmt.Println(run.Name, run.Status, run.TotalTokens)
     ```
     </CodeGroup>
   </Tab>
@@ -2211,6 +2232,7 @@ Java support is planned.
 ```go Before
 import (
 	"context"
+	"fmt"
 
 	"github.com/langchain-ai/langsmith-go"
 )
@@ -2222,12 +2244,13 @@ run, err := client.Runs.Get(ctx, "<run-id>", langsmith.RunGetParams{})
 if err != nil {
 	panic(err.Error())
 }
-_ = run
+fmt.Println(run.Name, run.Status, run.TotalTokens)
 ```
 
 ```go After
 import (
 	"context"
+	"fmt"
 
 	"github.com/langchain-ai/langsmith-go"
 )
@@ -2242,7 +2265,7 @@ run, err := client.Runs.RetrieveV2(ctx, "<run-id>", langsmith.RunRetrieveV2Param
 if err != nil {
 	panic(err.Error())
 }
-_ = run
+fmt.Println(run.ID)
 ```
 
 </CodeGroup>
