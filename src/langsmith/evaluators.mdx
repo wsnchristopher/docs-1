@@ -105,7 +105,7 @@ Click any evaluator in the table to open its detail view. The detail view has fo
 - **Overview**: The evaluator's feedback configuration and prompt or code definition.
 - **Traces**: Traces processed by this evaluator across all attached resources.
 - **Logs**: Execution logs for this evaluator across all attached resources.
-- **Resources**: The tracing projects and datasets this evaluator is attached to.
+- **Projects & Datasets**: The tracing projects and datasets this evaluator is attached to.
 
 ## Edit an evaluator
 
@@ -129,4 +129,9 @@ The change applies to traces scored after you save the evaluator. Existing score
 
 ## Delete an evaluator
 
-An evaluator cannot be deleted while it is attached to a tracing project or dataset. To delete an evaluator, first remove it from all resources via the **Resources** tab, then delete it.
+An evaluator cannot be deleted while it is attached to a tracing project or dataset. To delete an evaluator:
+
+1. In the [LangSmith UI](https://smith.langchain.com), select **Evaluators** in the left sidebar.
+1. Select the evaluator you want to delete.
+1. Open the **Projects & Datasets** tab. For each attached tracing project and dataset, select **Detach** in the **Actions** menu at the right of the row.
+1. Return to the **Evaluators** page and click **Delete** at the top of the page.

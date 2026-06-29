@@ -6,7 +6,7 @@ icon: "code"
 tag: "SDK"
 ---
 
-Use the LangSmith SDK to create and manage [evaluators](/langsmith/evaluation-concepts#evaluators) programmatically. Evaluators created through the SDK are [workspace-level](/langsmith/administration-overview#workspaces) resources that appear in the **Evaluators** table in the [LangSmith UI](https://smith.langchain.com), the same as [evaluators created in the UI](/langsmith/evaluators#create-an-evaluator-in-the-ui). You can attach them to tracing projects and datasets to run [online evaluations](/langsmith/evaluation-concepts#online-evaluations).
+Use the LangSmith SDK to create and manage [evaluators](/langsmith/evaluation-concepts#evaluators) programmatically. Evaluators created through the SDK are [workspace-level](/langsmith/administration-overview#workspaces) resources that appear in the **Evaluators** table in the [LangSmith UI](https://smith.langchain.com), the same as [evaluators created in the UI](/langsmith/evaluators#create-an-evaluator-in-the-ui). You can attach them to datasets to run [offline evaluations](/langsmith/evaluation-concepts#offline-evaluations) and to tracing projects to run [online evaluations](/langsmith/evaluation-concepts#online-evaluations).
 
 <Callout icon="code">
 This guide uses the Python and TypeScript SDKs. For installation and setup, refer to the [Python SDK documentation](https://reference.langchain.com/python/langsmith) and [TypeScript SDK documentation](https://reference.langchain.com/javascript/modules/langsmith.html).
@@ -20,6 +20,8 @@ Managing evaluators through the SDK requires:
 - TypeScript: `langsmith>=0.7.10` (npm)
 
 The examples below initialize the client with no arguments, so it reads the `LANGSMITH_API_KEY` and `LANGSMITH_ENDPOINT` environment variables. Configure your [API key](/langsmith/create-account-api-key) through environment variables rather than hardcoding it.
+
+In the examples below, replace placeholders such as `<evaluator-uuid>` with the corresponding information from LangSmith.
 
 ## Create an evaluator
 
@@ -70,8 +72,8 @@ created = client.online_evaluators.create(
     name="LLM judge",
     type="llm",
     llm_evaluator={
-        "prompt_repo_handle": "my-judge-prompt",
-        "commit_hash_or_tag": "latest",
+        "prompt_repo_handle": "<prompt-name>",
+        "commit_hash_or_tag": "<commit-hash-or-tag>",
         "variable_mapping": {
             "input": "inputs.question",
             "output": "outputs.answer",
@@ -86,8 +88,8 @@ const created = await client.onlineEvaluators.create({
   name: "LLM judge",
   type: "llm",
   llm_evaluator: {
-    prompt_repo_handle: "my-judge-prompt",
-    commit_hash_or_tag: "latest",
+    prompt_repo_handle: "<prompt-name>",
+    commit_hash_or_tag: "<commit-hash-or-tag>",
     variable_mapping: {
       input: "inputs.question",
       output: "outputs.answer",
@@ -125,8 +127,10 @@ Pass the field that matches the evaluator type: `code_evaluator` for a code eval
 <CodeGroup>
 ```python Python
 # Update a code evaluator
+code_evaluator_id = "<code-evaluator-uuid>"
+
 updated = client.online_evaluators.update(
-    evaluator_id,
+    code_evaluator_id,
     name="Updated correctness evaluator",
     code_evaluator={
         "code": "def perform_eval(run, example):\n    return {'score': 0.8}",
@@ -136,12 +140,14 @@ updated = client.online_evaluators.update(
 print(updated.evaluator.name if updated.evaluator else None)
 
 # Update an LLM-as-a-judge evaluator
+llm_evaluator_id = "<llm-evaluator-uuid>"
+
 client.online_evaluators.update(
-    evaluator_id,
+    llm_evaluator_id,
     name="Updated LLM judge",
     llm_evaluator={
-        "prompt_repo_handle": "my-updated-judge-prompt",
-        "commit_hash_or_tag": "main",
+        "prompt_repo_handle": "<prompt-name>",
+        "commit_hash_or_tag": "<commit-hash-or-tag>",
         "variable_mapping": {
             "input": "inputs.question",
             "output": "outputs.answer",
@@ -153,7 +159,9 @@ client.online_evaluators.update(
 ```
 ```typescript TypeScript
 // Update a code evaluator
-const updated = await client.onlineEvaluators.update(evaluatorId, {
+const codeEvaluatorId = "<code-evaluator-uuid>";
+
+const updated = await client.onlineEvaluators.update(codeEvaluatorId, {
   name: "Updated correctness evaluator",
   code_evaluator: {
     code: "def perform_eval(run, example):\n    return {'score': 0.8}",
@@ -163,11 +171,13 @@ const updated = await client.onlineEvaluators.update(evaluatorId, {
 console.log(updated.evaluator?.name);
 
 // Update an LLM-as-a-judge evaluator
-await client.onlineEvaluators.update(evaluatorId, {
+const llmEvaluatorId = "<llm-evaluator-uuid>";
+
+await client.onlineEvaluators.update(llmEvaluatorId, {
   name: "Updated LLM judge",
   llm_evaluator: {
-    prompt_repo_handle: "my-updated-judge-prompt",
-    commit_hash_or_tag: "main",
+    prompt_repo_handle: "<prompt-name>",
+    commit_hash_or_tag: "<commit-hash-or-tag>",
     variable_mapping: {
       input: "inputs.question",
       output: "outputs.answer",
@@ -188,10 +198,10 @@ Filter by name, type, feedback key, attached resource, or tag value, and sort or
 evaluators = client.online_evaluators.list(
     feedback_key="correctness",
     name_contains="judge",
-    resource_id=["project-or-dataset-id"],
-    tag_value_id=["tag-value-id"],
+    resource_id=["<project-or-dataset-uuid>"],
+    tag_value_id=["<tag-value-uuid>"],
     type="llm",
-    sort_by="name",
+    sort_by="updated_at", # must be one of "created_at" or "updated_at"
     sort_by_desc=False,
     limit=20,
     offset=0,
@@ -288,6 +298,10 @@ await client.onlineEvaluators.delete(evaluatorId, {
 
 <CodeGroup>
 ```python Python
+# Evaluator UUIDs from LangSmith
+evaluator_id_1 = "<evaluator-uuid-1>"
+evaluator_id_2 = "<evaluator-uuid-2>"
+
 result = client.online_evaluators.bulk_delete(
     evaluator_ids=[evaluator_id_1, evaluator_id_2],
     delete_run_rules=True,
@@ -296,6 +310,10 @@ print("Deleted:", result.succeeded)
 print("Failed:", result.failed)
 ```
 ```typescript TypeScript
+// Evaluator UUIDs from LangSmith
+const evaluatorId1 = "<evaluator-uuid-1>";
+const evaluatorId2 = "<evaluator-uuid-2>";
+
 const result = await client.onlineEvaluators.bulkDelete({
   evaluator_ids: [evaluatorId1, evaluatorId2],
   delete_run_rules: true,
