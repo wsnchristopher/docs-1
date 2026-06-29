@@ -66,13 +66,17 @@ console.log("Created evaluator:", evaluatorId);
 
 An LLM-as-a-judge evaluator references a prompt from the [prompt hub](/langsmith/prompt-engineering-quickstart) and maps your run or example fields to the prompt variables.
 
+<Note>
+The prompt must be a structured prompt (type `StructuredPrompt`), created in the [LangSmith UI](https://smith.langchain.com). A `StructuredPrompt` combines a prompt template with an output schema, ensuring the model returns data in a defined structure.
+</Note>
+
 <CodeGroup>
 ```python Python
 created = client.online_evaluators.create(
     name="LLM judge",
     type="llm",
     llm_evaluator={
-        "prompt_repo_handle": "<prompt-name>",
+        "prompt_repo_handle": "<prompt-repo-handle>",
         "commit_hash_or_tag": "<commit-hash-or-tag>",
         "variable_mapping": {
             "input": "inputs.question",
@@ -88,7 +92,7 @@ const created = await client.onlineEvaluators.create({
   name: "LLM judge",
   type: "llm",
   llm_evaluator: {
-    prompt_repo_handle: "<prompt-name>",
+    prompt_repo_handle: "<prompt-repo-handle>",
     commit_hash_or_tag: "<commit-hash-or-tag>",
     variable_mapping: {
       input: "inputs.question",
@@ -101,7 +105,45 @@ const evaluatorId = created.evaluator?.id;
 ```
 </CodeGroup>
 
+The `prompt_repo_handle` is the prompt's internal repository name, not its display title or URL. To find it, list your workspace prompts and read the `repo_handle` field, or retrieve a specific prompt by its identifier in LangSmith. The identifier of a prompt can be in the format:
+- "promptName" (for private prompts), for example `my-prompt`.
+- "owner/promptName" (for public prompts), for example `langchain-ai/correctness`
+
+<CodeGroup>
+```python Python
+# List workspace prompts and read each repo handle
+for prompt in client.list_prompts(limit=10).repos:
+    print("prompt-repo-handle:", prompt.repo_handle)   # value to use for prompt_repo_handle
+    print("prompt-full-name:", prompt.full_name)     # display name
+    print("description:", prompt.description)
+
+# Or retrieve a specific prompt by identifier
+prompt = client.get_prompt("<prompt-identifier>")
+print("prompt-repo-handle:", prompt.repo_handle)
+```
+```typescript TypeScript
+// List workspace prompts and read each repo handle.
+// listPrompts() has no `limit` option in this SDK version — it's an async
+// generator over all prompts, so cap the count client-side and break.
+const prompts = client.listPrompts();
+let count = 0;
+for await (const prompt of prompts) {
+  console.log("prompt-repo-handle:", prompt.repo_handle);
+  console.log("prompt-full-name:", prompt.full_name);
+  console.log("description:", prompt.description);
+  console.log("---");
+  if (++count >= 10) break; // first 10 only; stops further pagination
+}
+
+// Or retrieve a specific prompt by identifier
+const prompt = await client.getPrompt("<prompt-identifier>");
+console.log("prompt-repo-handle:", prompt.repo_handle);
+```
+</CodeGroup>
+
 ## Retrieve an evaluator
+
+Fetch a single evaluator by its ID to read its configuration, including its name, type, feedback keys, and run rules.
 
 <CodeGroup>
 ```python Python
@@ -146,7 +188,7 @@ client.online_evaluators.update(
     llm_evaluator_id,
     name="Updated LLM judge",
     llm_evaluator={
-        "prompt_repo_handle": "<prompt-name>",
+        "prompt_repo_handle": "<prompt-repo-handle>",
         "commit_hash_or_tag": "<commit-hash-or-tag>",
         "variable_mapping": {
             "input": "inputs.question",
@@ -176,7 +218,7 @@ const llmEvaluatorId = "<llm-evaluator-uuid>";
 await client.onlineEvaluators.update(llmEvaluatorId, {
   name: "Updated LLM judge",
   llm_evaluator: {
-    prompt_repo_handle: "<prompt-name>",
+    prompt_repo_handle: "<prompt-repo-handle>",
     commit_hash_or_tag: "<commit-hash-or-tag>",
     variable_mapping: {
       input: "inputs.question",
