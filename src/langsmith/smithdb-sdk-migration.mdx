@@ -200,7 +200,36 @@ asyncio.run(main())
   </Tab>
   <Tab title="TypeScript">
 
-TypeScript examples coming soon.
+<CodeGroup>
+
+```typescript Before
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const runs = client.listRuns({
+  projectName: "my-project",
+});
+
+for await (const run of runs) {
+  // use run
+}
+```
+
+```typescript After
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const project = await client.readProject({ projectName: "my-project" });
+for await (const run of client.runs.query({
+  project_ids: [project.id],
+})) {
+  // use run
+}
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="Java">
@@ -264,7 +293,39 @@ asyncio.run(main())
   </Tab>
   <Tab title="TypeScript">
 
-TypeScript examples coming soon.
+<CodeGroup>
+
+```typescript Before
+import { Client } from "langsmith";
+
+const client = new Client();
+
+// returns a default set of fields; no explicit selection needed
+const runs = client.listRuns({
+  projectName: "my-project",
+});
+
+for await (const run of runs) {
+  // use run
+}
+```
+
+```typescript After
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const project = await client.readProject({ projectName: "my-project" });
+// must explicitly list every field needed; default returns only id
+for await (const run of client.runs.query({
+  project_ids: [project.id],
+  selects: ["ID", "NAME", "RUN_TYPE", "STATUS", "START_TIME", "INPUTS", "ERROR"],
+})) {
+  // use run
+}
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="Java">
@@ -334,7 +395,41 @@ asyncio.run(main())
   </Tab>
   <Tab title="TypeScript">
 
-TypeScript examples coming soon.
+<CodeGroup>
+
+```typescript Before
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const runs = client.listRuns({
+  projectName: "my-project",
+  startTime: new Date(Date.now() - 24 * 60 * 60 * 1000),
+  runType: "llm",
+});
+
+for await (const run of runs) {
+  // use run
+}
+```
+
+```typescript After
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const project = await client.readProject({ projectName: "my-project" });
+const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+for await (const run of client.runs.query({
+  project_ids: [project.id],
+  min_start_time: oneDayAgo.toISOString(),
+  run_type: "LLM",
+})) {
+  // use run
+}
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="Java">
@@ -393,7 +488,38 @@ asyncio.run(main())
   </Tab>
   <Tab title="TypeScript">
 
-TypeScript examples coming soon.
+<CodeGroup>
+
+```typescript Before
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const runs = client.listRuns({
+  projectName: "my-project",
+  isRoot: true,
+});
+
+for await (const run of runs) {
+  // use run
+}
+```
+
+```typescript After
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const project = await client.readProject({ projectName: "my-project" });
+for await (const run of client.runs.query({
+  project_ids: [project.id],
+  is_root: true,
+})) {
+  // use run
+}
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="Java">
@@ -455,7 +581,37 @@ asyncio.run(main())
   </Tab>
   <Tab title="TypeScript">
 
-TypeScript examples coming soon.
+<CodeGroup>
+
+```typescript Before
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const runs = client.listRuns({
+  id: ["<run-id-1>", "<run-id-2>"],
+});
+
+for await (const run of runs) {
+  // use run
+}
+```
+
+```typescript After
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const project = await client.readProject({ projectName: "my-project" });
+for await (const run of client.runs.query({
+  project_ids: [project.id],
+  ids: ["<run-id-1>", "<run-id-2>"],
+})) {
+  // use run
+}
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="Java">
@@ -525,7 +681,37 @@ asyncio.run(main())
   </Tab>
   <Tab title="TypeScript">
 
-TypeScript examples coming soon.
+<CodeGroup>
+
+```typescript Before
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const runs: unknown[] = [];
+for await (const run of client.listRuns({ projectName: "my-project" })) {
+  runs.push(run);
+  if (runs.length >= 150) break;
+}
+```
+
+```typescript After
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const project = await client.readProject({ projectName: "my-project" });
+const runs: unknown[] = [];
+for await (const run of client.runs.query({
+  project_ids: [project.id],
+  selects: ["ID", "NAME"],
+})) {
+  runs.push(run);
+  if (runs.length >= 150) break;
+}
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="Java">
@@ -584,7 +770,38 @@ asyncio.run(main())
   </Tab>
   <Tab title="TypeScript">
 
-TypeScript examples coming soon.
+<CodeGroup>
+
+```typescript Before
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const runs = client.listRuns({
+  projectName: "my-project",
+  error: true,
+});
+
+for await (const run of runs) {
+  // use run
+}
+```
+
+```typescript After
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const project = await client.readProject({ projectName: "my-project" });
+for await (const run of client.runs.query({
+  project_ids: [project.id],
+  has_error: true,
+})) {
+  // use run
+}
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="Java">
@@ -645,7 +862,40 @@ asyncio.run(main())
   </Tab>
   <Tab title="TypeScript">
 
-TypeScript examples coming soon.
+<CodeGroup>
+
+```typescript Before
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const filterStr = "and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))";
+const runs = client.listRuns({
+  projectName: "my-project",
+  filter: filterStr,
+});
+
+for await (const run of runs) {
+  // use run
+}
+```
+
+```typescript After
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const filterStr = "and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))";
+const project = await client.readProject({ projectName: "my-project" });
+for await (const run of client.runs.query({
+  project_ids: [project.id],
+  filter: filterStr,
+})) {
+  // use run
+}
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="Java">
@@ -714,7 +964,46 @@ asyncio.run(main())
   </Tab>
   <Tab title="TypeScript">
 
-TypeScript examples coming soon.
+<CodeGroup>
+
+```typescript Before
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const filterStr =
+  'and(gt(start_time, "2023-07-15T12:34:56Z"),' +
+  ' or(neq(status, "error"),' +
+  '    and(eq(feedback_key, "Correctness"), eq(feedback_score, 0.0))))';
+const runs = client.listRuns({
+  projectName: "my-project",
+  filter: filterStr,
+});
+
+for await (const run of runs) {
+  // use run
+}
+```
+
+```typescript After
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const filterStr =
+  'and(gt(start_time, "2023-07-15T12:34:56Z"),' +
+  ' or(neq(status, "error"),' +
+  '    and(eq(feedback_key, "Correctness"), eq(feedback_score, 0.0))))';
+const project = await client.readProject({ projectName: "my-project" });
+for await (const run of client.runs.query({
+  project_ids: [project.id],
+  filter: filterStr,
+})) {
+  // use run
+}
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="Java">
@@ -783,7 +1072,42 @@ asyncio.run(main())
   </Tab>
   <Tab title="TypeScript">
 
-TypeScript examples coming soon.
+<CodeGroup>
+
+```typescript Before
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const runs = client.listRuns({
+  projectName: "my-project",
+  filter: 'eq(name, "RetrieveDocs")',
+  traceFilter: 'and(eq(feedback_key, "user_score"), eq(feedback_score, 1))',
+  treeFilter: 'eq(name, "ExpandQuery")',
+});
+
+for await (const run of runs) {
+  // use run
+}
+```
+
+```typescript After
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const project = await client.readProject({ projectName: "my-project" });
+for await (const run of client.runs.query({
+  project_ids: [project.id],
+  filter: 'eq(name, "RetrieveDocs")',
+  trace_filter: 'and(eq(feedback_key, "user_score"), eq(feedback_score, 1))',
+  tree_filter: 'eq(name, "ExpandQuery")',
+})) {
+  // use run
+}
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="Java">
@@ -843,11 +1167,11 @@ cURL examples coming soon.
   <Tab title="TypeScript">
     The v2 API uses `snake_case` parameter names, unlike v1 which used `camelCase`.
 
-    | Before (`listRuns`) | After (`client.runs.queryV2`) | Notes |
+    | Before (`listRuns`) | After (`client.runs.query`) | Notes |
     |---|---|---|
     | `projectName` | *(removed)* | Use `project_ids` with UUID(s)—see warning above |
     | `projectId` | `project_ids` | Renamed to `snake_case`; now takes a list; mutually exclusive with `reference_dataset_id` |
-    | `runType` | `run_type` | Renamed to `snake_case`; values must now be uppercase: `"LLM"`, `"CHAIN"`, `"TOOL"`, ... |
+    | `runType` | `run_type` | Renamed to `snake_case`; values must now be uppercase: `"LLM"`, `"CHAIN"`, `"TOOL"`, `"RETRIEVER"`, `"EMBEDDING"`, `"PROMPT"`, `"PARSER"` |
     | `traceId` | `trace_id` | Renamed to `snake_case` |
     | `referenceExampleId` | `reference_examples` | Renamed to `snake_case`; now takes a list of UUIDs |
     | `query` | *(removed)* | No equivalent |
@@ -858,7 +1182,7 @@ cURL examples coming soon.
     | `parentRunId` | *(removed)* | No equivalent |
     | `startTime` | `min_start_time` | Renamed to `snake_case`; defaults to 1 day ago—see warning above |
     | `error` | `has_error` | Renamed |
-    | `id` | `ids` | Renamed to `snake_case` |
+    | `id` | `ids` | Renamed |
     | `select` | `selects` | Field names are now uppercase (`"NAME"`, `"STATUS"`, etc.) |
     | `limit` | *(removed)* | Use `page_size` for per-request batch size |
     | `order` | *(removed)* | No equivalent |
@@ -1043,7 +1367,29 @@ asyncio.run(main())
   </Tab>
   <Tab title="TypeScript">
 
-TypeScript examples coming soon.
+<CodeGroup>
+
+```typescript Before
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const run = await client.readRun("<run-id>");
+```
+
+```typescript After
+import { Client } from "langsmith";
+
+const client = new Client();
+
+const project = await client.readProject({ projectName: "my-project" });
+const run = await client.runs.retrieve("<run-id>", {
+  project_id: project.id,
+  start_time: "2025-01-01T12:00:00Z",
+});
+```
+
+</CodeGroup>
 
   </Tab>
   <Tab title="Java">
@@ -1084,7 +1430,7 @@ cURL examples coming soon.
   <Tab title="TypeScript">
     The v2 API uses `snake_case` parameter names, unlike v1 which used `camelCase`.
 
-    | Before (`readRun`) | After (`client.runs.retrieveV2`) | Notes |
+    | Before (`readRun`) | After (`client.runs.retrieve`) | Notes |
     |---|---|---|
     | `runId` | `runId` | Unchanged (positional parameter) |
     | `options.loadChildRuns` | *(removed)* | No equivalent |
