@@ -1,0 +1,29 @@
+```go Before
+import (
+	"context"
+	"fmt"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+response, err := client.Runs.Query(ctx, langsmith.RunQueryParams{
+	Session: langsmith.F([]string{"<project-id>"}),
+	RunType: langsmith.F(langsmith.RunTypeEnumLlm),
+	Filter:  langsmith.F(`and(eq(status, "success"), gt(total_tokens, 100))`),
+	Select: langsmith.F([]langsmith.RunQueryParamsSelect{
+		langsmith.RunQueryParamsSelectID,
+		langsmith.RunQueryParamsSelectName,
+		langsmith.RunQueryParamsSelectStatus,
+	}),
+	Limit: langsmith.F(int64(100)),
+})
+if err != nil {
+	panic(err.Error())
+}
+for _, run := range response.Runs {
+	fmt.Println(run.ID, run.Name, run.Status)
+}
+```

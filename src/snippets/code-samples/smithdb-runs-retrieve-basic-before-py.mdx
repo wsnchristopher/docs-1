@@ -1,0 +1,7 @@
+```python Before
+from langsmith import Client
+
+client = Client()
+run = client.read_run(run_id="<run-id>")
+print(run.name, run.status, run.total_tokens)
+```

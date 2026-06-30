@@ -1,0 +1,28 @@
+```go After
+import (
+	"context"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+var runs []langsmith.RunSchemaV2
+pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
+	ProjectIDs: langsmith.F([]string{"<project-id>"}),
+	Selects: langsmith.F([]langsmith.RunQueryV2ParamsSelect{
+		langsmith.RunQueryV2ParamsSelectID,
+		langsmith.RunQueryV2ParamsSelectName,
+	}),
+})
+for pager.Next() {
+	runs = append(runs, pager.Current())
+	if len(runs) >= 150 {
+		break
+	}
+}
+if err := pager.Err(); err != nil {
+	panic(err.Error())
+}
+```

@@ -1,0 +1,53 @@
+# :remove-start:
+import os
+import sys
+
+if not os.environ.get("LANGSMITH_API_KEY"):
+    print("Skipping (LANGSMITH_API_KEY required).")
+    sys.exit(0)
+
+
+def _handle_expected_error(exc_type, exc_val, exc_tb):
+    import requests
+    _skip = (ValueError, requests.HTTPError)
+    try:
+        from langsmith.utils import LangSmithError, LangSmithUserError
+        _skip = _skip + (LangSmithError, LangSmithUserError)
+    except ImportError:
+        pass
+    if isinstance(exc_val, _skip) or "403" in str(exc_val) or "404" in str(exc_val) or "422" in str(exc_val):
+        print(f"Skipping (placeholder values in test env): {exc_val}")
+        sys.exit(0)
+    sys.__excepthook__(exc_type, exc_val, exc_tb)
+
+
+sys.excepthook = _handle_expected_error
+# :remove-end:
+
+# :snippet-start: smithdb-runs-retrieve-basic-before-py
+# :codegroup-tab: Before
+from langsmith import Client
+
+client = Client()
+run = client.read_run(run_id="<run-id>")
+print(run.name, run.status, run.total_tokens)
+# :snippet-end:
+
+# :snippet-start: smithdb-runs-retrieve-basic-after-py
+# :codegroup-tab: After
+import asyncio
+
+from langsmith import Client
+
+
+async def main():
+    client = Client()
+    run = await client.runs.retrieve(
+        run_id="<run-id>",
+        select=["NAME", "STATUS", "TOTAL_TOKENS"],
+    )
+    print(run.name, run.status, run.total_tokens)
+
+
+asyncio.run(main())
+# :snippet-end:

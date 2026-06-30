@@ -1,0 +1,16 @@
+```kotlin Before
+import com.langchain.smith.client.LangsmithClient
+import com.langchain.smith.client.okhttp.LangsmithOkHttpClient
+import com.langchain.smith.models.runs.RunQueryV1Params
+
+val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
+
+client.runs().queryV1(
+    RunQueryV1Params.builder()
+        .addSession("<project-id>")
+        .isRoot(true)
+        .build()
+).runs().forEach { run ->
+    println("${run.id()} ${run.name()} ${run.status()}")
+}
+```

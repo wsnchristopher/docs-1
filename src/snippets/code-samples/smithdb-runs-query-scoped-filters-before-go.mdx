@@ -1,0 +1,24 @@
+```go Before
+import (
+	"context"
+	"fmt"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+response, err := client.Runs.Query(ctx, langsmith.RunQueryParams{
+	Session:     langsmith.F([]string{"<project-id>"}),
+	Filter:      langsmith.F(`eq(name, "RetrieveDocs")`),
+	TraceFilter: langsmith.F(`and(eq(feedback_key, "user_score"), eq(feedback_score, 1))`),
+	TreeFilter:  langsmith.F(`eq(name, "ExpandQuery")`),
+})
+if err != nil {
+	panic(err.Error())
+}
+for _, run := range response.Runs {
+	fmt.Println(run.ID, run.Name, run.Status)
+}
+```

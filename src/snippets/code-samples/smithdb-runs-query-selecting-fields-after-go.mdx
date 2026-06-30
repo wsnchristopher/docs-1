@@ -1,0 +1,32 @@
+```go After
+import (
+	"context"
+	"fmt"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+// must explicitly list every field needed; default returns only id
+pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
+	ProjectIDs: langsmith.F([]string{"<project-id>"}),
+	Selects: langsmith.F([]langsmith.RunQueryV2ParamsSelect{
+		langsmith.RunQueryV2ParamsSelectID,
+		langsmith.RunQueryV2ParamsSelectName,
+		langsmith.RunQueryV2ParamsSelectRunType,
+		langsmith.RunQueryV2ParamsSelectStatus,
+		langsmith.RunQueryV2ParamsSelectStartTime,
+		langsmith.RunQueryV2ParamsSelectInputs,
+		langsmith.RunQueryV2ParamsSelectError,
+	}),
+})
+for pager.Next() {
+	run := pager.Current()
+	fmt.Println(run.ID, run.Name, run.Status)
+}
+if err := pager.Err(); err != nil {
+	panic(err.Error())
+}
+```

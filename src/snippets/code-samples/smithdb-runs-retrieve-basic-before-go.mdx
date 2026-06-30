@@ -1,0 +1,17 @@
+```go Before
+import (
+	"context"
+	"fmt"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+run, err := client.Runs.Get(ctx, "<run-id>", langsmith.RunGetParams{})
+if err != nil {
+	panic(err.Error())
+}
+fmt.Println(run.ID)
+```
