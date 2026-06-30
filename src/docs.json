@@ -1423,14 +1423,14 @@
                     ]
                   },
                   {
-                    "group": "Frameworks",
+                    "group": "Other agent frameworks",
                     "pages": [
                       "langsmith/deploy-google-adk",
                       "langsmith/deploy-other-frameworks"
                     ]
                   },
                   {
-                    "group": "Frameworks and platforms",
+                    "group": "Full-stack web apps",
                     "pages": [
                       "langsmith/deploy-frameworks-and-platforms",
                       "langsmith/deploy-vite-langsmith",
@@ -1531,15 +1531,15 @@
                             ]
                           }
                         ]
-                      },
-                      {
-                        "group": "Tutorials",
-                        "pages": [
-                          "langsmith/agent-server-feedback",
-                          "langsmith/generative-ui-react",
-                          "langsmith/cicd-pipeline-example"
-                        ]
                       }
+                    ]
+                  },
+                  {
+                    "group": "How to build",
+                    "pages": [
+                      "langsmith/agent-server-feedback",
+                      "langsmith/generative-ui-react",
+                      "langsmith/cicd-pipeline-example"
                     ]
                   },
                   {
