@@ -24,7 +24,7 @@ def _handle_expected_error(exc_type, exc_val, exc_tb):
 sys.excepthook = _handle_expected_error
 # :remove-end:
 
-# :snippet-start: smithdb-runs-query-fetch-by-id-before-py
+# :snippet-start: runs-query-fetch-by-id-before-py
 # :codegroup-tab: Before
 from langsmith import Client
 
@@ -32,7 +32,7 @@ client = Client()
 runs = client.list_runs(id=["<run-id-1>", "<run-id-2>"])
 # :snippet-end:
 
-# :snippet-start: smithdb-runs-query-fetch-by-id-after-py
+# :snippet-start: runs-query-fetch-by-id-after-py
 # :codegroup-tab: After
 import asyncio
 

@@ -17,7 +17,7 @@ process.on("uncaughtException", (reason) => {
 });
 // :remove-end:
 
-// :snippet-start: smithdb-runs-retrieve-basic-after-js
+// :snippet-start: runs-retrieve-basic-after-js
 // :codegroup-tab: After
 import { Client } from "langsmith";
 

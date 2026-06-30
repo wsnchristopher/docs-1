@@ -9,8 +9,17 @@ import (
 ctx := context.Background()
 client := langsmith.NewClient()
 
+sessions, err := client.Sessions.List(ctx, langsmith.SessionListParams{
+	Name:  langsmith.F("default"),
+	Limit: langsmith.F(int64(1)),
+})
+if err != nil {
+	panic(err.Error())
+}
+project := sessions.Items[0]
+
 run, err := client.Runs.RetrieveV2(ctx, "<run-id>", langsmith.RunRetrieveV2Params{
-	ProjectID: langsmith.F("<project-id>"),
+	ProjectID: langsmith.F(project.ID),
 	StartTime: langsmith.F("2025-01-01T12:00:00Z"),
 })
 if err != nil {

@@ -162,11 +162,13 @@ def _normalize_newlines(s: str) -> str:
     return s
 
 
-def _delete_snippet_outputs_for_source(out_dir: Path, source_path: Path) -> None:
+def _delete_snippet_outputs_for_source(out_dir: Path, source_path: Path, code_samples: Path) -> None:
     """Remove previously generated snippet files for one source file stem."""
     stem = source_path.stem
     ext = source_path.suffix.lstrip(".")
-    for p in out_dir.glob(f"{stem}.snippet.*.{ext}"):
+    rel = source_path.relative_to(code_samples)
+    search_dir = out_dir / rel.parts[-2] if len(rel.parts) > 2 else out_dir
+    for p in search_dir.glob(f"{stem}.snippet.*.{ext}"):
         if p.is_file():
             p.unlink()
 
@@ -213,13 +215,13 @@ def main() -> int:
         return 1
 
     if partial_sources is None:
-        for p in list(out_dir.iterdir()):
+        for p in out_dir.rglob("*"):
             if p.suffix in (".py", ".ts", ".java", ".kt") and p.is_file():
                 p.unlink()
         paths_to_process = _iter_source_files(code_samples)
     else:
         for src in partial_sources:
-            _delete_snippet_outputs_for_source(out_dir, src)
+            _delete_snippet_outputs_for_source(out_dir, src, code_samples)
         paths_to_process = partial_sources
 
     written: list[Path] = []
@@ -237,7 +239,10 @@ def main() -> int:
             return 1
         for snippet_id, body in pairs:
             body = _normalize_newlines(body)
-            out_path = out_dir / f"{path.stem}.snippet.{snippet_id}.{path.suffix.lstrip('.')}"
+            rel = path.relative_to(code_samples)
+            out_subdir = out_dir / rel.parts[-2] if len(rel.parts) > 2 else out_dir
+            out_subdir.mkdir(parents=True, exist_ok=True)
+            out_path = out_subdir / f"{path.stem}.snippet.{snippet_id}.{path.suffix.lstrip('.')}"
             out_path.write_text(body, encoding="utf-8", newline="\n")
             written.append(out_path)
 

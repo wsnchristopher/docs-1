@@ -24,7 +24,7 @@ def _handle_expected_error(exc_type, exc_val, exc_tb):
 sys.excepthook = _handle_expected_error
 # :remove-end:
 
-# :snippet-start: smithdb-runs-query-filter-root-before-py
+# :snippet-start: runs-query-filter-root-before-py
 # :codegroup-tab: Before
 from langsmith import Client
 
@@ -32,7 +32,7 @@ client = Client()
 runs = client.list_runs(project_name="default", is_root=True)
 # :snippet-end:
 
-# :snippet-start: smithdb-runs-query-filter-root-after-py
+# :snippet-start: runs-query-filter-root-after-py
 # :codegroup-tab: After
 import asyncio
 

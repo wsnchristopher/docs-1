@@ -8,9 +8,18 @@ import (
 ctx := context.Background()
 client := langsmith.NewClient()
 
+sessions, err := client.Sessions.List(ctx, langsmith.SessionListParams{
+	Name:  langsmith.F("default"),
+	Limit: langsmith.F(int64(1)),
+})
+if err != nil {
+	panic(err.Error())
+}
+project := sessions.Items[0]
+
 var runs []langsmith.RunSchemaV2
 pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
-	ProjectIDs: langsmith.F([]string{"<project-id>"}),
+	ProjectIDs: langsmith.F([]string{project.ID}),
 	Selects: langsmith.F([]langsmith.RunQueryV2ParamsSelect{
 		langsmith.RunQueryV2ParamsSelectID,
 		langsmith.RunQueryV2ParamsSelectName,

@@ -24,7 +24,7 @@ def _handle_expected_error(exc_type, exc_val, exc_tb):
 sys.excepthook = _handle_expected_error
 # :remove-end:
 
-# :snippet-start: smithdb-runs-retrieve-basic-before-py
+# :snippet-start: runs-retrieve-basic-before-py
 # :codegroup-tab: Before
 from langsmith import Client
 
@@ -33,7 +33,7 @@ run = client.read_run(run_id="<run-id>")
 print(run.name, run.status, run.total_tokens)
 # :snippet-end:
 
-# :snippet-start: smithdb-runs-retrieve-basic-after-py
+# :snippet-start: runs-retrieve-basic-after-py
 # :codegroup-tab: After
 import asyncio
 

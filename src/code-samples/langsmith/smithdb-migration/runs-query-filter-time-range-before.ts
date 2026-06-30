@@ -17,7 +17,7 @@ process.on("uncaughtException", (reason) => {
 });
 // :remove-end:
 
-// :snippet-start: smithdb-runs-query-filter-time-range-before-js
+// :snippet-start: runs-query-filter-time-range-before-js
 // :codegroup-tab: Before
 import { Client } from "langsmith";
 

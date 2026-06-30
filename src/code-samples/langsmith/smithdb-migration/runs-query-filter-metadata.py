@@ -24,7 +24,7 @@ def _handle_expected_error(exc_type, exc_val, exc_tb):
 sys.excepthook = _handle_expected_error
 # :remove-end:
 
-# :snippet-start: smithdb-runs-query-filter-metadata-before-py
+# :snippet-start: runs-query-filter-metadata-before-py
 # :codegroup-tab: Before
 from langsmith import Client
 
@@ -33,7 +33,7 @@ filter_str = "and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))"
 runs = client.list_runs(project_name="default", filter=filter_str)
 # :snippet-end:
 
-# :snippet-start: smithdb-runs-query-filter-metadata-after-py
+# :snippet-start: runs-query-filter-metadata-after-py
 # :codegroup-tab: After
 import asyncio
 

@@ -260,7 +260,7 @@ def main() -> None:
     lang_suffix = {"python": "-py", "ts": "-js", "java": "-java", "kotlin": "-kt"}
 
     for glob_pattern, language, fence_lang in snippet_configs:
-        for snippet_file in generated_dir.glob(glob_pattern):
+        for snippet_file in generated_dir.rglob(glob_pattern):
             snippet_name = ".".join(snippet_file.stem.split(".")[2:])
             expected_suffix = lang_suffix[language]
             if not snippet_name.endswith(expected_suffix):
@@ -270,7 +270,10 @@ def main() -> None:
             mdx_content = format_snippet_mdx(
                 content, language=language, fence_lang=fence_lang
             )
-            mdx_path = snippets_dir / f"{snippet_name}.mdx"
+            rel_parent = snippet_file.parent.relative_to(generated_dir)
+            out_subdir = snippets_dir / rel_parent
+            out_subdir.mkdir(parents=True, exist_ok=True)
+            mdx_path = out_subdir / f"{snippet_name}.mdx"
             mdx_path.write_text(mdx_content, encoding="utf-8")
             print(f"Generated {mdx_path.relative_to(repo_root)}")
 

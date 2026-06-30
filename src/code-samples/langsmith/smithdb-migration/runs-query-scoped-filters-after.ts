@@ -17,7 +17,7 @@ process.on("uncaughtException", (reason) => {
 });
 // :remove-end:
 
-// :snippet-start: smithdb-runs-query-scoped-filters-after-js
+// :snippet-start: runs-query-scoped-filters-after-js
 // :codegroup-tab: After
 import { Client } from "langsmith";
 

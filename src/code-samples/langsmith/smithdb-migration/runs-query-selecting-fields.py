@@ -24,7 +24,7 @@ def _handle_expected_error(exc_type, exc_val, exc_tb):
 sys.excepthook = _handle_expected_error
 # :remove-end:
 
-# :snippet-start: smithdb-runs-query-selecting-fields-before-py
+# :snippet-start: runs-query-selecting-fields-before-py
 # :codegroup-tab: Before
 from langsmith import Client
 
@@ -33,7 +33,7 @@ client = Client()
 runs = client.list_runs(project_name="default")
 # :snippet-end:
 
-# :snippet-start: smithdb-runs-query-selecting-fields-after-py
+# :snippet-start: runs-query-selecting-fields-after-py
 # :codegroup-tab: After
 import asyncio
 

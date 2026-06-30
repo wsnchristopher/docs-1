@@ -3,7 +3,7 @@
 //KOTLIN 2.0.21
 //DEPS com.langchain.smith:langsmith-java:0.1.0-beta.8
 
-// :snippet-start: smithdb-runs-retrieve-basic-before-kt
+// :snippet-start: runs-retrieve-basic-before-kt
 // :codegroup-tab: Before
 import com.langchain.smith.client.LangsmithClient
 import com.langchain.smith.client.okhttp.LangsmithOkHttpClient

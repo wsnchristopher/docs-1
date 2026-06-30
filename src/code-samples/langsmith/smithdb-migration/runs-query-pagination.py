@@ -24,7 +24,7 @@ def _handle_expected_error(exc_type, exc_val, exc_tb):
 sys.excepthook = _handle_expected_error
 # :remove-end:
 
-# :snippet-start: smithdb-runs-query-pagination-before-py
+# :snippet-start: runs-query-pagination-before-py
 # :codegroup-tab: Before
 import itertools
 
@@ -34,7 +34,7 @@ client = Client()
 runs = itertools.islice(client.list_runs(project_name="default"), 150)
 # :snippet-end:
 
-# :snippet-start: smithdb-runs-query-pagination-after-py
+# :snippet-start: runs-query-pagination-after-py
 # :codegroup-tab: After
 import asyncio
 

@@ -24,7 +24,7 @@ def _handle_expected_error(exc_type, exc_val, exc_tb):
 sys.excepthook = _handle_expected_error
 # :remove-end:
 
-# :snippet-start: smithdb-runs-query-filter-time-range-before-py
+# :snippet-start: runs-query-filter-time-range-before-py
 # :codegroup-tab: Before
 from datetime import datetime, timedelta
 
@@ -38,7 +38,7 @@ runs = client.list_runs(
 )
 # :snippet-end:
 
-# :snippet-start: smithdb-runs-query-filter-time-range-after-py
+# :snippet-start: runs-query-filter-time-range-after-py
 # :codegroup-tab: After
 import asyncio
 from datetime import datetime, timedelta

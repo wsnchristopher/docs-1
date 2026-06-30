@@ -17,7 +17,7 @@ process.on("uncaughtException", (reason) => {
 });
 // :remove-end:
 
-// :snippet-start: smithdb-runs-query-fetch-by-id-before-js
+// :snippet-start: runs-query-fetch-by-id-before-js
 // :codegroup-tab: Before
 import { Client } from "langsmith";
 
