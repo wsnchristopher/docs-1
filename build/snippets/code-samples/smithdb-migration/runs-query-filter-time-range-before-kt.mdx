@@ -1,0 +1,20 @@
+```kotlin Before
+import java.time.OffsetDateTime
+
+import com.langchain.smith.client.LangsmithClient
+import com.langchain.smith.client.okhttp.LangsmithOkHttpClient
+import com.langchain.smith.models.runs.RunQueryV1Params
+import com.langchain.smith.models.runs.RunTypeEnum
+
+val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
+
+client.runs().queryV1(
+    RunQueryV1Params.builder()
+        .addSession("<project-id>")
+        .startTime(OffsetDateTime.parse("2024-01-01T00:00:00Z"))
+        .runType(RunTypeEnum.LLM)
+        .build()
+).runs().forEach { run ->
+    println("${run.id()} ${run.name()} ${run.status()}")
+}
+```

@@ -1,0 +1,24 @@
+```go After
+import (
+	"context"
+	"fmt"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+filterStr := "and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))"
+pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
+	ProjectIDs: langsmith.F([]string{"<project-id>"}),
+	Filter:     langsmith.F(filterStr),
+})
+for pager.Next() {
+	run := pager.Current()
+	fmt.Println(run.ID, run.Name, run.Status)
+}
+if err := pager.Err(); err != nil {
+	panic(err.Error())
+}
+```
