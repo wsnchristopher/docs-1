@@ -4,10 +4,12 @@ sidebarTitle: CLI reference
 description: Reference for Managed Deep Agents CLI commands, project files, and deploy behavior.
 ---
 
+import ManagedDeepAgentsPrivateBetaNote from '/snippets/langsmith/managed-deep-agents-private-beta-note.mdx';
+
 The `deepagents` CLI, installed from the `deepagents-cli` package, provides deployment tooling for [Managed Deep Agents](/langsmith/managed-deep-agents-overview). Use it to scaffold local agent projects, deploy them to LangSmith, manage Managed Deep Agent resources, and register MCP servers.
 
 <Note>
-Managed Deep Agents is in **private beta**, available on [LangSmith Cloud](/langsmith/cloud) in the US region only. [Join the waitlist](https://www.langchain.com/langsmith-managed-deep-agents-waitlist) to request access.
+<ManagedDeepAgentsPrivateBetaNote />
 </Note>
 
 For the fastest end-to-end path, see the [quickstart](/langsmith/managed-deep-agents-quickstart). For workflow guides, see [Connect tools](/langsmith/managed-deep-agents-mcp) and [Deploy an agent](/langsmith/managed-deep-agents-deploy).
@@ -425,7 +427,7 @@ The optional `permissions` field in `agent.json` sets identity, visibility, and 
 }
 ```
 
-Each tool requires `name` and `mcp_server_url`. `mcp_server_name` and `display_name` are optional. `interrupt_config` is optional and must be an object when present. Key each interrupt entry by `"{mcp_server_url}::{tool_name}"`. Additional `::{mcp_server_name}` components are accepted for compatibility.
+`interrupt_config` is optional and must be an object when present. For field semantics and `interrupt_config` usage, see [Reference tools](/langsmith/managed-deep-agents-mcp#reference-tools).
 
 ### skills
 

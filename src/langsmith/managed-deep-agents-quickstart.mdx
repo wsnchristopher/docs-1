@@ -4,26 +4,32 @@ sidebarTitle: Quickstart
 description: Create and deploy your first Managed Deep Agent with the CLI.
 ---
 
-LangChain hosts [Managed Deep Agents](/langsmith/managed-deep-agents-overview), so you can deploy a Deep Agent without setting up infrastructure. This quickstart shows how to scaffold a local project, edit the agent instructions, and deploy it with the CLI.
+import ManagedDeepAgentsPrivateBetaNote from '/snippets/langsmith/managed-deep-agents-private-beta-note.mdx';
+
+Deploy a hosted Deep Agent without setting up infrastructure. LangChain hosts [Managed Deep Agents](/langsmith/managed-deep-agents-overview) for you. This quickstart scaffolds a local project, edits the agent instructions, and deploys a research assistant that searches sources and returns cited answers.
 
 For the full deploy workflow and all backend options, see [Deploy an agent](/langsmith/managed-deep-agents-deploy).
 
 <Note>
-Managed Deep Agents is in **private beta**, available on [LangSmith Cloud](/langsmith/cloud) in the US region only. [Join the waitlist](https://www.langchain.com/langsmith-managed-deep-agents-waitlist) to request access.
+<ManagedDeepAgentsPrivateBetaNote />
 </Note>
 
 ## Prerequisites
 
 Before you start, make sure you have:
 
-- Managed Deep Agents [private beta access](https://www.langchain.com/langsmith-managed-deep-agents-waitlist).
-- A [LangSmith API key](/langsmith/create-account-api-key) for a workspace with private beta access.
+- A workspace with Managed Deep Agents [private beta access](https://www.langchain.com/langsmith-managed-deep-agents-waitlist).
+- A [LangSmith API key](/langsmith/create-account-api-key) for that workspace.
 - The `deepagents-cli>=0.2.2` package.
 
 ## Create and deploy an agent
 
 <Steps>
   <Step title="Install the CLI" id="install-the-cli">
+
+<Note>
+Managed Deep Agents requires `deepagents-cli>=0.2.2`.
+</Note>
 
 Install `deepagents-cli` with `uv` (preferred) or `pip`:
 
@@ -43,21 +49,23 @@ To upgrade an existing CLI installation, run `uv tool upgrade deepagents-cli` (o
 
   </Step>
 
-  <Step title="Set your API key">
+  <Step title="Set your API key" id="set-your-api-key">
 
-Set a LangSmith API key for a workspace with private beta access:
+Set the LangSmith API key for your beta-enabled workspace:
 
 ```bash
 export LANGSMITH_API_KEY="<LANGSMITH_API_KEY>"
 ```
 
+The CLI targets US LangSmith Cloud by default.
+
 <Note>
-If a request returns 401 or 403, confirm your API key belongs to a workspace with private beta access.
+If a request returns 401 or 403, confirm the key belongs to a workspace with beta access.
 </Note>
 
   </Step>
 
-  <Step title="Create a project">
+  <Step title="Create a project" id="create-a-project">
 
 Create a Managed Deep Agents project:
 
@@ -70,7 +78,7 @@ The CLI creates:
 
 | File or directory | Purpose |
 | --- | --- |
-| `agent.json` | Agent metadata, model, backend, and optional target `agent_id`. |
+| `agent.json` | Agent metadata: model, backend, and an optional `agent_id` for [redeploying to an existing agent](/langsmith/managed-deep-agents-cli#target-existing-agents). |
 | `AGENTS.md` | Main agent instructions. |
 | `tools.json` | Empty MCP tool configuration. |
 | `skills/example-skill/` | Example skill you can edit or remove. |
@@ -79,11 +87,11 @@ The CLI creates:
 
   </Step>
 
-  <Step title="Edit the instructions">
+  <Step title="Edit the instructions" id="edit-the-instructions">
 
 Open `AGENTS.md` and replace the generated instructions with the behavior you want:
 
-```md AGENTS.md
+```markdown AGENTS.md
 # Research assistant
 
 You are a careful research assistant. Search for sources, keep notes, and return
@@ -96,13 +104,17 @@ If the agent calls MCP tools, [connect tools](/langsmith/managed-deep-agents-mcp
 
   </Step>
 
-  <Step title="Deploy the agent">
+  <Step title="Deploy the agent" id="deploy-the-agent">
 
 Deploy the local project:
 
 ```bash
 deepagents deploy
 ```
+
+<Note>
+Free LangSmith workspaces are limited to one Managed Deep Agent. If `deepagents deploy` fails because the workspace is at its limit, delete the existing agent or upgrade the plan.
+</Note>
 
 On success, the CLI prints the agent name, ID, short revision, agent URL, and a post-deploy MCP health check:
 
@@ -114,7 +126,9 @@ Deployed: research-assistant
   health:   {'agent_id': '...', 'mcp_check': {'ok': True, 'servers': []}, ...}
 ```
 
-Open the printed agent URL in LangSmith to inspect the deployed agent, managed files, revisions, traces, and runtime behavior.
+The `health` field reports the post-deploy MCP check. `ok: True` means the agent's tools resolved, and an empty `servers` list is expected until you [connect tools](/langsmith/managed-deep-agents-mcp).
+
+Open the printed agent URL in LangSmith to inspect traces and revisions for the deployed agent.
 
   </Step>
 </Steps>
@@ -126,12 +140,12 @@ Open the printed agent URL in LangSmith to inspect the deployed agent, managed f
     Register MCP servers and reference their tools from `tools.json`.
   </Card>
   <Card title="Deploy an agent" icon="upload" href="/langsmith/managed-deep-agents-deploy">
-    Review the complete CLI deploy workflow and project file layout.
+    Walk through the full deploy workflow and project file layout.
   </Card>
   <Card title="CLI reference" icon="terminal" href="/langsmith/managed-deep-agents-cli">
-    Review all deploy commands, flags, and validation rules.
+    Look up every command, flag, and validation rule.
   </Card>
-  <Card title="LangSmith sandboxes" icon="terminal-2" href="/langsmith/sandboxes">
-    Learn how sandboxes provide isolated execution environments.
+  <Card title="LangSmith sandboxes" icon="box" href="/langsmith/sandboxes">
+    Give agents isolated environments for code execution and filesystem work.
   </Card>
 </CardGroup>

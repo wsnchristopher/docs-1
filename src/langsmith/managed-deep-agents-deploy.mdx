@@ -4,23 +4,25 @@ sidebarTitle: Deploy an agent
 description: Create or update a Managed Deep Agent with the CLI.
 ---
 
-Deploying a Managed Deep Agent creates or updates the hosted agent resource and syncs the managed file tree that contains instructions, skills, subagents, and tool configuration. A deploy does not create a [LangSmith Deployment](/langsmith/deployment-quickstart). For more information on what a deploy does create, refer to [Created resources](/langsmith/managed-deep-agents-overview#created-resources).
+import ManagedDeepAgentsPrivateBetaNote from '/snippets/langsmith/managed-deep-agents-private-beta-note.mdx';
 
-Use the [CLI](/langsmith/managed-deep-agents-cli) for Managed Deep Agents deploy workflows.
+Deploy a Managed Deep Agent to run a hosted agent. A deploy syncs the project's managed file tree (instructions, skills, subagents, and tool configuration) to the [Context Hub](/langsmith/use-the-context-hub) and records a new agent revision each time. A deploy does not create a [LangSmith Deployment](/langsmith/deployment-quickstart). For what a deploy does create, see [Created resources](/langsmith/managed-deep-agents-overview#created-resources).
 
 <Note>
-Managed Deep Agents is in **private beta**, available on [LangSmith Cloud](/langsmith/cloud) in the US region only. [Join the waitlist](https://www.langchain.com/langsmith-managed-deep-agents-waitlist) to request access.
+<ManagedDeepAgentsPrivateBetaNote />
 </Note>
 
-This page covers the deploy workflow: project files, MCP tools, subagents, backends, shared-agent updates, and troubleshooting. For a faster, guided setup, see the [quickstart](/langsmith/managed-deep-agents-quickstart).
+This page covers the [CLI](/langsmith/managed-deep-agents-cli) deploy workflow: project files, MCP tools, subagents, backends, shared-agent updates, and troubleshooting. For a faster, guided setup, see the [quickstart](/langsmith/managed-deep-agents-quickstart).
 
 ## Prerequisites
 
 Before you deploy, make sure you have:
 
-- Managed Deep Agents [private beta access](https://www.langchain.com/langsmith-managed-deep-agents-waitlist).
-- A [LangSmith API key](/langsmith/create-account-api-key) for a workspace with private beta access, exported as `LANGSMITH_API_KEY`.
+- A workspace with Managed Deep Agents [private beta access](https://www.langchain.com/langsmith-managed-deep-agents-waitlist).
+- A [LangSmith API key](/langsmith/create-account-api-key) for that workspace, exported as `LANGSMITH_API_KEY`.
 - The `deepagents-cli` package. For install commands and version requirements, see [Install the CLI](/langsmith/managed-deep-agents-quickstart#install-the-cli) in the quickstart.
+
+The CLI targets US LangSmith Cloud by default.
 
 ## Deploy from project files with the CLI
 
@@ -97,23 +99,7 @@ deepagents mcp-servers tools <id|name|url>
 
 The `deepagents mcp-servers add` command also tries to list tools after registration. Pass `--no-tools` when you want to skip that discovery step.
 
-```json tools.json
-{
-  "tools": [
-    {
-      "name": "example_tool",
-      "mcp_server_url": "https://example.com/mcp",
-      "mcp_server_name": "my-tools",
-      "display_name": "example_tool"
-    }
-  ],
-  "interrupt_config": {
-    "https://example.com/mcp::example_tool": true
-  }
-}
-```
-
-Each tool requires `name` and `mcp_server_url`. The `mcp_server_name` and `display_name` fields are optional. Use the optional `interrupt_config` object to require human approval before a tool runs. Key each entry by `"{mcp_server_url}::{tool_name}"` and set it to `true`.
+Add tool entries to the project `tools.json`. For the entry schema, optional fields, and `interrupt_config`, see [Reference tools](/langsmith/managed-deep-agents-mcp#reference-tools).
 
 Deploy validates referenced MCP server URLs before sending a request. If a server URL is not registered, deploy fails with a hint to add it. For server setup and OAuth, see [Connect tools](/langsmith/managed-deep-agents-mcp).
 
@@ -170,7 +156,7 @@ Use a [LangSmith sandbox](/langsmith/sandboxes) backend when the agent needs an 
 
 | Backend type | Use for |
 | --- | --- |
-| `state` | Use no sandbox-specific backend behavior. |
+| `state` | No sandbox; the agent runs without sandbox-specific behavior. |
 | `sandbox` with `sandbox_config.scope: "thread"` | Scope LangSmith sandbox resources to each thread. |
 | `sandbox` with `sandbox_config.scope: "agent"` | Scope LangSmith sandbox resources to the agent. |
 
@@ -190,19 +176,23 @@ Add optional sandbox settings under `backend` in `agent.json`:
 }
 ```
 
-`backend.sandbox_config` is valid only when `backend.type` is `sandbox`. For standalone sandbox features such as snapshots, service URLs, permissions, CLI commands, and SDK usage, see the [LangSmith sandboxes overview](/langsmith/sandboxes).
+`backend.sandbox_config` is valid only when `backend.type` is `sandbox`. `policy_ids` is optional. Omit it unless you have sandbox policy IDs to apply. For standalone sandbox features such as snapshots, service URLs, permissions, CLI commands, and SDK usage, see the [LangSmith sandboxes overview](/langsmith/sandboxes).
 
 ### Deploy the project
 
-Deploy the local project:
+Preview the assembled payload and managed file tree before you deploy:
+
+```bash
+deepagents deploy --dry-run
+```
+
+Then deploy the local project:
 
 ```bash
 deepagents deploy
 ```
 
-To preview the assembled payload and managed file tree before deploying, run `deepagents deploy --dry-run`.
-
-The first deploy creates a Managed Deep Agent. Later deploys update the same remote agent using local deploy state.
+The first deploy creates a Managed Deep Agent. Later deploys update the same remote agent. To target a specific agent, for example from CI or another machine, set its `agent_id` as described in [Update a shared agent](#update-a-shared-agent).
 
 On success, the CLI prints the agent name, ID, short revision, the agent URL, and a post-deploy MCP health check:
 
@@ -214,7 +204,9 @@ Deployed: my-agent
   health:   {'agent_id': '...', 'mcp_check': {'ok': True, 'servers': [{'url': 'https://example.com/mcp', 'ok': True}]}, ...}
 ```
 
-The `health` output above is abbreviated; it includes the full `mcp_check` result for every referenced server. A `mcp_check.ok` value of `True` confirms the agent can reach the MCP servers its tools reference. Each deploy creates a new agent revision, even when no managed files changed, because deploy always sends a metadata update. The managed file tree itself only changes when its contents do.
+The `health` output above is abbreviated. It includes the full `mcp_check` result for every referenced server, and a `mcp_check.ok` value of `True` confirms the agent can reach the MCP servers its tools reference.
+
+Each deploy creates a new agent revision, even when no managed files changed, because deploy always sends a metadata update. The managed file tree itself changes only when its contents do.
 
 ### Update a shared agent
 
@@ -255,7 +247,17 @@ deepagents deploy --yes
 | `mcp_check.ok` is `False` in the deploy output | The agent cannot reach one or more referenced MCP servers. Find the failing URL under `servers`, confirm the server is running and reachable, then deploy again. |
 | Deploy prompts to confirm an update you did not expect | `agent.json` declares an `agent_id` that targets an existing remote agent. Confirm the target before continuing, or remove `agent_id` to create a new agent. |
 | Deploy fails with `401` or `403` | The `LANGSMITH_API_KEY` is missing, invalid, or belongs to a workspace without private beta access. Check the key and confirm the workspace has access. |
+| `deepagents deploy` fails because the workspace is at its agent limit | Free workspaces are limited to one Managed Deep Agent. Delete the existing agent or [upgrade the plan](/langsmith/billing). |
 
 ## Next steps
 
-After you deploy an agent, open the printed agent URL in LangSmith to inspect managed files, revisions, traces, and runtime behavior. To add MCP tools, see [Connect tools](/langsmith/managed-deep-agents-mcp).
+After you deploy an agent, open the printed agent URL in LangSmith to inspect managed files, revisions, traces, and runtime behavior.
+
+<CardGroup cols={2}>
+  <Card title="Connect tools" icon="plug" href="/langsmith/managed-deep-agents-mcp">
+    Register MCP servers and reference their tools from `tools.json`.
+  </Card>
+  <Card title="CLI reference" icon="terminal" href="/langsmith/managed-deep-agents-cli">
+    Look up every deploy command, flag, and project file rule.
+  </Card>
+</CardGroup>

@@ -4,16 +4,16 @@ sidebarTitle: Overview
 description: Overview of Managed Deep Agents private beta features, workflows, and limits.
 ---
 
+import ManagedDeepAgentsPrivateBetaNote from '/snippets/langsmith/managed-deep-agents-private-beta-note.mdx';
+
 Managed Deep Agents is a hosted runtime for deploying and operating Deep Agents in LangSmith. Use it to run durable, long-running agents without standing up your own agent server.
 
 It pairs the [Deep Agents](/oss/deepagents/overview) harness with managed infrastructure: durable runs, [LangSmith sandboxes](/langsmith/sandboxes), thread state, MCP tools, file trees, traces, and agent revisions.
 
 <Note>
-Managed Deep Agents is in **private beta**, available on [LangSmith Cloud](/langsmith/cloud) in the US region only. [Join the waitlist](https://www.langchain.com/langsmith-managed-deep-agents-waitlist) to request access.
-</Note>
+<ManagedDeepAgentsPrivateBetaNote />
 
-<Note>
-**Private beta API update:** Managed Deep Agents is moving to a CLI-first private beta surface while we finalize the supported API story. Previous API-driven creation, update, and invocation examples have been removed from these docs. If you built against those preview APIs or need to use agents programmatically, contact your LangChain team; more guidance will be shared during private beta.
+**API access:** During private beta, Managed Deep Agents is CLI-first while LangChain finalizes the supported API. API-driven creation, update, and invocation examples have been removed. To use agents programmatically, contact your LangChain team.
 </Note>
 
 The recommended workflow is:
@@ -120,11 +120,11 @@ Free LangSmith workspaces are limited to one Managed Deep Agent. Paid LangSmith 
 
 ### Delete agents
 
-Deleting an agent does not cascade to threads. Threads created against a deleted agent remain queryable but cannot start new runs. Track and delete threads explicitly when you want to clean them up.
+[Deleting an agent](/langsmith/managed-deep-agents-cli#manage-agents) does not cascade to threads. Threads created against a deleted agent remain queryable but cannot start new runs. Track and delete threads explicitly when you want to clean them up.
 
 ### API stability
 
-Managed Deep Agents is repo- and CLI-first during private beta. The agent-creation APIs are not part of the documented product surface. Use the CLI for creation, updates, MCP server registration, and deploy workflows.
+During private beta, work with Managed Deep Agents from a local project and the CLI, not through an API. The agent-creation APIs are not a supported or documented interface. Use the CLI for creation, updates, MCP server registration, and deploy workflows.
 
 ### Support and feedback
 
@@ -134,4 +134,4 @@ Beta access includes direct support. The contact for bug reports and feature req
 
 Managed Deep Agents is available on LangSmith Cloud in the US region only during private beta. Self-hosted and Hybrid deployments are not supported, and EU and other regions are planned after general availability.
 
-The API also does not mirror every LangSmith Deployment endpoint in private beta. A Managed Deep Agent is not a LangSmith Deployment.
+A Managed Deep Agent is not a LangSmith Deployment.
