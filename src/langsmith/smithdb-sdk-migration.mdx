@@ -281,7 +281,25 @@ v2 does not accept a project name directly. Resolve the project UUID with `clien
   </Tab>
   <Tab title="cURL">
 
-cURL examples coming soon.
+<Tabs sync={false}>
+  <Tab title="Before">
+```bash
+curl "https://api.smith.langchain.com/api/v1/runs?project_name=default" \
+  -H "x-api-key: $LANGSMITH_API_KEY"
+```
+  </Tab>
+  <Tab title="After">
+```bash
+PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
+  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
+
+curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+  -H "x-api-key: $LANGSMITH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n --arg pid "$PROJECT_ID" '{"project_ids": [$pid]}')"
+```
+  </Tab>
+</Tabs>
 
   </Tab>
 </Tabs>
@@ -341,7 +359,25 @@ cURL examples coming soon.
   </Tab>
   <Tab title="cURL">
 
-cURL examples coming soon.
+<Tabs sync={false}>
+  <Tab title="Before">
+```bash
+curl "https://api.smith.langchain.com/api/v1/runs?project_name=default" \
+  -H "x-api-key: $LANGSMITH_API_KEY"
+```
+  </Tab>
+  <Tab title="After">
+```bash
+PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
+  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
+
+curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+  -H "x-api-key: $LANGSMITH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n --arg pid "$PROJECT_ID" '{"project_ids": [$pid], "selects": ["ID", "NAME", "RUN_TYPE", "STATUS", "START_TIME", "INPUTS", "ERROR"]}')"
+```
+  </Tab>
+</Tabs>
 
   </Tab>
 </Tabs>
@@ -401,7 +437,25 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
   </Tab>
   <Tab title="cURL">
 
-cURL examples coming soon.
+<Tabs sync={false}>
+  <Tab title="Before">
+```bash
+curl "https://api.smith.langchain.com/api/v1/runs?project_name=default&run_type=llm&start_time=2025-01-01T00:00:00Z" \
+  -H "x-api-key: $LANGSMITH_API_KEY"
+```
+  </Tab>
+  <Tab title="After">
+```bash
+PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
+  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
+
+curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+  -H "x-api-key: $LANGSMITH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n --arg pid "$PROJECT_ID" '{"project_ids": [$pid], "run_type": "LLM", "min_start_time": "2025-01-01T00:00:00Z"}')"
+```
+  </Tab>
+</Tabs>
 
   </Tab>
 </Tabs>
@@ -461,7 +515,25 @@ cURL examples coming soon.
   </Tab>
   <Tab title="cURL">
 
-cURL examples coming soon.
+<Tabs sync={false}>
+  <Tab title="Before">
+```bash
+curl "https://api.smith.langchain.com/api/v1/runs?project_name=default&is_root=true" \
+  -H "x-api-key: $LANGSMITH_API_KEY"
+```
+  </Tab>
+  <Tab title="After">
+```bash
+PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
+  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
+
+curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+  -H "x-api-key: $LANGSMITH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n --arg pid "$PROJECT_ID" '{"project_ids": [$pid], "is_root": true}')"
+```
+  </Tab>
+</Tabs>
 
   </Tab>
 </Tabs>
@@ -521,7 +593,25 @@ cURL examples coming soon.
   </Tab>
   <Tab title="cURL">
 
-cURL examples coming soon.
+<Tabs sync={false}>
+  <Tab title="Before">
+```bash
+curl "https://api.smith.langchain.com/api/v1/runs?id=<run-id-1>&id=<run-id-2>" \
+  -H "x-api-key: $LANGSMITH_API_KEY"
+```
+  </Tab>
+  <Tab title="After">
+```bash
+PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
+  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
+
+curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+  -H "x-api-key: $LANGSMITH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n --arg pid "$PROJECT_ID" '{"project_ids": [$pid], "ids": ["<run-id-1>", "<run-id-2>"]}')"
+```
+  </Tab>
+</Tabs>
 
   </Tab>
 </Tabs>
@@ -581,7 +671,34 @@ cURL examples coming soon.
   </Tab>
   <Tab title="cURL">
 
-cURL examples coming soon.
+<Tabs sync={false}>
+  <Tab title="Before">
+```bash
+curl "https://api.smith.langchain.com/api/v1/runs?project_name=default" \
+  -H "x-api-key: $LANGSMITH_API_KEY"
+```
+  </Tab>
+  <Tab title="After">
+```bash
+PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
+  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
+
+# First page
+RESPONSE=$(curl -s -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+  -H "x-api-key: $LANGSMITH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n --arg pid "$PROJECT_ID" '{"project_ids": [$pid], "selects": ["ID", "NAME"]}')") 
+echo "$RESPONSE" | jq '.runs'
+
+# Next page: pass cursor from previous response
+CURSOR=$(echo "$RESPONSE" | jq -r '.next_cursor // empty')
+curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+  -H "x-api-key: $LANGSMITH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n --arg pid "$PROJECT_ID" --arg cursor "$CURSOR" '{"project_ids": [$pid], "selects": ["ID", "NAME"], "cursor": $cursor}')"
+```
+  </Tab>
+</Tabs>
 
   </Tab>
 </Tabs>
@@ -641,7 +758,25 @@ The typed boolean `error=True/False` is renamed to `has_error=True/False` in v2.
   </Tab>
   <Tab title="cURL">
 
-cURL examples coming soon.
+<Tabs sync={false}>
+  <Tab title="Before">
+```bash
+curl "https://api.smith.langchain.com/api/v1/runs?project_name=default&error=true" \
+  -H "x-api-key: $LANGSMITH_API_KEY"
+```
+  </Tab>
+  <Tab title="After">
+```bash
+PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
+  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
+
+curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+  -H "x-api-key: $LANGSMITH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n --arg pid "$PROJECT_ID" '{"project_ids": [$pid], "has_error": true}')"
+```
+  </Tab>
+</Tabs>
 
   </Tab>
 </Tabs>
@@ -701,7 +836,29 @@ The metadata filter syntax is unchanged. Use `eq(metadata_key, ...)` to check fo
   </Tab>
   <Tab title="cURL">
 
-cURL examples coming soon.
+<Tabs sync={false}>
+  <Tab title="Before">
+```bash
+curl -G "https://api.smith.langchain.com/api/v1/runs" \
+  -H "x-api-key: $LANGSMITH_API_KEY" \
+  --data-urlencode "project_name=default" \
+  --data-urlencode "filter=and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))"
+```
+  </Tab>
+  <Tab title="After">
+```bash
+PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
+  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
+
+FILTER="and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))"
+
+curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+  -H "x-api-key: $LANGSMITH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n --arg pid "$PROJECT_ID" --arg f "$FILTER" '{"project_ids": [$pid], "filter": $f}')"
+```
+  </Tab>
+</Tabs>
 
   </Tab>
 </Tabs>
@@ -761,7 +918,29 @@ Nested `and()` / `or()` filter expressions are unchanged between v1 and v2.
   </Tab>
   <Tab title="cURL">
 
-cURL examples coming soon.
+<Tabs sync={false}>
+  <Tab title="Before">
+```bash
+curl -G "https://api.smith.langchain.com/api/v1/runs" \
+  -H "x-api-key: $LANGSMITH_API_KEY" \
+  --data-urlencode "project_name=default" \
+  --data-urlencode 'filter=and(gt(start_time, "2023-07-15T12:34:56Z"), or(neq(status, "error"), and(eq(feedback_key, "Correctness"), eq(feedback_score, 0.0))))'
+```
+  </Tab>
+  <Tab title="After">
+```bash
+PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
+  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
+
+FILTER='and(gt(start_time, "2023-07-15T12:34:56Z"), or(neq(status, "error"), and(eq(feedback_key, "Correctness"), eq(feedback_score, 0.0))))'
+
+curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+  -H "x-api-key: $LANGSMITH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n --arg pid "$PROJECT_ID" --arg f "$FILTER" '{"project_ids": [$pid], "filter": $f}')"
+```
+  </Tab>
+</Tabs>
 
   </Tab>
 </Tabs>
@@ -821,7 +1000,38 @@ All three filter parameters are unchanged between v1 and v2. `filter` applies to
   </Tab>
   <Tab title="cURL">
 
-cURL examples coming soon.
+<Tabs sync={false}>
+  <Tab title="Before">
+```bash
+curl -G "https://api.smith.langchain.com/api/v1/runs" \
+  -H "x-api-key: $LANGSMITH_API_KEY" \
+  --data-urlencode "project_name=default" \
+  --data-urlencode 'filter=eq(name, "RetrieveDocs")' \
+  --data-urlencode 'trace_filter=and(eq(feedback_key, "user_score"), eq(feedback_score, 1))' \
+  --data-urlencode 'tree_filter=eq(name, "ExpandQuery")'
+```
+  </Tab>
+  <Tab title="After">
+```bash
+PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
+  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
+
+FILTER='eq(name, "RetrieveDocs")'
+TRACE_FILTER='and(eq(feedback_key, "user_score"), eq(feedback_score, 1))'
+TREE_FILTER='eq(name, "ExpandQuery")'
+
+curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+  -H "x-api-key: $LANGSMITH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n \
+    --arg pid "$PROJECT_ID" \
+    --arg f "$FILTER" \
+    --arg tf "$TRACE_FILTER" \
+    --arg treef "$TREE_FILTER" \
+    '{"project_ids": [$pid], "filter": $f, "trace_filter": $tf, "tree_filter": $treef}')"
+```
+  </Tab>
+</Tabs>
 
   </Tab>
 </Tabs>
@@ -1351,7 +1561,23 @@ v2 requires two additional parameters that `read_run` did not need: `project_id`
   </Tab>
   <Tab title="cURL">
 
-cURL examples coming soon.
+<Tabs sync={false}>
+  <Tab title="Before">
+```bash
+curl "https://api.smith.langchain.com/api/v1/runs/<run-id>" \
+  -H "x-api-key: $LANGSMITH_API_KEY"
+```
+  </Tab>
+  <Tab title="After">
+```bash
+PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
+  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
+
+curl "https://api.smith.langchain.com/api/v2/runs/<run-id>?project_id=$PROJECT_ID&start_time=2025-01-01T12:00:00Z" \
+  -H "x-api-key: $LANGSMITH_API_KEY"
+```
+  </Tab>
+</Tabs>
 
   </Tab>
 </Tabs>
