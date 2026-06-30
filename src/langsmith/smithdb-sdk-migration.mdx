@@ -211,7 +211,7 @@ Migrate `list_runs` to `runs.query`. Field selection is now required via `select
       </Tab>
       <Tab title="After">
     ```bash
-    curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+    curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
       -H "x-api-key: $LANGSMITH_API_KEY" \
       -H "Content-Type: application/json" \
       -d '{
@@ -293,7 +293,7 @@ curl "https://api.smith.langchain.com/api/v1/runs?project_name=default" \
 PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
   -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
 
-curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
   -H "x-api-key: $LANGSMITH_API_KEY" \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg pid "$PROJECT_ID" '{"project_ids": [$pid]}')"
@@ -371,7 +371,7 @@ curl "https://api.smith.langchain.com/api/v1/runs?project_name=default" \
 PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
   -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
 
-curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
   -H "x-api-key: $LANGSMITH_API_KEY" \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg pid "$PROJECT_ID" '{"project_ids": [$pid], "selects": ["ID", "NAME", "RUN_TYPE", "STATUS", "START_TIME", "INPUTS", "ERROR"]}')"
@@ -449,7 +449,7 @@ curl "https://api.smith.langchain.com/api/v1/runs?project_name=default&run_type=
 PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
   -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
 
-curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
   -H "x-api-key: $LANGSMITH_API_KEY" \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg pid "$PROJECT_ID" '{"project_ids": [$pid], "run_type": "LLM", "min_start_time": "2025-01-01T00:00:00Z"}')"
@@ -527,7 +527,7 @@ curl "https://api.smith.langchain.com/api/v1/runs?project_name=default&is_root=t
 PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
   -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
 
-curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
   -H "x-api-key: $LANGSMITH_API_KEY" \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg pid "$PROJECT_ID" '{"project_ids": [$pid], "is_root": true}')"
@@ -605,7 +605,7 @@ curl "https://api.smith.langchain.com/api/v1/runs?id=<run-id-1>&id=<run-id-2>" \
 PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
   -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
 
-curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
   -H "x-api-key: $LANGSMITH_API_KEY" \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg pid "$PROJECT_ID" '{"project_ids": [$pid], "ids": ["<run-id-1>", "<run-id-2>"]}')"
@@ -684,7 +684,7 @@ PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=defau
   -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
 
 # First page
-RESPONSE=$(curl -s -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+RESPONSE=$(curl -s -X POST "https://api.smith.langchain.com/v2/runs/query" \
   -H "x-api-key: $LANGSMITH_API_KEY" \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg pid "$PROJECT_ID" '{"project_ids": [$pid], "selects": ["ID", "NAME"]}')") 
@@ -692,7 +692,7 @@ echo "$RESPONSE" | jq '.runs'
 
 # Next page: pass cursor from previous response
 CURSOR=$(echo "$RESPONSE" | jq -r '.next_cursor // empty')
-curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
   -H "x-api-key: $LANGSMITH_API_KEY" \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg pid "$PROJECT_ID" --arg cursor "$CURSOR" '{"project_ids": [$pid], "selects": ["ID", "NAME"], "cursor": $cursor}')"
@@ -770,7 +770,7 @@ curl "https://api.smith.langchain.com/api/v1/runs?project_name=default&error=tru
 PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
   -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
 
-curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
   -H "x-api-key: $LANGSMITH_API_KEY" \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg pid "$PROJECT_ID" '{"project_ids": [$pid], "has_error": true}')"
@@ -852,7 +852,7 @@ PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=defau
 
 FILTER="and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))"
 
-curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
   -H "x-api-key: $LANGSMITH_API_KEY" \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg pid "$PROJECT_ID" --arg f "$FILTER" '{"project_ids": [$pid], "filter": $f}')"
@@ -934,7 +934,7 @@ PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=defau
 
 FILTER='and(gt(start_time, "2023-07-15T12:34:56Z"), or(neq(status, "error"), and(eq(feedback_key, "Correctness"), eq(feedback_score, 0.0))))'
 
-curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
   -H "x-api-key: $LANGSMITH_API_KEY" \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg pid "$PROJECT_ID" --arg f "$FILTER" '{"project_ids": [$pid], "filter": $f}')"
@@ -1020,7 +1020,7 @@ FILTER='eq(name, "RetrieveDocs")'
 TRACE_FILTER='and(eq(feedback_key, "user_score"), eq(feedback_score, 1))'
 TREE_FILTER='eq(name, "ExpandQuery")'
 
-curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
+curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
   -H "x-api-key: $LANGSMITH_API_KEY" \
   -H "Content-Type: application/json" \
   -d "$(jq -n \
@@ -1498,7 +1498,7 @@ Migrate `read_run` to `runs.retrieve`. The API returns only the run ID by defaul
       </Tab>
       <Tab title="After">
     ```bash
-    curl "https://api.smith.langchain.com/api/v2/runs/<run-id>?select=NAME&select=STATUS&select=TOTAL_TOKENS" \
+    curl "https://api.smith.langchain.com/v2/runs/<run-id>?select=NAME&select=STATUS&select=TOTAL_TOKENS" \
       -H "x-api-key: $LANGSMITH_API_KEY"
     ```
       </Tab>
@@ -1573,7 +1573,7 @@ curl "https://api.smith.langchain.com/api/v1/runs/<run-id>" \
 PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
   -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
 
-curl "https://api.smith.langchain.com/api/v2/runs/<run-id>?project_id=$PROJECT_ID&start_time=2025-01-01T12:00:00Z" \
+curl "https://api.smith.langchain.com/v2/runs/<run-id>?project_id=$PROJECT_ID&start_time=2025-01-01T12:00:00Z" \
   -H "x-api-key: $LANGSMITH_API_KEY"
 ```
   </Tab>
