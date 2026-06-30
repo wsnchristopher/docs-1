@@ -5,10 +5,12 @@
 
 // :snippet-start: smithdb-runs-retrieve-basic-after-kt
 // :codegroup-tab: After
+import java.time.OffsetDateTime
+
 import com.langchain.smith.client.LangsmithClient
 import com.langchain.smith.client.okhttp.LangsmithOkHttpClient
 import com.langchain.smith.models.runs.RunRetrieveV2Params
-import java.time.OffsetDateTime
+import com.langchain.smith.models.sessions.SessionListParams
 
 // :remove-start:
 fun main() {
@@ -20,10 +22,14 @@ fun main() {
 // :remove-end:
 val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
 
+val project = client.sessions().list(
+    SessionListParams.builder().name("default").limit(1L).build()
+).items().first()
+
 val run = client.runs().retrieveV2(
     "<run-id>",
     RunRetrieveV2Params.builder()
-        .projectId("<project-id>")
+        .projectId(project.id())
         .startTime(OffsetDateTime.parse("<run-start-time-rfc3339>"))
         .addSelect(RunRetrieveV2Params.Select.NAME)
         .addSelect(RunRetrieveV2Params.Select.STATUS)

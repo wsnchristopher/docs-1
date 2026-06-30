@@ -2,8 +2,13 @@
 import com.langchain.smith.client.LangsmithClient
 import com.langchain.smith.client.okhttp.LangsmithOkHttpClient
 import com.langchain.smith.models.runs.RunQueryV2Params
+import com.langchain.smith.models.sessions.SessionListParams
 
 val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
+
+val project = client.sessions().list(
+    SessionListParams.builder().name("default").limit(1L).build()
+).items().first()
 
 val filterStr = """and(gt(start_time, "2023-07-15T12:34:56Z"),""" +
     """ or(neq(status, "error"),""" +
@@ -11,7 +16,7 @@ val filterStr = """and(gt(start_time, "2023-07-15T12:34:56Z"),""" +
 
 client.runs().queryV2(
     RunQueryV2Params.builder()
-        .addProjectId("<project-id>")
+        .addProjectId(project.id())
         .filter(filterStr)
         .build()
 ).autoPager().forEach { run ->
