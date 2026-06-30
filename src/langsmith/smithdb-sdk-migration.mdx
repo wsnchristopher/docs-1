@@ -77,7 +77,8 @@ Migrate `list_runs` to `runs.query`. Field selection is now required via `select
     async def main():
         client = Client()
 
-        project = await asyncio.to_thread(client.read_project, project_name="my-project")
+        async for project in client.projects.list(name="my-project", limit=1):
+            break
         async for run in client.runs.query(
             project_ids=[str(project.id)],
             run_type="LLM",
@@ -117,7 +118,7 @@ Migrate `list_runs` to `runs.query`. Field selection is now required via `select
 
     const client = new Client();
 
-    const project = await client.readProject({ projectName: "my-project" });
+    const project = await client.projects.list({ name: "my-project", limit: 1 }).then((page) => page.getPaginatedItems()[0]);
     const page = await client.runs.query({
       project_ids: [String(project.id)],
       run_type: "LLM",
@@ -269,7 +270,7 @@ Migrate `list_runs` to `runs.query`. Field selection is now required via `select
 
 **List all runs in a project**
 
-v2 does not accept a project name directly. Resolve the project UUID with `read_project()` first, then pass it as a string in `project_ids`.
+v2 does not accept a project name directly. Resolve the project UUID with `client.projects.list()` first, then pass it as a string in `project_ids`.
 
 <Tabs>
   <Tab title="Python">
@@ -293,7 +294,8 @@ from langsmith import Client
 async def main():
     client = Client()
 
-    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    async for project in client.projects.list(name="my-project", limit=1):
+        break
     async for run in client.runs.query(project_ids=[str(project.id)]):
         print(run.id, run.name, run.status)
 
@@ -327,7 +329,7 @@ import { Client } from "langsmith";
 
 const client = new Client();
 
-const project = await client.readProject({ projectName: "my-project" });
+const project = await client.projects.list({ name: "my-project", limit: 1 }).then((page) => page.getPaginatedItems()[0]);
 for await (const run of client.runs.query({
   project_ids: [project.id],
 })) {
@@ -404,7 +406,7 @@ cURL examples coming soon.
 
 **Selecting fields**
 
-`list_runs` returns a default set of fields without requiring explicit selection. `runs.query` returns only `id` by default — you must declare every field you need via `selects=[...]`. Two renames: `select` → `selects` (plural), and field names are now **uppercase** (`"name"` → `"NAME"`).
+`list_runs` returns a default set of fields without requiring explicit selection. `runs.query` returns only `id` by default—you must declare every field you need via `selects=[...]`. Two renames: `select` → `selects` (plural), and field names are now **uppercase** (`"name"` → `"NAME"`).
 
 <Tabs>
   <Tab title="Python">
@@ -429,7 +431,8 @@ from langsmith import Client
 async def main():
     client = Client()
 
-    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    async for project in client.projects.list(name="my-project", limit=1):
+        break
     # must explicitly list every field needed; default returns only id
     async for run in client.runs.query(
         project_ids=[str(project.id)],
@@ -468,7 +471,7 @@ import { Client } from "langsmith";
 
 const client = new Client();
 
-const project = await client.readProject({ projectName: "my-project" });
+const project = await client.projects.list({ name: "my-project", limit: 1 }).then((page) => page.getPaginatedItems()[0]);
 // must explicitly list every field needed; default returns only id
 for await (const run of client.runs.query({
   project_ids: [project.id],
@@ -589,7 +592,8 @@ from langsmith import Client
 async def main():
     client = Client()
 
-    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    async for project in client.projects.list(name="my-project", limit=1):
+        break
     async for run in client.runs.query(
         project_ids=[str(project.id)],
         min_start_time=datetime.now() - timedelta(days=1),
@@ -629,7 +633,7 @@ import { Client } from "langsmith";
 
 const client = new Client();
 
-const project = await client.readProject({ projectName: "my-project" });
+const project = await client.projects.list({ name: "my-project", limit: 1 }).then((page) => page.getPaginatedItems()[0]);
 const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 for await (const run of client.runs.query({
   project_ids: [project.id],
@@ -739,7 +743,8 @@ from langsmith import Client
 async def main():
     client = Client()
 
-    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    async for project in client.projects.list(name="my-project", limit=1):
+        break
     async for run in client.runs.query(project_ids=[str(project.id)], is_root=True):
         print(run.id, run.name, run.status)
 
@@ -774,7 +779,7 @@ import { Client } from "langsmith";
 
 const client = new Client();
 
-const project = await client.readProject({ projectName: "my-project" });
+const project = await client.projects.list({ name: "my-project", limit: 1 }).then((page) => page.getPaginatedItems()[0]);
 for await (const run of client.runs.query({
   project_ids: [project.id],
   is_root: true,
@@ -854,7 +859,7 @@ cURL examples coming soon.
 
 **Fetch runs by ID list**
 
-`id=[...]` is renamed to `ids=[...]`. `project_ids` is now required even when filtering by run IDs — v1 allowed omitting the project context.
+`id=[...]` is renamed to `ids=[...]`. `project_ids` is now required even when filtering by run IDs—v1 allowed omitting the project context.
 
 <Tabs>
   <Tab title="Python">
@@ -878,7 +883,8 @@ from langsmith import Client
 async def main():
     client = Client()
 
-    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    async for project in client.projects.list(name="my-project", limit=1):
+        break
     async for run in client.runs.query(
         project_ids=[str(project.id)],
         ids=["<run-id-1>", "<run-id-2>"],
@@ -915,7 +921,7 @@ import { Client } from "langsmith";
 
 const client = new Client();
 
-const project = await client.readProject({ projectName: "my-project" });
+const project = await client.projects.list({ name: "my-project", limit: 1 }).then((page) => page.getPaginatedItems()[0]);
 for await (const run of client.runs.query({
   project_ids: [project.id],
   ids: ["<run-id-1>", "<run-id-2>"],
@@ -994,7 +1000,7 @@ cURL examples coming soon.
 
 **Pagination**
 
-`list_runs` auto-paginates transparently — the SDK fetches 100 runs per API call and advances the cursor internally. Use `itertools.islice()` to stop iteration client-side. `runs.query` exposes pagination explicitly: iterate with `async for` and a `break` to stop. For page-level control, `runs.query` also provides `page.has_next_page()` and `await page.get_next_page()`.
+`list_runs` auto-paginates transparently—the SDK fetches 100 runs per API call and advances the cursor internally. Use `itertools.islice()` to stop iteration client-side. `runs.query` exposes pagination explicitly: iterate with `async for` and a `break` to stop. For page-level control, `runs.query` also provides `page.has_next_page()` and `await page.get_next_page()`.
 
 <Tabs>
   <Tab title="Python">
@@ -1023,7 +1029,8 @@ from langsmith import Client
 async def main():
     client = Client()
 
-    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    async for project in client.projects.list(name="my-project", limit=1):
+        break
     runs = []
     async for run in client.runs.query(
         project_ids=[str(project.id)],
@@ -1061,7 +1068,7 @@ import { Client } from "langsmith";
 
 const client = new Client();
 
-const project = await client.readProject({ projectName: "my-project" });
+const project = await client.projects.list({ name: "my-project", limit: 1 }).then((page) => page.getPaginatedItems()[0]);
 const runs: unknown[] = [];
 for await (const run of client.runs.query({
   project_ids: [project.id],
@@ -1175,7 +1182,8 @@ from langsmith import Client
 async def main():
     client = Client()
 
-    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    async for project in client.projects.list(name="my-project", limit=1):
+        break
     async for run in client.runs.query(project_ids=[str(project.id)], has_error=True):
         print(run.id, run.name, run.status)
 
@@ -1210,7 +1218,7 @@ import { Client } from "langsmith";
 
 const client = new Client();
 
-const project = await client.readProject({ projectName: "my-project" });
+const project = await client.projects.list({ name: "my-project", limit: 1 }).then((page) => page.getPaginatedItems()[0]);
 for await (const run of client.runs.query({
   project_ids: [project.id],
   has_error: true,
@@ -1316,7 +1324,8 @@ async def main():
     client = Client()
 
     filter_str = "and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))"
-    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    async for project in client.projects.list(name="my-project", limit=1):
+        break
     async for run in client.runs.query(project_ids=[str(project.id)], filter=filter_str):
         print(run.id, run.name, run.status)
 
@@ -1353,7 +1362,7 @@ import { Client } from "langsmith";
 const client = new Client();
 
 const filterStr = "and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))";
-const project = await client.readProject({ projectName: "my-project" });
+const project = await client.projects.list({ name: "my-project", limit: 1 }).then((page) => page.getPaginatedItems()[0]);
 for await (const run of client.runs.query({
   project_ids: [project.id],
   filter: filterStr,
@@ -1469,7 +1478,8 @@ async def main():
         ' or(neq(status, "error"),'
         '    and(eq(feedback_key, "Correctness"), eq(feedback_score, 0.0))))'
     )
-    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    async for project in client.projects.list(name="my-project", limit=1):
+        break
     async for run in client.runs.query(project_ids=[str(project.id)], filter=filter_str):
         print(run.id, run.name, run.status)
 
@@ -1512,7 +1522,7 @@ const filterStr =
   'and(gt(start_time, "2023-07-15T12:34:56Z"),' +
   ' or(neq(status, "error"),' +
   '    and(eq(feedback_key, "Correctness"), eq(feedback_score, 0.0))))';
-const project = await client.readProject({ projectName: "my-project" });
+const project = await client.projects.list({ name: "my-project", limit: 1 }).then((page) => page.getPaginatedItems()[0]);
 for await (const run of client.runs.query({
   project_ids: [project.id],
   filter: filterStr,
@@ -1627,7 +1637,8 @@ from langsmith import Client
 async def main():
     client = Client()
 
-    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    async for project in client.projects.list(name="my-project", limit=1):
+        break
     async for run in client.runs.query(
         project_ids=[str(project.id)],
         filter='eq(name, "RetrieveDocs")',
@@ -1669,7 +1680,7 @@ import { Client } from "langsmith";
 
 const client = new Client();
 
-const project = await client.readProject({ projectName: "my-project" });
+const project = await client.projects.list({ name: "my-project", limit: 1 }).then((page) => page.getPaginatedItems()[0]);
 for await (const run of client.runs.query({
   project_ids: [project.id],
   filter: 'eq(name, "RetrieveDocs")',
@@ -1756,7 +1767,7 @@ cURL examples coming soon.
 #### Parameter renames
 
 <Warning>
-`project_name` is not supported in `runs.query`. Pass `project_ids` with the project UUID instead. To look up a UUID by name: `client.read_project(project_name="my-project").id`
+`project_name` is not supported in `runs.query`. Pass `project_ids` with the project UUID instead. To look up a UUID by name, use `client.projects.list(name="my-project", limit=1)`.
 </Warning>
 
 <Warning>
@@ -1873,7 +1884,30 @@ cURL examples coming soon.
     | *(not available)* | `ReferenceDatasetID` | Alternative to `ProjectIDs` |
   </Tab>
   <Tab title="cURL">
-    JSON body field names match the Python `snake_case` names exactly.
+    v1 used `GET /api/v1/runs` with query parameters; v2 uses `POST /v2/runs/query` with a JSON body. Field names in the JSON body match Python `snake_case`.
+
+    | Before (v1 `GET /api/v1/runs` query param) | After (v2 `POST /v2/runs/query` JSON body field) | Notes |
+    |---|---|---|
+    | `project_name` | *(removed)* | Use `project_ids` with UUID(s)—see warning above |
+    | `project_id` | `project_ids` | Now takes an array; mutually exclusive with `reference_dataset_id` |
+    | `run_type` | `run_type` | Values must now be uppercase: `"LLM"`, `"CHAIN"`, `"TOOL"`, `"RETRIEVER"`, `"EMBEDDING"`, `"PROMPT"`, `"PARSER"` |
+    | `trace_id` | `trace_id` | Unchanged |
+    | `reference_example_id` | `reference_examples` | Now takes an array of UUIDs |
+    | `query` | *(removed)* | No equivalent |
+    | `filter` | `filter` | Syntax unchanged |
+    | `trace_filter` | `trace_filter` | Unchanged |
+    | `tree_filter` | `tree_filter` | Unchanged |
+    | `is_root` | `is_root` | Unchanged |
+    | `parent_run_id` | *(removed)* | No equivalent |
+    | `start_time` | `min_start_time` | Renamed; defaults to 1 day ago—see warning above |
+    | `error` | `has_error` | Renamed |
+    | `id` | `ids` | Renamed to plural |
+    | `select` | `selects` | Field names are now uppercase (`"NAME"`, `"STATUS"`, etc.) |
+    | `limit` | *(removed)* | Use `page_size` for per-request batch size |
+    | *(not available)* | `max_start_time` | Upper bound for `start_time`; defaults to now |
+    | *(not available)* | `page_size` | Per-request result count (default 100, max 1000) |
+    | *(not available)* | `reference_dataset_id` | Alternative to `project_ids`; mutually exclusive |
+    | *(not available)* | `cursor` | Pass `next_cursor` from previous response to fetch next page |
   </Tab>
 </Tabs>
 
@@ -1934,31 +1968,123 @@ v1 `list_runs` returns `Run` objects with attribute access (`run.name`). v2 `run
     | *(not available)* | `run.completion_cost_details` | New: per-category completion cost breakdown |
   </Tab>
   <Tab title="TypeScript">
-    TypeScript `QueryRunResponse` uses the same snake_case attribute access as Python (`run.name`, `run.status`). Field names, renames, and removed fields are identical to the Python table above.
+    v1 TypeScript `Run` properties used `camelCase`; v2 `QueryRunResponse` properties use `snake_case`.
+
+    | Before (v1 `Run` property) | After (v2 `QueryRunResponse` property) | Notes |
+    |---|---|---|
+    | `run.id` | `run.id` | Unchanged |
+    | `run.name` | `run.name` | Unchanged |
+    | `run.runType` | `run.run_type` | Renamed to `snake_case`; values are now uppercase: `"LLM"`, `"CHAIN"`, etc. |
+    | `run.status` | `run.status` | Values: `"SUCCESS"`, `"ERROR"`, `"PENDING"` |
+    | `run.startTime` | `run.start_time` | Renamed to `snake_case` |
+    | `run.endTime` | `run.end_time` | Renamed to `snake_case` |
+    | `run.error` | `run.error` | Unchanged |
+    | `run.inputs` | `run.inputs` | Unchanged |
+    | `run.outputs` | `run.outputs` | Unchanged |
+    | `run.tags` | `run.tags` | Unchanged |
+    | `run.extra` | `run.extra` | Unchanged |
+    | `run.metadata` | `run.metadata` | Was derived from `extra.metadata`; now an explicit field |
+    | `run.events` | `run.events` | Unchanged |
+    | `run.referenceExampleId` | `run.reference_example_id` | Renamed to `snake_case` |
+    | `run.traceId` | `run.trace_id` | Renamed to `snake_case` |
+    | `run.dottedOrder` | `run.dotted_order` | Renamed to `snake_case` |
+    | `run.parentRunId` | *(removed)* | Use `run.parent_run_ids` (list of all ancestor UUIDs, root first) |
+    | `run.parentRunIds` | `run.parent_run_ids` | Renamed to `snake_case` |
+    | `run.sessionId` | `run.project_id` | Renamed; `sessionId` was the project UUID |
+    | `run.feedbackStats` | `run.feedback_stats` | Renamed to `snake_case` |
+    | `run.appPath` | `run.app_path` | Renamed to `snake_case` |
+    | `run.attachments` | `run.attachments` | v2 returns pre-signed download URLs instead of raw bytes |
+    | `run.totalTokens` | `run.total_tokens` | Renamed to `snake_case` |
+    | `run.promptTokens` | `run.prompt_tokens` | Renamed to `snake_case` |
+    | `run.completionTokens` | `run.completion_tokens` | Renamed to `snake_case` |
+    | `run.totalCost` | `run.total_cost` | Renamed to `snake_case` |
+    | `run.promptCost` | `run.prompt_cost` | Renamed to `snake_case` |
+    | `run.completionCost` | `run.completion_cost` | Renamed to `snake_case` |
+    | `run.firstTokenTime` | `run.first_token_time` | Renamed to `snake_case` |
+    | `run.latency` | `run.latency_seconds` | Renamed; was a computed property, now a native `number` field (seconds) |
+    | `run.inDataset` | `run.is_in_dataset` | Renamed |
+    | `run.childRunIds` | *(removed)* | No equivalent |
+    | `run.childRuns` | *(removed)* | No equivalent |
+    | `run.serialized` | *(removed)* | Use `run.manifest` |
+    | `run.manifestId` | *(removed)* | Use `run.manifest` |
+    | `run.shareToken` | *(removed)* | Use `run.share_url` (full URL, only set when the run has been shared) |
+    | *(not available)* | `run.is_root` | New |
+    | *(not available)* | `run.manifest` | New: full manifest object (replaces `serialized` and `manifestId`) |
+    | *(not available)* | `run.error_preview` | New: truncated error snippet |
+    | *(not available)* | `run.inputs_preview` | New: truncated inputs preview |
+    | *(not available)* | `run.outputs_preview` | New: truncated outputs preview |
+    | *(not available)* | `run.thread_id` | New: conversation thread UUID |
+    | *(not available)* | `run.reference_dataset_id` | New: dataset UUID for the reference example |
+    | *(not available)* | `run.share_url` | New: public share URL (only set when the run has been shared) |
+    | *(not available)* | `run.prompt_token_details` | New: per-category prompt token breakdown |
+    | *(not available)* | `run.completion_token_details` | New: per-category completion token breakdown |
+    | *(not available)* | `run.prompt_cost_details` | New: per-category prompt cost breakdown |
+    | *(not available)* | `run.completion_cost_details` | New: per-category completion cost breakdown |
   </Tab>
   <Tab title="Java">
-    Java `QueryRunResponse` uses camelCase method accessors. Pass `SCREAMING_SNAKE_CASE` strings to `selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; unselected fields return empty `Optional` values.
+    Java `QueryRunResponse` uses camelCase method accessors. Pass `SCREAMING_SNAKE_CASE` strings to `selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; unselected fields return empty `Optional` values. Fields stored as raw JSON (`inputs`, `outputs`, `extra`, `manifest`, `metadata`) are accessed via underscore-prefixed methods that return `JsonValue`.
 
     | Before (`RunSchema` method) | After (`QueryRunResponse` method) | Notes |
     |---|---|---|
     | `run.id()` | `run.id()` | Unchanged |
     | `run.name()` | `run.name()` | Unchanged |
-    | `run.runType()` | `run.runType()` | Unchanged |
-    | `run.status()` | `run.status()` | Unchanged |
+    | `run.runType()` | `run.runType()` | Values are now uppercase: `"LLM"`, `"CHAIN"`, etc. |
+    | `run.status()` | `run.status()` | Values: `"SUCCESS"`, `"ERROR"`, `"PENDING"` |
+    | `run.startTime()` | `run.startTime()` | Unchanged |
+    | `run.endTime()` | `run.endTime()` | Unchanged |
+    | `run.error()` | `run.error()` | Unchanged |
+    | `run.inputs()` | `run._inputs()` | Now a raw `JsonValue`; use `_inputs()` to access |
+    | `run.outputs()` | `run._outputs()` | Now a raw `JsonValue`; use `_outputs()` to access |
+    | `run.tags()` | `run.tags()` | Unchanged |
+    | `run.extra()` | `run._extra()` | Now a raw `JsonValue`; use `_extra()` to access |
+    | `run.events()` | `run.events()` | Unchanged |
+    | `run.feedbackStats()` | `run.feedbackStats()` | Unchanged |
+    | `run.inputsPreview()` | `run.inputsPreview()` | Unchanged |
+    | `run.outputsPreview()` | `run.outputsPreview()` | Unchanged |
+    | `run.referenceExampleId()` | `run.referenceExampleId()` | Unchanged |
     | `run.traceId()` | `run.traceId()` | Unchanged |
+    | `run.dottedOrder()` | `run.dottedOrder()` | Unchanged |
+    | `run.parentRunId()` | *(removed)* | Use `run.parentRunIds()` (list of all ancestor UUIDs, root first) |
+    | `run.parentRunIds()` | `run.parentRunIds()` | Unchanged |
+    | `run.sessionId()` | `run.projectId()` | Renamed; `sessionId()` returned the project UUID |
+    | `run.appPath()` | `run.appPath()` | Unchanged |
+    | `run.firstTokenTime()` | `run.firstTokenTime()` | Unchanged |
     | `run.totalTokens()` | `run.totalTokens()` | Unchanged |
-    | `run.sessionId()` | `run.projectId()` | Renamed |
+    | `run.promptTokens()` | `run.promptTokens()` | Unchanged |
+    | `run.completionTokens()` | `run.completionTokens()` | Unchanged |
+    | `run.totalCost()` | `run.totalCost()` | Return type changed from `Optional<String>` to `Optional<Double>` |
+    | `run.promptCost()` | `run.promptCost()` | Return type changed from `Optional<String>` to `Optional<Double>` |
+    | `run.completionCost()` | `run.completionCost()` | Return type changed from `Optional<String>` to `Optional<Double>` |
+    | `run.promptTokenDetails()` | `run.promptTokenDetails()` | Unchanged |
+    | `run.completionTokenDetails()` | `run.completionTokenDetails()` | Unchanged |
+    | `run.promptCostDetails()` | `run.promptCostDetails()` | Unchanged |
+    | `run.completionCostDetails()` | `run.completionCostDetails()` | Unchanged |
+    | `run.priceModelId()` | `run.priceModelId()` | Unchanged |
     | `run.inDataset()` | `run.isInDataset()` | Renamed |
+    | `run.referenceDatasetId()` | `run.referenceDatasetId()` | Unchanged |
+    | `run.threadId()` | `run.threadId()` | Unchanged |
     | `run.shareToken()` | *(removed)* | Use `run.shareUrl()` (full URL, only set when the run has been shared) |
-    | `run.parentRunId()` | *(removed)* | Use `run.parentRunIds()` |
     | `run.childRunIds()` | *(removed)* | No equivalent |
-    | `run.serialized()` | *(removed)* | Use `run.manifest()` |
-    | `run.manifestId()` | *(removed)* | Use `run.manifest()` |
+    | `run.directChildRunIds()` | *(removed)* | No equivalent |
+    | `run.serialized()` | *(removed)* | Use `run._manifest()` |
+    | `run.manifestId()` | *(removed)* | Use `run._manifest()` |
+    | `run.messages()` | *(removed)* | No equivalent |
+    | `run.executionOrder()` | *(removed)* | No equivalent |
+    | `run.lastQueuedAt()` | *(removed)* | No equivalent |
+    | `run.traceFirstReceivedAt()` | *(removed)* | No equivalent |
+    | `run.traceMaxStartTime()` | *(removed)* | No equivalent |
+    | `run.traceMinStartTime()` | *(removed)* | No equivalent |
+    | `run.traceTier()` | *(removed)* | No equivalent |
+    | `run.traceUpgrade()` | *(removed)* | No equivalent |
+    | `run.ttlSeconds()` | *(removed)* | No equivalent |
+    | *(not available)* | `run.attachments()` | New: pre-signed download URLs for attachments (replaces S3 URL fields) |
     | *(not available)* | `run.latencySeconds()` | New: wall-clock duration in seconds |
     | *(not available)* | `run.isRoot()` | New |
     | *(not available)* | `run.errorPreview()` | New: truncated error snippet |
-    | *(not available)* | `run.manifest()` | New: full manifest object (replaces `serialized()` and `manifestId()`) |
+    | *(not available)* | `run._manifest()` | New: full manifest as raw `JsonValue` (replaces `serialized()` and `manifestId()`) |
+    | *(not available)* | `run._metadata()` | New: metadata as raw `JsonValue` (was derived from `extra.metadata`) |
     | *(not available)* | `run.shareUrl()` | New: public share URL (only set when the run has been shared) |
+    | *(not available)* | `run.threadEvaluationTime()` | New |
   </Tab>
   <Tab title="Go">
     Go `QueryRunResponse` uses PascalCase struct field access. Pass `SCREAMING_SNAKE_CASE` strings to `Selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; unselected fields are zero-valued on returned structs.
@@ -1967,22 +2093,67 @@ v1 `list_runs` returns `Run` objects with attribute access (`run.name`). v2 `run
     |---|---|---|
     | `run.ID` | `run.ID` | Unchanged |
     | `run.Name` | `run.Name` | Unchanged |
-    | `run.RunType` | `run.RunType` | Unchanged |
-    | `run.Status` | `run.Status` | Unchanged |
+    | `run.RunType` | `run.RunType` | Values changed to uppercase: `"LLM"`, `"CHAIN"`, etc. |
+    | `run.Status` | `run.Status` | Values: `"SUCCESS"`, `"ERROR"`, `"PENDING"` |
     | `run.TraceID` | `run.TraceID` | Unchanged |
+    | `run.DottedOrder` | `run.DottedOrder` | Unchanged |
+    | `run.AppPath` | `run.AppPath` | Unchanged |
+    | `run.StartTime` | `run.StartTime` | Unchanged |
+    | `run.EndTime` | `run.EndTime` | Unchanged |
+    | `run.Error` | `run.Error` | Unchanged |
+    | `run.Events` | `run.Events` | Unchanged; element type is now `QueryRunResponseEvent` (was `map[string]interface{}`) |
+    | `run.Extra` | `run.Extra` | Unchanged; type is now `interface{}` (was `map[string]interface{}`) |
+    | `run.FeedbackStats` | `run.FeedbackStats` | Unchanged; element type is now `QueryRunResponseFeedbackStat` |
+    | `run.FirstTokenTime` | `run.FirstTokenTime` | Unchanged |
+    | `run.Inputs` | `run.Inputs` | Unchanged; type is now `interface{}` (was `map[string]interface{}`) |
+    | `run.InputsPreview` | `run.InputsPreview` | Unchanged |
+    | `run.Outputs` | `run.Outputs` | Unchanged; type is now `interface{}` (was `map[string]interface{}`) |
+    | `run.OutputsPreview` | `run.OutputsPreview` | Unchanged |
+    | `run.ParentRunIDs` | `run.ParentRunIDs` | Unchanged |
+    | `run.PriceModelID` | `run.PriceModelID` | Unchanged |
+    | `run.PromptCost` | `run.PromptCost` | Unchanged |
+    | `run.PromptCostDetails` | `run.PromptCostDetails` | Unchanged; type is now `QueryRunResponsePromptCostDetails` |
+    | `run.PromptTokenDetails` | `run.PromptTokenDetails` | Unchanged; type is now `QueryRunResponsePromptTokenDetails` |
+    | `run.PromptTokens` | `run.PromptTokens` | Unchanged |
+    | `run.CompletionCost` | `run.CompletionCost` | Unchanged |
+    | `run.CompletionCostDetails` | `run.CompletionCostDetails` | Unchanged; type is now `QueryRunResponseCompletionCostDetails` |
+    | `run.CompletionTokenDetails` | `run.CompletionTokenDetails` | Unchanged; type is now `QueryRunResponseCompletionTokenDetails` |
+    | `run.CompletionTokens` | `run.CompletionTokens` | Unchanged |
+    | `run.TotalCost` | `run.TotalCost` | Unchanged |
     | `run.TotalTokens` | `run.TotalTokens` | Unchanged |
+    | `run.ReferenceDatasetID` | `run.ReferenceDatasetID` | Unchanged |
+    | `run.ReferenceExampleID` | `run.ReferenceExampleID` | Unchanged |
+    | `run.Tags` | `run.Tags` | Unchanged |
+    | `run.ThreadID` | `run.ThreadID` | Unchanged |
     | `run.SessionID` | `run.ProjectID` | Renamed |
     | `run.InDataset` | `run.IsInDataset` | Renamed |
-    | `run.ShareToken` | *(removed)* | Use `run.ShareURL` (full URL, only set when the run has been shared) |
-    | `run.ParentRunID` | *(removed)* | Use `run.ParentRunIDs` |
     | `run.ChildRunIDs` | *(removed)* | No equivalent |
-    | `run.Serialized` | *(removed)* | Use `run.Manifest` |
+    | `run.DirectChildRunIDs` | *(removed)* | No equivalent |
+    | `run.ExecutionOrder` | *(removed)* | No equivalent |
+    | `run.InputsS3URLs` | *(removed)* | Internal storage URL; not exposed in v2 |
+    | `run.LastQueuedAt` | *(removed)* | No equivalent |
     | `run.ManifestID` | *(removed)* | Use `run.Manifest` |
-    | *(not available)* | `run.LatencySeconds` | New: wall-clock duration in seconds |
-    | *(not available)* | `run.IsRoot` | New |
+    | `run.ManifestS3ID` | *(removed)* | Internal storage URL; not exposed in v2 |
+    | `run.Messages` | *(removed)* | No equivalent |
+    | `run.OutputsS3URLs` | *(removed)* | Internal storage URL; not exposed in v2 |
+    | `run.ParentRunID` | *(removed)* | Use `run.ParentRunIDs` |
+    | `run.S3URLs` | *(removed)* | Internal storage URL; not exposed in v2 |
+    | `run.Serialized` | *(removed)* | Use `run.Manifest` |
+    | `run.ShareToken` | *(removed)* | Use `run.ShareURL` |
+    | `run.TraceFirstReceivedAt` | *(removed)* | No equivalent |
+    | `run.TraceMaxStartTime` | *(removed)* | No equivalent |
+    | `run.TraceMinStartTime` | *(removed)* | No equivalent |
+    | `run.TraceTier` | *(removed)* | No equivalent |
+    | `run.TraceUpgrade` | *(removed)* | No equivalent |
+    | `run.TtlSeconds` | *(removed)* | No equivalent |
+    | *(not available)* | `run.Attachments` | New: maps attachment filename to pre-signed download URL |
     | *(not available)* | `run.ErrorPreview` | New: truncated error snippet |
+    | *(not available)* | `run.IsRoot` | New |
+    | *(not available)* | `run.LatencySeconds` | New: wall-clock duration in seconds |
     | *(not available)* | `run.Manifest` | New: full manifest object (replaces `Serialized` and `ManifestID`) |
+    | *(not available)* | `run.Metadata` | New: arbitrary user-defined JSON metadata |
     | *(not available)* | `run.ShareURL` | New: public share URL (only set when the run has been shared) |
+    | *(not available)* | `run.ThreadEvaluationTime` | New |
   </Tab>
 </Tabs>
 
@@ -2157,7 +2328,7 @@ Migrate `read_run` to `runs.retrieve`. The API returns only the run ID by defaul
 
 **Fetch a single run by ID**
 
-v2 requires two additional parameters that `read_run` did not need: `project_id` (UUID) and `start_time`. Both are required by the SmithDB storage model to locate a run efficiently. Resolve the project UUID via `read_project()` first.
+v2 requires two additional parameters that `read_run` did not need: `project_id` (UUID) and `start_time`. Both are required by the SmithDB storage model to locate a run efficiently. Resolve the project UUID via `client.projects.list()` first.
 
 <Tabs>
   <Tab title="Python">
@@ -2181,7 +2352,8 @@ from langsmith import Client
 async def main():
     client = Client()
 
-    project = await asyncio.to_thread(client.read_project, project_name="my-project")
+    async for project in client.projects.list(name="my-project", limit=1):
+        break
     run = await client.runs.retrieve(
         run_id="<run-id>",
         project_id=str(project.id),
@@ -2212,7 +2384,7 @@ import { Client } from "langsmith";
 
 const client = new Client();
 
-const project = await client.readProject({ projectName: "my-project" });
+const project = await client.projects.list({ name: "my-project", limit: 1 }).then((page) => page.getPaginatedItems()[0]);
 const run = await client.runs.retrieve("<run-id>", {
   project_id: project.id,
   start_time: "2025-01-01T12:00:00Z",
@@ -2338,7 +2510,15 @@ cURL examples coming soon.
     | *(all fields returned by default)* | `Selects` | Field projection; defaults to `["ID"]` only; field name constants are uppercase (e.g., `RunRetrieveV2ParamsSelectName`) |
   </Tab>
   <Tab title="cURL">
-    Query parameter names match the Python `snake_case` names exactly.
+    `run_id` remains in the URL path. All other parameters are query string values with `snake_case` names.
+
+    | Before (`GET /api/v1/runs/{run_id}` param) | After (`GET /v2/runs/{run_id}` param) | Notes |
+    |---|---|---|
+    | `run_id` (path) | `run_id` (path) | Unchanged |
+    | `load_child_runs` (query) | *(removed)* | No equivalent |
+    | *(not available)* | `project_id` (query) | **Required**—UUID of the project that owns the run |
+    | *(not available)* | `start_time` (query) | **Required**—run's start time (RFC3339), used with `project_id` to locate the run |
+    | *(all fields returned by default)* | `selects` (query, repeatable) | Field projection; defaults to `["ID"]` only; field names are uppercase |
   </Tab>
 </Tabs>
 
@@ -2399,31 +2579,123 @@ v1 `read_run` returns a `Run` object with attribute access (`run.name`). v2 `run
     | *(not available)* | `run.completion_cost_details` | New: per-category completion cost breakdown |
   </Tab>
   <Tab title="TypeScript">
-    TypeScript `QueryRunResponse` uses the same snake_case attribute access as Python (`run.name`, `run.status`). Field names, renames, and removed fields are identical to the Python table above.
+    v1 TypeScript `Run` properties used `camelCase`; v2 `QueryRunResponse` properties use `snake_case`.
+
+    | Before (v1 `Run` property) | After (v2 `QueryRunResponse` property) | Notes |
+    |---|---|---|
+    | `run.id` | `run.id` | Unchanged |
+    | `run.name` | `run.name` | Unchanged |
+    | `run.runType` | `run.run_type` | Renamed to `snake_case`; values are now uppercase: `"LLM"`, `"CHAIN"`, etc. |
+    | `run.status` | `run.status` | Values: `"SUCCESS"`, `"ERROR"`, `"PENDING"` |
+    | `run.startTime` | `run.start_time` | Renamed to `snake_case` |
+    | `run.endTime` | `run.end_time` | Renamed to `snake_case` |
+    | `run.error` | `run.error` | Unchanged |
+    | `run.inputs` | `run.inputs` | Unchanged |
+    | `run.outputs` | `run.outputs` | Unchanged |
+    | `run.tags` | `run.tags` | Unchanged |
+    | `run.extra` | `run.extra` | Unchanged |
+    | `run.metadata` | `run.metadata` | Was derived from `extra.metadata`; now an explicit field |
+    | `run.events` | `run.events` | Unchanged |
+    | `run.referenceExampleId` | `run.reference_example_id` | Renamed to `snake_case` |
+    | `run.traceId` | `run.trace_id` | Renamed to `snake_case` |
+    | `run.dottedOrder` | `run.dotted_order` | Renamed to `snake_case` |
+    | `run.parentRunId` | *(removed)* | Use `run.parent_run_ids` (list of all ancestor UUIDs, root first) |
+    | `run.parentRunIds` | `run.parent_run_ids` | Renamed to `snake_case` |
+    | `run.sessionId` | `run.project_id` | Renamed; `sessionId` was the project UUID |
+    | `run.feedbackStats` | `run.feedback_stats` | Renamed to `snake_case` |
+    | `run.appPath` | `run.app_path` | Renamed to `snake_case` |
+    | `run.attachments` | `run.attachments` | v2 returns pre-signed download URLs instead of raw bytes |
+    | `run.totalTokens` | `run.total_tokens` | Renamed to `snake_case` |
+    | `run.promptTokens` | `run.prompt_tokens` | Renamed to `snake_case` |
+    | `run.completionTokens` | `run.completion_tokens` | Renamed to `snake_case` |
+    | `run.totalCost` | `run.total_cost` | Renamed to `snake_case` |
+    | `run.promptCost` | `run.prompt_cost` | Renamed to `snake_case` |
+    | `run.completionCost` | `run.completion_cost` | Renamed to `snake_case` |
+    | `run.firstTokenTime` | `run.first_token_time` | Renamed to `snake_case` |
+    | `run.latency` | `run.latency_seconds` | Renamed; was a computed property, now a native `number` field (seconds) |
+    | `run.inDataset` | `run.is_in_dataset` | Renamed |
+    | `run.childRunIds` | *(removed)* | No equivalent |
+    | `run.childRuns` | *(removed)* | No equivalent |
+    | `run.serialized` | *(removed)* | Use `run.manifest` |
+    | `run.manifestId` | *(removed)* | Use `run.manifest` |
+    | `run.shareToken` | *(removed)* | Use `run.share_url` (full URL, only set when the run has been shared) |
+    | *(not available)* | `run.is_root` | New |
+    | *(not available)* | `run.manifest` | New: full manifest object (replaces `serialized` and `manifestId`) |
+    | *(not available)* | `run.error_preview` | New: truncated error snippet |
+    | *(not available)* | `run.inputs_preview` | New: truncated inputs preview |
+    | *(not available)* | `run.outputs_preview` | New: truncated outputs preview |
+    | *(not available)* | `run.thread_id` | New: conversation thread UUID |
+    | *(not available)* | `run.reference_dataset_id` | New: dataset UUID for the reference example |
+    | *(not available)* | `run.share_url` | New: public share URL (only set when the run has been shared) |
+    | *(not available)* | `run.prompt_token_details` | New: per-category prompt token breakdown |
+    | *(not available)* | `run.completion_token_details` | New: per-category completion token breakdown |
+    | *(not available)* | `run.prompt_cost_details` | New: per-category prompt cost breakdown |
+    | *(not available)* | `run.completion_cost_details` | New: per-category completion cost breakdown |
   </Tab>
   <Tab title="Java">
-    Java `QueryRunResponse` uses camelCase method accessors. Pass `SCREAMING_SNAKE_CASE` strings to `selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; unselected fields return empty `Optional` values.
+    Java `QueryRunResponse` uses camelCase method accessors. Pass `SCREAMING_SNAKE_CASE` strings to `selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; unselected fields return empty `Optional` values. Fields stored as raw JSON (`inputs`, `outputs`, `extra`, `manifest`, `metadata`) are accessed via underscore-prefixed methods that return `JsonValue`.
 
     | Before (`RunSchema` method) | After (`QueryRunResponse` method) | Notes |
     |---|---|---|
     | `run.id()` | `run.id()` | Unchanged |
     | `run.name()` | `run.name()` | Unchanged |
-    | `run.runType()` | `run.runType()` | Unchanged |
-    | `run.status()` | `run.status()` | Unchanged |
+    | `run.runType()` | `run.runType()` | Values are now uppercase: `"LLM"`, `"CHAIN"`, etc. |
+    | `run.status()` | `run.status()` | Values: `"SUCCESS"`, `"ERROR"`, `"PENDING"` |
+    | `run.startTime()` | `run.startTime()` | Unchanged |
+    | `run.endTime()` | `run.endTime()` | Unchanged |
+    | `run.error()` | `run.error()` | Unchanged |
+    | `run.inputs()` | `run._inputs()` | Now a raw `JsonValue`; use `_inputs()` to access |
+    | `run.outputs()` | `run._outputs()` | Now a raw `JsonValue`; use `_outputs()` to access |
+    | `run.tags()` | `run.tags()` | Unchanged |
+    | `run.extra()` | `run._extra()` | Now a raw `JsonValue`; use `_extra()` to access |
+    | `run.events()` | `run.events()` | Unchanged |
+    | `run.feedbackStats()` | `run.feedbackStats()` | Unchanged |
+    | `run.inputsPreview()` | `run.inputsPreview()` | Unchanged |
+    | `run.outputsPreview()` | `run.outputsPreview()` | Unchanged |
+    | `run.referenceExampleId()` | `run.referenceExampleId()` | Unchanged |
     | `run.traceId()` | `run.traceId()` | Unchanged |
+    | `run.dottedOrder()` | `run.dottedOrder()` | Unchanged |
+    | `run.parentRunId()` | *(removed)* | Use `run.parentRunIds()` (list of all ancestor UUIDs, root first) |
+    | `run.parentRunIds()` | `run.parentRunIds()` | Unchanged |
+    | `run.sessionId()` | `run.projectId()` | Renamed; `sessionId()` returned the project UUID |
+    | `run.appPath()` | `run.appPath()` | Unchanged |
+    | `run.firstTokenTime()` | `run.firstTokenTime()` | Unchanged |
     | `run.totalTokens()` | `run.totalTokens()` | Unchanged |
-    | `run.sessionId()` | `run.projectId()` | Renamed |
+    | `run.promptTokens()` | `run.promptTokens()` | Unchanged |
+    | `run.completionTokens()` | `run.completionTokens()` | Unchanged |
+    | `run.totalCost()` | `run.totalCost()` | Return type changed from `Optional<String>` to `Optional<Double>` |
+    | `run.promptCost()` | `run.promptCost()` | Return type changed from `Optional<String>` to `Optional<Double>` |
+    | `run.completionCost()` | `run.completionCost()` | Return type changed from `Optional<String>` to `Optional<Double>` |
+    | `run.promptTokenDetails()` | `run.promptTokenDetails()` | Unchanged |
+    | `run.completionTokenDetails()` | `run.completionTokenDetails()` | Unchanged |
+    | `run.promptCostDetails()` | `run.promptCostDetails()` | Unchanged |
+    | `run.completionCostDetails()` | `run.completionCostDetails()` | Unchanged |
+    | `run.priceModelId()` | `run.priceModelId()` | Unchanged |
     | `run.inDataset()` | `run.isInDataset()` | Renamed |
+    | `run.referenceDatasetId()` | `run.referenceDatasetId()` | Unchanged |
+    | `run.threadId()` | `run.threadId()` | Unchanged |
     | `run.shareToken()` | *(removed)* | Use `run.shareUrl()` (full URL, only set when the run has been shared) |
-    | `run.parentRunId()` | *(removed)* | Use `run.parentRunIds()` |
     | `run.childRunIds()` | *(removed)* | No equivalent |
-    | `run.serialized()` | *(removed)* | Use `run.manifest()` |
-    | `run.manifestId()` | *(removed)* | Use `run.manifest()` |
+    | `run.directChildRunIds()` | *(removed)* | No equivalent |
+    | `run.serialized()` | *(removed)* | Use `run._manifest()` |
+    | `run.manifestId()` | *(removed)* | Use `run._manifest()` |
+    | `run.messages()` | *(removed)* | No equivalent |
+    | `run.executionOrder()` | *(removed)* | No equivalent |
+    | `run.lastQueuedAt()` | *(removed)* | No equivalent |
+    | `run.traceFirstReceivedAt()` | *(removed)* | No equivalent |
+    | `run.traceMaxStartTime()` | *(removed)* | No equivalent |
+    | `run.traceMinStartTime()` | *(removed)* | No equivalent |
+    | `run.traceTier()` | *(removed)* | No equivalent |
+    | `run.traceUpgrade()` | *(removed)* | No equivalent |
+    | `run.ttlSeconds()` | *(removed)* | No equivalent |
+    | *(not available)* | `run.attachments()` | New: pre-signed download URLs for attachments (replaces S3 URL fields) |
     | *(not available)* | `run.latencySeconds()` | New: wall-clock duration in seconds |
     | *(not available)* | `run.isRoot()` | New |
     | *(not available)* | `run.errorPreview()` | New: truncated error snippet |
-    | *(not available)* | `run.manifest()` | New: full manifest object (replaces `serialized()` and `manifestId()`) |
+    | *(not available)* | `run._manifest()` | New: full manifest as raw `JsonValue` (replaces `serialized()` and `manifestId()`) |
+    | *(not available)* | `run._metadata()` | New: metadata as raw `JsonValue` (was derived from `extra.metadata`) |
     | *(not available)* | `run.shareUrl()` | New: public share URL (only set when the run has been shared) |
+    | *(not available)* | `run.threadEvaluationTime()` | New |
   </Tab>
   <Tab title="Go">
     Go `QueryRunResponse` uses PascalCase struct field access. Pass `SCREAMING_SNAKE_CASE` strings to `Selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; unselected fields are zero-valued on returned structs.
@@ -2432,21 +2704,66 @@ v1 `read_run` returns a `Run` object with attribute access (`run.name`). v2 `run
     |---|---|---|
     | `run.ID` | `run.ID` | Unchanged |
     | `run.Name` | `run.Name` | Unchanged |
-    | `run.RunType` | `run.RunType` | Unchanged |
-    | `run.Status` | `run.Status` | Unchanged |
+    | `run.RunType` | `run.RunType` | Values changed to uppercase: `"LLM"`, `"CHAIN"`, etc. |
+    | `run.Status` | `run.Status` | Values: `"SUCCESS"`, `"ERROR"`, `"PENDING"` |
     | `run.TraceID` | `run.TraceID` | Unchanged |
+    | `run.DottedOrder` | `run.DottedOrder` | Unchanged |
+    | `run.AppPath` | `run.AppPath` | Unchanged |
+    | `run.StartTime` | `run.StartTime` | Unchanged |
+    | `run.EndTime` | `run.EndTime` | Unchanged |
+    | `run.Error` | `run.Error` | Unchanged |
+    | `run.Events` | `run.Events` | Unchanged; element type is now `QueryRunResponseEvent` (was `map[string]interface{}`) |
+    | `run.Extra` | `run.Extra` | Unchanged; type is now `interface{}` (was `map[string]interface{}`) |
+    | `run.FeedbackStats` | `run.FeedbackStats` | Unchanged; element type is now `QueryRunResponseFeedbackStat` |
+    | `run.FirstTokenTime` | `run.FirstTokenTime` | Unchanged |
+    | `run.Inputs` | `run.Inputs` | Unchanged; type is now `interface{}` (was `map[string]interface{}`) |
+    | `run.InputsPreview` | `run.InputsPreview` | Unchanged |
+    | `run.Outputs` | `run.Outputs` | Unchanged; type is now `interface{}` (was `map[string]interface{}`) |
+    | `run.OutputsPreview` | `run.OutputsPreview` | Unchanged |
+    | `run.ParentRunIDs` | `run.ParentRunIDs` | Unchanged |
+    | `run.PriceModelID` | `run.PriceModelID` | Unchanged |
+    | `run.PromptCost` | `run.PromptCost` | Unchanged |
+    | `run.PromptCostDetails` | `run.PromptCostDetails` | Unchanged; type is now `QueryRunResponsePromptCostDetails` |
+    | `run.PromptTokenDetails` | `run.PromptTokenDetails` | Unchanged; type is now `QueryRunResponsePromptTokenDetails` |
+    | `run.PromptTokens` | `run.PromptTokens` | Unchanged |
+    | `run.CompletionCost` | `run.CompletionCost` | Unchanged |
+    | `run.CompletionCostDetails` | `run.CompletionCostDetails` | Unchanged; type is now `QueryRunResponseCompletionCostDetails` |
+    | `run.CompletionTokenDetails` | `run.CompletionTokenDetails` | Unchanged; type is now `QueryRunResponseCompletionTokenDetails` |
+    | `run.CompletionTokens` | `run.CompletionTokens` | Unchanged |
+    | `run.TotalCost` | `run.TotalCost` | Unchanged |
     | `run.TotalTokens` | `run.TotalTokens` | Unchanged |
+    | `run.ReferenceDatasetID` | `run.ReferenceDatasetID` | Unchanged |
+    | `run.ReferenceExampleID` | `run.ReferenceExampleID` | Unchanged |
+    | `run.Tags` | `run.Tags` | Unchanged |
+    | `run.ThreadID` | `run.ThreadID` | Unchanged |
     | `run.SessionID` | `run.ProjectID` | Renamed |
     | `run.InDataset` | `run.IsInDataset` | Renamed |
-    | `run.ShareToken` | *(removed)* | Use `run.ShareURL` (full URL, only set when the run has been shared) |
-    | `run.ParentRunID` | *(removed)* | Use `run.ParentRunIDs` |
     | `run.ChildRunIDs` | *(removed)* | No equivalent |
-    | `run.Serialized` | *(removed)* | Use `run.Manifest` |
+    | `run.DirectChildRunIDs` | *(removed)* | No equivalent |
+    | `run.ExecutionOrder` | *(removed)* | No equivalent |
+    | `run.InputsS3URLs` | *(removed)* | Internal storage URL; not exposed in v2 |
+    | `run.LastQueuedAt` | *(removed)* | No equivalent |
     | `run.ManifestID` | *(removed)* | Use `run.Manifest` |
-    | *(not available)* | `run.LatencySeconds` | New: wall-clock duration in seconds |
-    | *(not available)* | `run.IsRoot` | New |
+    | `run.ManifestS3ID` | *(removed)* | Internal storage URL; not exposed in v2 |
+    | `run.Messages` | *(removed)* | No equivalent |
+    | `run.OutputsS3URLs` | *(removed)* | Internal storage URL; not exposed in v2 |
+    | `run.ParentRunID` | *(removed)* | Use `run.ParentRunIDs` |
+    | `run.S3URLs` | *(removed)* | Internal storage URL; not exposed in v2 |
+    | `run.Serialized` | *(removed)* | Use `run.Manifest` |
+    | `run.ShareToken` | *(removed)* | Use `run.ShareURL` |
+    | `run.TraceFirstReceivedAt` | *(removed)* | No equivalent |
+    | `run.TraceMaxStartTime` | *(removed)* | No equivalent |
+    | `run.TraceMinStartTime` | *(removed)* | No equivalent |
+    | `run.TraceTier` | *(removed)* | No equivalent |
+    | `run.TraceUpgrade` | *(removed)* | No equivalent |
+    | `run.TtlSeconds` | *(removed)* | No equivalent |
+    | *(not available)* | `run.Attachments` | New: maps attachment filename to pre-signed download URL |
     | *(not available)* | `run.ErrorPreview` | New: truncated error snippet |
+    | *(not available)* | `run.IsRoot` | New |
+    | *(not available)* | `run.LatencySeconds` | New: wall-clock duration in seconds |
     | *(not available)* | `run.Manifest` | New: full manifest object (replaces `Serialized` and `ManifestID`) |
+    | *(not available)* | `run.Metadata` | New: arbitrary user-defined JSON metadata |
     | *(not available)* | `run.ShareURL` | New: public share URL (only set when the run has been shared) |
+    | *(not available)* | `run.ThreadEvaluationTime` | New |
   </Tab>
 </Tabs>
