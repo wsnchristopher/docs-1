@@ -1,0 +1,16 @@
+```kotlin After
+import com.langchain.smith.client.LangsmithClient
+import com.langchain.smith.client.okhttp.LangsmithOkHttpClient
+import com.langchain.smith.models.runs.RunQueryV2Params
+
+val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
+
+client.runs().queryV2(
+    RunQueryV2Params.builder()
+        .addProjectId("<project-id>")
+        .filter("""eq(metadata_key("user_id"), "user-abc123")""")
+        .build()
+).autoPager().forEach { run ->
+    println("${run.id()} ${run.name()} ${run.status()}")
+}
+```

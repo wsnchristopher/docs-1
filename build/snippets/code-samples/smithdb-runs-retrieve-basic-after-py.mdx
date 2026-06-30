@@ -1,0 +1,17 @@
+```python After
+import asyncio
+
+from langsmith import Client
+
+
+async def main():
+    client = Client()
+    run = await client.runs.retrieve(
+        run_id="<run-id>",
+        select=["NAME", "STATUS", "TOTAL_TOKENS"],
+    )
+    print(run.name, run.status, run.total_tokens)
+
+
+asyncio.run(main())
+```

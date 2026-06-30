@@ -1,0 +1,12 @@
+```ts After
+import { Client } from "langsmith";
+
+const client = new Client();
+const project = await client.projects
+  .list({ name: "default", limit: 1 })
+  .then((page) => page.getPaginatedItems()[0]);
+const run = await client.runs.retrieve("<run-id>", {
+  project_id: project.id,
+  start_time: "2025-01-01T12:00:00Z",
+});
+```

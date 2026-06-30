@@ -1,0 +1,21 @@
+```go Before
+import (
+	"context"
+	"fmt"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+response, err := client.Runs.Query(ctx, langsmith.RunQueryParams{
+	Session: langsmith.F([]string{"<project-id>"}),
+})
+if err != nil {
+	panic(err.Error())
+}
+for _, run := range response.Runs {
+	fmt.Println(run.ID, run.Name, run.Status)
+}
+```

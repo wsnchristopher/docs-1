@@ -1,0 +1,25 @@
+```go Before
+import (
+	"context"
+	"fmt"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+filterStr := `and(gt(start_time, "2023-07-15T12:34:56Z"),` +
+	` or(neq(status, "error"),` +
+	`    and(eq(feedback_key, "Correctness"), eq(feedback_score, 0.0))))`
+response, err := client.Runs.Query(ctx, langsmith.RunQueryParams{
+	Session: langsmith.F([]string{"<project-id>"}),
+	Filter:  langsmith.F(filterStr),
+})
+if err != nil {
+	panic(err.Error())
+}
+for _, run := range response.Runs {
+	fmt.Println(run.ID, run.Name, run.Status)
+}
+```
