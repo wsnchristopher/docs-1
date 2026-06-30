@@ -1,0 +1,25 @@
+```go After
+import (
+	"context"
+	"fmt"
+
+	"github.com/langchain-ai/langsmith-go"
+)
+
+ctx := context.Background()
+client := langsmith.NewClient()
+
+run, err := client.Runs.RetrieveV2(ctx, "<run-id>", langsmith.RunRetrieveV2Params{
+	ProjectID: langsmith.F("<project-id>"),
+	StartTime: langsmith.F("2025-01-01T12:00:00Z"),
+	Selects: langsmith.F([]langsmith.RunRetrieveV2ParamsSelect{
+		langsmith.RunRetrieveV2ParamsSelectName,
+		langsmith.RunRetrieveV2ParamsSelectStatus,
+		langsmith.RunRetrieveV2ParamsSelectTotalTokens,
+	}),
+})
+if err != nil {
+	panic(err.Error())
+}
+fmt.Println(run.Name, run.Status, run.TotalTokens)
+```

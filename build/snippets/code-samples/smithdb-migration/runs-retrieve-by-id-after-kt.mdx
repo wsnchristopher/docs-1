@@ -1,0 +1,18 @@
+```kotlin After
+import java.time.OffsetDateTime
+
+import com.langchain.smith.client.LangsmithClient
+import com.langchain.smith.client.okhttp.LangsmithOkHttpClient
+import com.langchain.smith.models.runs.RunRetrieveV2Params
+
+val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
+
+val run = client.runs().retrieveV2(
+    "<run-id>",
+    RunRetrieveV2Params.builder()
+        .projectId("<project-id>")
+        .startTime(OffsetDateTime.parse("<run-start-time-rfc3339>"))
+        .build()
+)
+println("${run.id()} ${run.name()} ${run.status()}")
+```
