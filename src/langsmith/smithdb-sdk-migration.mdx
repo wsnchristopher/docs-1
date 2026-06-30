@@ -156,43 +156,61 @@ Migrate `list_runs` to `runs.query`. Field selection is now required via `select
   <Tab title="Python">
     <Note>Requires `langsmith>=0.9.2`.</Note>
 
-    <CodeGroup>
-      <SmithdbRunsQueryBasicBeforePy />
-      <SmithdbRunsQueryBasicAfterPy />
-    </CodeGroup>
+    <Tabs sync={false}>
+      <Tab title="Before">
+        <SmithdbRunsQueryBasicBeforePy />
+      </Tab>
+      <Tab title="After">
+        <SmithdbRunsQueryBasicAfterPy />
+      </Tab>
+    </Tabs>
   </Tab>
   <Tab title="TypeScript">
     <Note>Requires `langsmith@>=0.7.12`.</Note>
 
-    <CodeGroup>
-      <SmithdbRunsQueryBasicBeforeJs />
-      <SmithdbRunsQueryBasicAfterJs />
-    </CodeGroup>
+    <Tabs sync={false}>
+      <Tab title="Before">
+        <SmithdbRunsQueryBasicBeforeJs />
+      </Tab>
+      <Tab title="After">
+        <SmithdbRunsQueryBasicAfterJs />
+      </Tab>
+    </Tabs>
   </Tab>
   <Tab title="Java">
     <Note>Requires `langsmith-java` 0.1.0-beta.8.</Note>
 
-    <CodeGroup>
-      <SmithdbRunsQueryBasicBeforeKt />
-      <SmithdbRunsQueryBasicAfterKt />
-    </CodeGroup>
+    <Tabs sync={false}>
+      <Tab title="Before">
+        <SmithdbRunsQueryBasicBeforeKt />
+      </Tab>
+      <Tab title="After">
+        <SmithdbRunsQueryBasicAfterKt />
+      </Tab>
+    </Tabs>
   </Tab>
   <Tab title="Go">
     <Note>Requires `langsmith-go` v0.16.0.</Note>
 
-    <CodeGroup>
-      <SmithdbRunsQueryBasicBeforeGo />
-      <SmithdbRunsQueryBasicAfterGo />
-    </CodeGroup>
+    <Tabs sync={false}>
+      <Tab title="Before">
+        <SmithdbRunsQueryBasicBeforeGo />
+      </Tab>
+      <Tab title="After">
+        <SmithdbRunsQueryBasicAfterGo />
+      </Tab>
+    </Tabs>
   </Tab>
   <Tab title="cURL">
-    <CodeGroup>
-    ```bash Before
+    <Tabs sync={false}>
+      <Tab title="Before">
+    ```bash
     curl "https://api.smith.langchain.com/api/v1/runs?project_name=my-project&run_type=llm&limit=100" \
       -H "x-api-key: $LANGSMITH_API_KEY"
     ```
-
-    ```bash After
+      </Tab>
+      <Tab title="After">
+    ```bash
     curl -X POST "https://api.smith.langchain.com/api/v2/runs/query" \
       -H "x-api-key: $LANGSMITH_API_KEY" \
       -H "Content-Type: application/json" \
@@ -203,7 +221,8 @@ Migrate `list_runs` to `runs.query`. Field selection is now required via `select
         "selects": ["ID", "NAME", "STATUS"]
       }'
     ```
-    </CodeGroup>
+      </Tab>
+    </Tabs>
   </Tab>
 </Tabs>
 
@@ -214,34 +233,50 @@ v2 does not accept a project name directly. Resolve the project UUID with `clien
 <Tabs>
   <Tab title="Python">
 
-<CodeGroup>
-  <SmithdbRunsQueryListAllBeforePy />
-  <SmithdbRunsQueryListAllAfterPy />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryListAllBeforePy />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryListAllAfterPy />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="TypeScript">
 
-<CodeGroup>
-  <SmithdbRunsQueryListAllBeforeJs />
-  <SmithdbRunsQueryListAllAfterJs />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryListAllBeforeJs />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryListAllAfterJs />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Java">
 
-<CodeGroup>
-  <SmithdbRunsQueryListAllBeforeKt />
-  <SmithdbRunsQueryListAllAfterKt />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryListAllBeforeKt />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryListAllAfterKt />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Go">
 
-<CodeGroup>
-  <SmithdbRunsQueryListAllBeforeGo />
-  <SmithdbRunsQueryListAllAfterGo />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryListAllBeforeGo />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryListAllAfterGo />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="cURL">
@@ -258,34 +293,50 @@ cURL examples coming soon.
 <Tabs>
   <Tab title="Python">
 
-<CodeGroup>
-  <SmithdbRunsQuerySelectingFieldsBeforePy />
-  <SmithdbRunsQuerySelectingFieldsAfterPy />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQuerySelectingFieldsBeforePy />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQuerySelectingFieldsAfterPy />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="TypeScript">
 
-<CodeGroup>
-  <SmithdbRunsQuerySelectingFieldsBeforeJs />
-  <SmithdbRunsQuerySelectingFieldsAfterJs />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQuerySelectingFieldsBeforeJs />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQuerySelectingFieldsAfterJs />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Java">
 
-<CodeGroup>
-  <SmithdbRunsQuerySelectingFieldsBeforeKt />
-  <SmithdbRunsQuerySelectingFieldsAfterKt />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQuerySelectingFieldsBeforeKt />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQuerySelectingFieldsAfterKt />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Go">
 
-<CodeGroup>
-  <SmithdbRunsQuerySelectingFieldsBeforeGo />
-  <SmithdbRunsQuerySelectingFieldsAfterGo />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQuerySelectingFieldsBeforeGo />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQuerySelectingFieldsAfterGo />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="cURL">
@@ -302,34 +353,50 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 <Tabs>
   <Tab title="Python">
 
-<CodeGroup>
-  <SmithdbRunsQueryFilterTimeRangeBeforePy />
-  <SmithdbRunsQueryFilterTimeRangeAfterPy />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryFilterTimeRangeBeforePy />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryFilterTimeRangeAfterPy />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="TypeScript">
 
-<CodeGroup>
-  <SmithdbRunsQueryFilterTimeRangeBeforeJs />
-  <SmithdbRunsQueryFilterTimeRangeAfterJs />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryFilterTimeRangeBeforeJs />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryFilterTimeRangeAfterJs />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Java">
 
-<CodeGroup>
-  <SmithdbRunsQueryFilterTimeRangeBeforeKt />
-  <SmithdbRunsQueryFilterTimeRangeAfterKt />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryFilterTimeRangeBeforeKt />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryFilterTimeRangeAfterKt />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Go">
 
-<CodeGroup>
-  <SmithdbRunsQueryFilterTimeRangeBeforeGo />
-  <SmithdbRunsQueryFilterTimeRangeAfterGo />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryFilterTimeRangeBeforeGo />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryFilterTimeRangeAfterGo />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="cURL">
@@ -346,34 +413,50 @@ cURL examples coming soon.
 <Tabs>
   <Tab title="Python">
 
-<CodeGroup>
-  <SmithdbRunsQueryFilterRootBeforePy />
-  <SmithdbRunsQueryFilterRootAfterPy />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryFilterRootBeforePy />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryFilterRootAfterPy />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="TypeScript">
 
-<CodeGroup>
-  <SmithdbRunsQueryFilterRootBeforeJs />
-  <SmithdbRunsQueryFilterRootAfterJs />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryFilterRootBeforeJs />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryFilterRootAfterJs />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Java">
 
-<CodeGroup>
-  <SmithdbRunsQueryFilterRootBeforeKt />
-  <SmithdbRunsQueryFilterRootAfterKt />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryFilterRootBeforeKt />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryFilterRootAfterKt />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Go">
 
-<CodeGroup>
-  <SmithdbRunsQueryFilterRootBeforeGo />
-  <SmithdbRunsQueryFilterRootAfterGo />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryFilterRootBeforeGo />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryFilterRootAfterGo />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="cURL">
@@ -390,34 +473,50 @@ cURL examples coming soon.
 <Tabs>
   <Tab title="Python">
 
-<CodeGroup>
-  <SmithdbRunsQueryFetchByIdBeforePy />
-  <SmithdbRunsQueryFetchByIdAfterPy />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryFetchByIdBeforePy />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryFetchByIdAfterPy />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="TypeScript">
 
-<CodeGroup>
-  <SmithdbRunsQueryFetchByIdBeforeJs />
-  <SmithdbRunsQueryFetchByIdAfterJs />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryFetchByIdBeforeJs />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryFetchByIdAfterJs />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Java">
 
-<CodeGroup>
-  <SmithdbRunsQueryFetchByIdBeforeKt />
-  <SmithdbRunsQueryFetchByIdAfterKt />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryFetchByIdBeforeKt />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryFetchByIdAfterKt />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Go">
 
-<CodeGroup>
-  <SmithdbRunsQueryFetchByIdBeforeGo />
-  <SmithdbRunsQueryFetchByIdAfterGo />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryFetchByIdBeforeGo />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryFetchByIdAfterGo />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="cURL">
@@ -434,34 +533,50 @@ cURL examples coming soon.
 <Tabs>
   <Tab title="Python">
 
-<CodeGroup>
-  <SmithdbRunsQueryPaginationBeforePy />
-  <SmithdbRunsQueryPaginationAfterPy />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryPaginationBeforePy />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryPaginationAfterPy />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="TypeScript">
 
-<CodeGroup>
-  <SmithdbRunsQueryPaginationBeforeJs />
-  <SmithdbRunsQueryPaginationAfterJs />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryPaginationBeforeJs />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryPaginationAfterJs />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Java">
 
-<CodeGroup>
-  <SmithdbRunsQueryPaginationBeforeKt />
-  <SmithdbRunsQueryPaginationAfterKt />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryPaginationBeforeKt />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryPaginationAfterKt />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Go">
 
-<CodeGroup>
-  <SmithdbRunsQueryPaginationBeforeGo />
-  <SmithdbRunsQueryPaginationAfterGo />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryPaginationBeforeGo />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryPaginationAfterGo />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="cURL">
@@ -478,34 +593,50 @@ The typed boolean `error=True/False` is renamed to `has_error=True/False` in v2.
 <Tabs>
   <Tab title="Python">
 
-<CodeGroup>
-  <SmithdbRunsQueryFilterErrorsBeforePy />
-  <SmithdbRunsQueryFilterErrorsAfterPy />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryFilterErrorsBeforePy />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryFilterErrorsAfterPy />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="TypeScript">
 
-<CodeGroup>
-  <SmithdbRunsQueryFilterErrorsBeforeJs />
-  <SmithdbRunsQueryFilterErrorsAfterJs />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryFilterErrorsBeforeJs />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryFilterErrorsAfterJs />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Java">
 
-<CodeGroup>
-  <SmithdbRunsQueryFilterErrorsBeforeKt />
-  <SmithdbRunsQueryFilterErrorsAfterKt />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryFilterErrorsBeforeKt />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryFilterErrorsAfterKt />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Go">
 
-<CodeGroup>
-  <SmithdbRunsQueryFilterErrorsBeforeGo />
-  <SmithdbRunsQueryFilterErrorsAfterGo />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryFilterErrorsBeforeGo />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryFilterErrorsAfterGo />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="cURL">
@@ -522,34 +653,50 @@ The metadata filter syntax is unchanged. Use `eq(metadata_key, ...)` to check fo
 <Tabs>
   <Tab title="Python">
 
-<CodeGroup>
-  <SmithdbRunsQueryFilterMetadataBeforePy />
-  <SmithdbRunsQueryFilterMetadataAfterPy />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryFilterMetadataBeforePy />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryFilterMetadataAfterPy />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="TypeScript">
 
-<CodeGroup>
-  <SmithdbRunsQueryFilterMetadataBeforeJs />
-  <SmithdbRunsQueryFilterMetadataAfterJs />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryFilterMetadataBeforeJs />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryFilterMetadataAfterJs />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Java">
 
-<CodeGroup>
-  <SmithdbRunsQueryFilterMetadataBeforeKt />
-  <SmithdbRunsQueryFilterMetadataAfterKt />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryFilterMetadataBeforeKt />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryFilterMetadataAfterKt />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Go">
 
-<CodeGroup>
-  <SmithdbRunsQueryFilterMetadataBeforeGo />
-  <SmithdbRunsQueryFilterMetadataAfterGo />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryFilterMetadataBeforeGo />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryFilterMetadataAfterGo />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="cURL">
@@ -566,34 +713,50 @@ Nested `and()` / `or()` filter expressions are unchanged between v1 and v2.
 <Tabs>
   <Tab title="Python">
 
-<CodeGroup>
-  <SmithdbRunsQueryBooleanFiltersBeforePy />
-  <SmithdbRunsQueryBooleanFiltersAfterPy />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryBooleanFiltersBeforePy />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryBooleanFiltersAfterPy />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="TypeScript">
 
-<CodeGroup>
-  <SmithdbRunsQueryBooleanFiltersBeforeJs />
-  <SmithdbRunsQueryBooleanFiltersAfterJs />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryBooleanFiltersBeforeJs />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryBooleanFiltersAfterJs />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Java">
 
-<CodeGroup>
-  <SmithdbRunsQueryBooleanFiltersBeforeKt />
-  <SmithdbRunsQueryBooleanFiltersAfterKt />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryBooleanFiltersBeforeKt />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryBooleanFiltersAfterKt />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Go">
 
-<CodeGroup>
-  <SmithdbRunsQueryBooleanFiltersBeforeGo />
-  <SmithdbRunsQueryBooleanFiltersAfterGo />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryBooleanFiltersBeforeGo />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryBooleanFiltersAfterGo />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="cURL">
@@ -610,34 +773,50 @@ All three filter parameters are unchanged between v1 and v2. `filter` applies to
 <Tabs>
   <Tab title="Python">
 
-<CodeGroup>
-  <SmithdbRunsQueryScopedFiltersBeforePy />
-  <SmithdbRunsQueryScopedFiltersAfterPy />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryScopedFiltersBeforePy />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryScopedFiltersAfterPy />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="TypeScript">
 
-<CodeGroup>
-  <SmithdbRunsQueryScopedFiltersBeforeJs />
-  <SmithdbRunsQueryScopedFiltersAfterJs />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryScopedFiltersBeforeJs />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryScopedFiltersAfterJs />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Java">
 
-<CodeGroup>
-  <SmithdbRunsQueryScopedFiltersBeforeKt />
-  <SmithdbRunsQueryScopedFiltersAfterKt />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryScopedFiltersBeforeKt />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryScopedFiltersAfterKt />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Go">
 
-<CodeGroup>
-  <SmithdbRunsQueryScopedFiltersBeforeGo />
-  <SmithdbRunsQueryScopedFiltersAfterGo />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsQueryScopedFiltersBeforeGo />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsQueryScopedFiltersAfterGo />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="cURL">
@@ -1054,47 +1233,66 @@ Migrate `read_run` to `runs.retrieve`. The API returns only the run ID by defaul
   <Tab title="Python">
     <Note>Requires `langsmith>=0.9.2`.</Note>
 
-    <CodeGroup>
-      <SmithdbRunsRetrieveBasicBeforePy />
-      <SmithdbRunsRetrieveBasicAfterPy />
-    </CodeGroup>
+    <Tabs sync={false}>
+      <Tab title="Before">
+        <SmithdbRunsRetrieveBasicBeforePy />
+      </Tab>
+      <Tab title="After">
+        <SmithdbRunsRetrieveBasicAfterPy />
+      </Tab>
+    </Tabs>
   </Tab>
   <Tab title="TypeScript">
     <Note>Requires `langsmith@>=0.7.12`.</Note>
 
-    <CodeGroup>
-      <SmithdbRunsRetrieveBasicBeforeJs />
-      <SmithdbRunsRetrieveBasicAfterJs />
-    </CodeGroup>
+    <Tabs sync={false}>
+      <Tab title="Before">
+        <SmithdbRunsRetrieveBasicBeforeJs />
+      </Tab>
+      <Tab title="After">
+        <SmithdbRunsRetrieveBasicAfterJs />
+      </Tab>
+    </Tabs>
   </Tab>
   <Tab title="Java">
     <Note>Requires `langsmith-java` 0.1.0-beta.8.</Note>
 
-    <CodeGroup>
-      <SmithdbRunsRetrieveBasicBeforeKt />
-      <SmithdbRunsRetrieveBasicAfterKt />
-    </CodeGroup>
+    <Tabs sync={false}>
+      <Tab title="Before">
+        <SmithdbRunsRetrieveBasicBeforeKt />
+      </Tab>
+      <Tab title="After">
+        <SmithdbRunsRetrieveBasicAfterKt />
+      </Tab>
+    </Tabs>
   </Tab>
   <Tab title="Go">
     <Note>Requires `langsmith-go` v0.16.0.</Note>
 
-    <CodeGroup>
-      <SmithdbRunsRetrieveBasicBeforeGo />
-      <SmithdbRunsRetrieveBasicAfterGo />
-    </CodeGroup>
+    <Tabs sync={false}>
+      <Tab title="Before">
+        <SmithdbRunsRetrieveBasicBeforeGo />
+      </Tab>
+      <Tab title="After">
+        <SmithdbRunsRetrieveBasicAfterGo />
+      </Tab>
+    </Tabs>
   </Tab>
   <Tab title="cURL">
-    <CodeGroup>
-    ```bash Before
+    <Tabs sync={false}>
+      <Tab title="Before">
+    ```bash
     curl "https://api.smith.langchain.com/api/v1/runs/<run-id>" \
       -H "x-api-key: $LANGSMITH_API_KEY"
     ```
-
-    ```bash After
+      </Tab>
+      <Tab title="After">
+    ```bash
     curl "https://api.smith.langchain.com/api/v2/runs/<run-id>?select=NAME&select=STATUS&select=TOTAL_TOKENS" \
       -H "x-api-key: $LANGSMITH_API_KEY"
     ```
-    </CodeGroup>
+      </Tab>
+    </Tabs>
   </Tab>
 </Tabs>
 
@@ -1105,34 +1303,50 @@ v2 requires two additional parameters that `read_run` did not need: `project_id`
 <Tabs>
   <Tab title="Python">
 
-<CodeGroup>
-  <SmithdbRunsRetrieveByIdBeforePy />
-  <SmithdbRunsRetrieveByIdAfterPy />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsRetrieveByIdBeforePy />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsRetrieveByIdAfterPy />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="TypeScript">
 
-<CodeGroup>
-  <SmithdbRunsRetrieveByIdBeforeJs />
-  <SmithdbRunsRetrieveByIdAfterJs />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsRetrieveByIdBeforeJs />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsRetrieveByIdAfterJs />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Java">
 
-<CodeGroup>
-  <SmithdbRunsRetrieveByIdBeforeKt />
-  <SmithdbRunsRetrieveByIdAfterKt />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsRetrieveByIdBeforeKt />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsRetrieveByIdAfterKt />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="Go">
 
-<CodeGroup>
-  <SmithdbRunsRetrieveByIdBeforeGo />
-  <SmithdbRunsRetrieveByIdAfterGo />
-</CodeGroup>
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsRetrieveByIdBeforeGo />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsRetrieveByIdAfterGo />
+  </Tab>
+</Tabs>
 
   </Tab>
   <Tab title="cURL">
