@@ -8,6 +8,7 @@
 import com.langchain.smith.client.LangsmithClient
 import com.langchain.smith.client.okhttp.LangsmithOkHttpClient
 import com.langchain.smith.models.runs.RunQueryV2Params
+import com.langchain.smith.models.sessions.SessionListParams
 
 // :remove-start:
 fun main() {
@@ -19,8 +20,12 @@ fun main() {
 // :remove-end:
 val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
 
+val project = client.sessions().list(
+    SessionListParams.builder().name("default").limit(1L).build()
+).items().first()
+
 val params = RunQueryV2Params.builder()
-    .addProjectId("<project-id>")
+    .addProjectId(project.id())
     .runType(RunQueryV2Params.RunType.LLM)
     .filter("""and(eq(status, "success"), gt(total_tokens, 100))""")
     .addSelect(RunQueryV2Params.Select.ID)
