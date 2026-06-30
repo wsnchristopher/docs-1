@@ -10,6 +10,6 @@ for await (const run of client.runs.query({
   project_ids: [project.id],
   selects: ["ID", "NAME", "RUN_TYPE", "STATUS", "START_TIME", "INPUTS", "ERROR"],
 })) {
-  /* use run */
+  console.log(run.id, run.name, run.run_type, run.status, run.start_time, run.inputs, run.error);
 }
 ```

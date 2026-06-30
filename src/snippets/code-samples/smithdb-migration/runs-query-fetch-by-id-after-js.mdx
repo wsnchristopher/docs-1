@@ -9,6 +9,6 @@ for await (const run of client.runs.query({
   project_ids: [project.id],
   ids: ["<run-id-1>", "<run-id-2>"],
 })) {
-  /* use run */
+  console.log(run.id);
 }
 ```

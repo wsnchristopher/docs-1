@@ -25,7 +25,7 @@ pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
 })
 for pager.Next() {
 	run := pager.Current()
-	fmt.Println(run.ID, run.Name, run.Status)
+	fmt.Println(run.ID)
 }
 if err := pager.Err(); err != nil {
 	panic(err.Error())

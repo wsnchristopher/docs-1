@@ -19,5 +19,5 @@ val run = client.runs().retrieveV2(
         .startTime(OffsetDateTime.parse("<run-start-time-rfc3339>"))
         .build()
 )
-println("${run.id()} ${run.name()} ${run.status()}")
+println(run.id())
 ```

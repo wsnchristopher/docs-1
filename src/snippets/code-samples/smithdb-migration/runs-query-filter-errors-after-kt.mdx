@@ -16,6 +16,6 @@ client.runs().queryV2(
         .hasError(true)
         .build()
 ).autoPager().forEach { run ->
-    println("${run.id()} ${run.name()} ${run.status()}")
+    println(run.id())
 }
 ```

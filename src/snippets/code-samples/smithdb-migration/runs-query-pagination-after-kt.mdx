@@ -16,7 +16,7 @@ client.runs().queryV2(
         .addProjectId(project.id())
         .build()
 ).autoPager().forEach { run ->
-    println("${run.id()} ${run.name()} ${run.status()}")
+    println("${run.id()} ${run.name()}")
     if (++count >= 150) return@forEach
 }
 ```

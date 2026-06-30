@@ -20,6 +20,6 @@ client.runs().queryV2(
         .filter(filterStr)
         .build()
 ).autoPager().forEach { run ->
-    println("${run.id()} ${run.name()} ${run.status()}")
+    println(run.id())
 }
 ```

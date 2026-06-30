@@ -16,6 +16,6 @@ client.runs().queryV2(
         .filter("""eq(metadata_key("user_id"), "user-abc123")""")
         .build()
 ).autoPager().forEach { run ->
-    println("${run.id()} ${run.name()} ${run.status()}")
+    println(run.id())
 }
 ```

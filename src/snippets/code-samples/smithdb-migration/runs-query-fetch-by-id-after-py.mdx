@@ -12,7 +12,7 @@ async def main():
         project_ids=[str(project.id)],
         ids=["<run-id-1>", "<run-id-2>"],
     ):
-        print(run.id, run.name, run.status)
+        print(run.id)
 
 
 asyncio.run(main())
