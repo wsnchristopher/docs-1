@@ -2,6 +2,7 @@
 import { Client } from "langsmith";
 
 const client = new Client();
-const run = await client.readRun("<run-id>");
-console.log(run.name, run.status, run.total_tokens);
+let runId = "<run-id>";
+const retrievedRun = await client.readRun(runId);
+console.log(retrievedRun.name, retrievedRun.status, retrievedRun.total_tokens);
 ```
