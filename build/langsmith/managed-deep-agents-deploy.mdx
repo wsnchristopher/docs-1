@@ -1,0 +1,281 @@
+---
+title: Deploy a Managed Deep Agent
+sidebarTitle: Deploy an agent
+description: Build, test, and deploy a Managed Deep Agent with the mda CLI.
+---
+
+import ManagedDeepAgentsPrivateBetaNote from '/snippets/langsmith/managed-deep-agents-private-beta-note.mdx';
+
+Deploying a Managed Deep Agent compiles a code-first project into a managed LangGraph app, syncs deploy-owned context to [Context Hub](/langsmith/use-the-context-hub), uploads the compiled source, and triggers a LangSmith hosted deployment build.
+
+<Note>
+<ManagedDeepAgentsPrivateBetaNote />
+</Note>
+
+This page covers project files, build output, local development, Context Hub sync, sandboxes, and deploy behavior. For command flags, see the [CLI reference](/langsmith/managed-deep-agents-cli).
+
+## Prerequisites
+
+Before you deploy, make sure you have:
+
+- A workspace with Managed Deep Agents [private beta access](https://www.langchain.com/langsmith-managed-deep-agents-waitlist).
+- A [LangSmith API key](/langsmith/create-account-api-key) for that workspace, either in `.env` or your shell environment.
+- `managed-deepagents` installed in your project.
+- Project dependencies installed with `npm install` or `pip install -e .`.
+- Model provider credentials, such as `OPENAI_API_KEY`, in `.env`, your shell environment, or LangSmith workspace secrets.
+
+The CLI targets US LangSmith Cloud by default.
+
+## Project layout
+
+A Managed Deep Agents project starts with an agent entry and optional project folders:
+
+```text
+my-agent/
+  agent.py | agent.ts | agent.tsx     # Required named agent definition
+  instructions.md                     # Optional managed system prompt
+  .env                                # Deploy auth and runtime secrets; never commit real secrets
+  .gitignore
+  skills/<name>/SKILL.md              # Optional deploy-owned skills
+  connectors/mcp.py | connectors/mcp.ts # Optional remote MCP server declarations
+  sandbox/__init__.py | sandbox/index.ts
+  sandbox/setup.sh
+  tools/
+  middleware/
+```
+
+Create a project with `mda init`:
+
+```bash
+mda init my-agent
+cd my-agent
+```
+
+Or adapt an existing TypeScript or Python project by adding `agent.ts`, `agent.tsx`, or `agent.py` at the project root.
+
+## Define the agent
+
+The agent entry exports a named `agent` definition. It is a pre-runtime spec, not a compiled graph.
+
+<CodeGroup>
+
+```python agent.py
+from managed_deepagents import define_deep_agent
+
+from tools.query_db import query_db
+
+agent = define_deep_agent(
+    model="openai:gpt-5.5",
+    tools=[query_db],
+)
+```
+
+```ts agent.ts
+import { defineDeepAgent } from "managed-deepagents";
+import { queryDB } from "./tools/query-db";
+
+export const agent = defineDeepAgent({
+  model: "openai:gpt-5.5",
+  tools: [queryDB],
+});
+```
+
+</CodeGroup>
+
+The managed runtime injects backend, store, checkpointer, memory, skills, and the system prompt. The agent definition should focus on behavior: model, tools, middleware, interrupts, and other Deep Agents configuration fields that are not managed by MDA.
+
+## Configure instructions, skills, and memory
+
+Put the system prompt in `instructions.md` next to the project-root agent entry file:
+
+```markdown instructions.md
+# Assistant
+
+You are a careful assistant. Use available tools when needed and cite sources.
+```
+
+Put deploy-owned skills under `skills/` next to the project-root agent entry file. Deploy syncs `instructions.md` and `skills/**` to the Context Hub repo associated with the deployment.
+
+Managed memory is stored in the same Context Hub repo under `/memories/AGENTS.md`. Deploy syncs `instructions.md` and `skills/**`, but preserves memory and does not overwrite `memories/**`. To disable MDA-managed memory, set `disableMemory: true` or `disable_memory=True` in the agent definition.
+
+## Add tools, connectors, and middleware
+
+Add authored tools and middleware directly in the agent source. MDA copies your project files into the compiled build, so imports from `tools/`, `middleware/`, or other local modules work like they do in a normal Python or TypeScript project.
+
+- Use [custom tools](/langsmith/managed-deep-agents-tools) for business logic, private APIs, database access, and other project-owned code.
+- Use [custom middleware](/langsmith/managed-deep-agents-middleware) for cross-cutting behavior around model calls, tool calls, lifecycle hooks, retries, limits, and data handling.
+- Declare remote MCP servers in `connectors/mcp.ts` or `connectors/mcp.py`; MDA loads those connector tools and appends them to the authored tools at runtime. For examples and guidance, see [Connect MCP tools](/langsmith/managed-deep-agents-mcp).
+
+## Configure a sandbox
+
+Use a sandbox when the agent needs isolated code execution or filesystem work. Export `sandbox` from `sandbox/index.ts` or `sandbox/__init__.py`.
+
+<CodeGroup>
+
+```python sandbox/__init__.py
+from managed_deepagents import define_sandbox
+from deepagents.backends import LangSmithSandbox
+
+sandbox = define_sandbox(
+    LangSmithSandbox,
+    scope="thread",
+    idle_ttl_seconds=600,
+    default_timeout=600,
+)
+```
+
+```ts sandbox/index.ts
+import { defineSandbox } from "managed-deepagents";
+import { LangSmithSandbox } from "deepagents";
+
+export const sandbox = defineSandbox(LangSmithSandbox, {
+  scope: "thread",
+  idleTtlSeconds: 600,
+  defaultTimeout: 600,
+});
+```
+
+</CodeGroup>
+
+Supported reuse scopes are:
+
+| Scope | Behavior |
+| --- | --- |
+| `thread` | One sandbox per durable thread or conversation. |
+| `tenant` | One sandbox shared across threads for the current tenant. |
+| `actor` | One sandbox shared across threads for the current actor. |
+
+If `sandbox/setup.sh` exists, MDA runs it once when a new managed sandbox is provisioned. Use it to install packages, seed files, or prepare workspace state.
+
+## Build locally
+
+Compile the project without deploying:
+
+```bash
+mda build .
+```
+
+By default, build writes `.mda/build`. The output contains copied project files, a generated `_mda_entry.ts` or `_mda_entry.py`, and `langgraph.json`.
+
+Use `--out` to write the compiled app somewhere else:
+
+```bash
+mda build . --out /tmp/my-agent-build
+```
+
+## Run locally
+
+Run the local LangGraph dev server:
+
+```bash
+mda dev .
+```
+
+`mda dev` compiles into `.mda/build` and starts the matching LangGraph dev server from that directory. Pass `--port`, `--hostname`, `--browser`, or `--no-reload` to forward local dev server options.
+
+For local development, `mda dev` stages the project `.env` file into `.mda/build/.env` so LangGraph can load model provider keys and connector tokens.
+
+For Python projects, install the Python LangGraph dev server first:
+
+```bash
+pip install -U "langgraph-cli[inmem]"
+```
+
+When a sandbox is configured, `mda dev` tries the configured provider and falls back to a local temp-directory sandbox when provider credentials are unavailable. The local fallback is intended only for development.
+
+## Deploy to LangSmith
+
+Deploy the local project:
+
+```bash
+mda deploy .
+```
+
+Deploy runs this flow:
+
+1. Validate that the project has `agent.ts`, `agent.tsx`, or `agent.py`.
+2. Resolve a LangSmith API key from `.env`, then the shell environment, or an interactive prompt.
+3. Collect non-reserved `.env` values, such as model provider keys and connector tokens, as hosted deployment secrets.
+4. Verify the model provider API key is available from `.env`, the shell environment, or LangSmith workspace secrets.
+5. Sync `instructions.md` and `skills/**` to Context Hub.
+6. Compile the project into `.mda/build`, including optional `connectors/mcp` declarations and MCP adapter dependencies.
+7. Find or create a LangSmith hosted deployment by name.
+8. Archive and upload the compiled build.
+9. Trigger a remote build and wait until the revision is `DEPLOYED`.
+
+Set the deployment name explicitly when the directory name is not the name you want:
+
+```bash
+mda deploy . --name research-assistant
+```
+
+Use `--deployment-type prod` when creating a production deployment:
+
+```bash
+mda deploy . --deployment-type prod
+```
+
+Use `--no-wait` to trigger the build without polling for completion:
+
+```bash
+mda deploy . --no-wait
+```
+
+On success, the CLI prints the LangSmith deployment dashboard URL.
+
+## Secrets and environment files
+
+`mda deploy` reads project `.env` values before shell environment variables. Use `.env` for the LangSmith API key that authenticates the deploy and for runtime secrets the hosted deployment needs:
+
+```text .env
+LANGSMITH_API_KEY=<LANGSMITH_API_KEY>
+OPENAI_API_KEY=<OPENAI_API_KEY>
+GITHUB_MCP_TOKEN=<GITHUB_MCP_TOKEN>
+DATABASE_URL=<DATABASE_URL>
+```
+
+`LANGSMITH_API_KEY`, `LANGGRAPH_HOST_API_KEY`, `LANGCHAIN_API_KEY`, and other platform variables are reserved. They can authenticate the deploy, but they are not uploaded as user-managed deployment secrets.
+
+Non-reserved `.env` entries, such as model provider keys, MCP tokens, and custom tool credentials, are forwarded as hosted deployment secrets when `mda deploy` creates or updates the deployment. If the configured model requires a provider key, deploy fails before upload unless that key is available from `.env`, the shell environment, or LangSmith workspace secrets. When the provider key is only in the shell environment, `mda deploy` forwards it as a secret for that deploy.
+
+Reserved platform variables, empty values, `.env`, and `.env.*` files are not copied into the compiled build archive.
+
+## Troubleshoot a deploy
+
+| Symptom | Cause and fix |
+| --- | --- |
+| `project root ... is not a directory` | Pass a directory path to `mda build`, `mda dev`, or `mda deploy`. |
+| `no agent entry file found` | Add `agent.ts`, `agent.tsx`, or `agent.py` to the project root. |
+| `No LangSmith API key found` | Set `LANGSMITH_API_KEY` or add it to the project `.env`. |
+| Missing model provider API key | Add the provider key, such as `OPENAI_API_KEY`, to `.env`, export it in your shell, or configure it as a LangSmith workspace secret. |
+| Context Hub changed during deploy | Re-run `mda deploy`; another deploy updated the same repo concurrently. |
+| `source archive ... exceeds the 200 MB limit` | Remove large generated files or ignored artifacts before deploying. |
+| Deployment reaches `BUILD_FAILED` or `DEPLOY_FAILED` | Open the printed deployment URL in LangSmith and inspect the revision logs. |
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Connect MCP tools" icon="plug" href="/langsmith/managed-deep-agents-mcp">
+    Declare remote MCP servers with Managed Deep Agents connectors.
+  </Card>
+  <Card title="Custom tools" icon="tool" href="/langsmith/managed-deep-agents-tools">
+    Add authored LangChain tools to the agent definition.
+  </Card>
+  <Card title="Custom middleware" icon="code" href="/langsmith/managed-deep-agents-middleware">
+    Add middleware for logging, retries, limits, and guardrails.
+  </Card>
+  <Card title="CLI reference" icon="terminal" href="/langsmith/managed-deep-agents-cli">
+    Look up every `mda` command and flag.
+  </Card>
+</CardGroup>
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/managed-deep-agents-deploy.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>
