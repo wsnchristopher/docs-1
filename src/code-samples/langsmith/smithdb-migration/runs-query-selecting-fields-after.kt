@@ -1,9 +1,23 @@
-```kotlin After
+///usr/bin/env jbang "$0" "$@" ; exit $?
+//JAVA 21
+//KOTLIN 2.2.0
+//DEPS com.langchain.smith:langsmith-java:0.1.0-beta.8
+
+// :snippet-start: runs-query-selecting-fields-after-kt
+// :codegroup-tab: After
 import com.langchain.smith.client.LangsmithClient
 import com.langchain.smith.client.okhttp.LangsmithOkHttpClient
 import com.langchain.smith.models.runs.RunQueryV2Params
 import com.langchain.smith.models.sessions.SessionListParams
 
+// :remove-start:
+fun main() {
+    if (System.getenv("LANGSMITH_API_KEY").isNullOrBlank()) {
+        println("[smithdb-runs-query-selecting-fields-after] Skipping (LANGSMITH_API_KEY is not set).")
+        return
+    }
+
+// :remove-end:
 val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
 
 val project = client.sessions().list(
@@ -24,5 +38,11 @@ val runs = client.runs().queryV2(
 ).items()
 for (run in runs) {
     println("${run.id()} ${run.name()} ${run.runType()} ${run.status()} ${run.startTime()} ${run._inputs()} ${run.error()}")
+    // :remove-start:
+    break
+    // :remove-end:
 }
-```
+// :remove-start:
+}
+// :remove-end:
+// :snippet-end:

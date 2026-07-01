@@ -12,11 +12,13 @@ val project = client.sessions().list(
     SessionListParams.builder().name("default").limit(1L).build()
 ).items().first()
 
+var runId = "<run-id>"
+var startTime = "<run-start-time-rfc3339>"
 val run = client.runs().retrieveV2(
-    "<run-id>",
+    runId,
     RunRetrieveV2Params.builder()
         .projectId(project.id())
-        .startTime(OffsetDateTime.parse("<run-start-time-rfc3339>"))
+        .startTime(OffsetDateTime.parse(startTime))
         .addSelect(RunRetrieveV2Params.Select.NAME)
         .addSelect(RunRetrieveV2Params.Select.STATUS)
         .addSelect(RunRetrieveV2Params.Select.TOTAL_TOKENS)

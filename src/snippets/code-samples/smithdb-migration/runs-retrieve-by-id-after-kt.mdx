@@ -1,4 +1,4 @@
-```kotlin
+```kotlin After
 import java.time.OffsetDateTime
 
 import com.langchain.smith.client.LangsmithClient
@@ -12,11 +12,13 @@ val project = client.sessions().list(
     SessionListParams.builder().name("default").limit(1L).build()
 ).items().first()
 
-val run = client.runs().retrieveV2(
-    "<run-id>",
+var runId = "<run-id>"
+var startTime = "<run-start-time-rfc3339>"
+client.runs().retrieveV2(
+    runId,
     RunRetrieveV2Params.builder()
         .projectId(project.id())
-        .startTime(OffsetDateTime.parse("<run-start-time-rfc3339>"))
+        .startTime(OffsetDateTime.parse(startTime))
         .build()
 )
 ```

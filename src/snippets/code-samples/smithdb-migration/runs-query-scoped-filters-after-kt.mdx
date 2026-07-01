@@ -1,4 +1,4 @@
-```kotlin
+```kotlin After
 import com.langchain.smith.client.LangsmithClient
 import com.langchain.smith.client.okhttp.LangsmithOkHttpClient
 import com.langchain.smith.models.runs.RunQueryV2Params
@@ -9,13 +9,12 @@ val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
 val project = client.sessions().list(
     SessionListParams.builder().name("default").limit(1L).build()
 ).items().first()
-
-client.runs().queryV2(
+val runs = client.runs().queryV2(
     RunQueryV2Params.builder()
         .addProjectId(project.id())
-        .filter("""eq(name, "RetrieveDocs")""")
-        .traceFilter("""and(eq(feedback_key, "user_score"), eq(feedback_score, 1))""")
-        .treeFilter("""eq(name, "ExpandQuery")""")
+        .filter("eq(name, \"RetrieveDocs\")")
+        .traceFilter("and(eq(feedback_key, \"user_score\"), eq(feedback_score, 1))")
+        .treeFilter("eq(name, \"ExpandQuery\")")
         .build()
-).autoPager()
+).items()
 ```

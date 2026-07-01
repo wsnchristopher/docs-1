@@ -3,37 +3,36 @@
 //KOTLIN 2.2.0
 //DEPS com.langchain.smith:langsmith-java:0.1.0-beta.8
 
-// :snippet-start: runs-retrieve-basic-before-kt
+// :snippet-start: runs-query-selecting-fields-before-kt
 // :codegroup-tab: Before
 import com.langchain.smith.client.LangsmithClient
 import com.langchain.smith.client.okhttp.LangsmithOkHttpClient
-// :remove-start:
 import com.langchain.smith.models.runs.RunQueryParams
 import com.langchain.smith.models.sessions.SessionListParams
-// :remove-end:
 
 // :remove-start:
 fun main() {
     if (System.getenv("LANGSMITH_API_KEY").isNullOrBlank()) {
-        println("[smithdb-runs-retrieve-basic-before] Skipping (LANGSMITH_API_KEY is not set).")
+        println("[smithdb-runs-query-selecting-fields-before] Skipping (LANGSMITH_API_KEY is not set).")
         return
     }
 
 // :remove-end:
 val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
 
-var runId = "<run-id>"
-// :remove-start:
 val project = client.sessions().list(
     SessionListParams.builder().name("default").limit(1L).build()
 ).items().first()
-val foundRun = client.runs().query(
-    RunQueryParams.builder().addSession(project.id()).limit(1L).build()
-).items().first()
-runId = foundRun.id()
-// :remove-end:
-val run = client.runs().retrieve(runId)
-println("${run.name()} ${run.status()} ${run.totalTokens()}")
+// returns a default set of fields; no explicit selection needed
+val runs = client.runs().query(
+    RunQueryParams.builder().addSession(project.id()).build()
+).items()
+for (run in runs) {
+    println("${run.id()} ${run.name()} ${run.runType()} ${run.status()} ${run.startTime()} ${run.inputs()} ${run.error()}")
+    // :remove-start:
+    break
+    // :remove-end:
+}
 // :remove-start:
 }
 // :remove-end:

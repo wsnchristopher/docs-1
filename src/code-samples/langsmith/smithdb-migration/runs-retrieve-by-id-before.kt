@@ -3,7 +3,7 @@
 //KOTLIN 2.2.0
 //DEPS com.langchain.smith:langsmith-java:0.1.0-beta.8
 
-// :snippet-start: runs-retrieve-basic-before-kt
+// :snippet-start: runs-retrieve-by-id-before-kt
 // :codegroup-tab: Before
 import com.langchain.smith.client.LangsmithClient
 import com.langchain.smith.client.okhttp.LangsmithOkHttpClient
@@ -15,7 +15,7 @@ import com.langchain.smith.models.sessions.SessionListParams
 // :remove-start:
 fun main() {
     if (System.getenv("LANGSMITH_API_KEY").isNullOrBlank()) {
-        println("[smithdb-runs-retrieve-basic-before] Skipping (LANGSMITH_API_KEY is not set).")
+        println("[smithdb-runs-retrieve-by-id-before] Skipping (LANGSMITH_API_KEY is not set).")
         return
     }
 
@@ -32,8 +32,7 @@ val foundRun = client.runs().query(
 ).items().first()
 runId = foundRun.id()
 // :remove-end:
-val run = client.runs().retrieve(runId)
-println("${run.name()} ${run.status()} ${run.totalTokens()}")
+client.runs().retrieve(runId)
 // :remove-start:
 }
 // :remove-end:

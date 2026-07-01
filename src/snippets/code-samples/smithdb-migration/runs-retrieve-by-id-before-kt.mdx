@@ -1,8 +1,9 @@
-```kotlin
+```kotlin Before
 import com.langchain.smith.client.LangsmithClient
 import com.langchain.smith.client.okhttp.LangsmithOkHttpClient
 
 val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
 
-val run = client.runs().retrieveV1("<run-id>")
+var runId = "<run-id>"
+client.runs().retrieve(runId)
 ```

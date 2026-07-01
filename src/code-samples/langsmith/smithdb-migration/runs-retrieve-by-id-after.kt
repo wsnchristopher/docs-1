@@ -3,7 +3,7 @@
 //KOTLIN 2.2.0
 //DEPS com.langchain.smith:langsmith-java:0.1.0-beta.8
 
-// :snippet-start: runs-retrieve-basic-after-kt
+// :snippet-start: runs-retrieve-by-id-after-kt
 // :codegroup-tab: After
 import java.time.OffsetDateTime
 
@@ -18,7 +18,7 @@ import com.langchain.smith.models.runs.RunQueryV2Params
 // :remove-start:
 fun main() {
     if (System.getenv("LANGSMITH_API_KEY").isNullOrBlank()) {
-        println("[smithdb-runs-retrieve-basic-after] Skipping (LANGSMITH_API_KEY is not set).")
+        println("[smithdb-runs-retrieve-by-id-after] Skipping (LANGSMITH_API_KEY is not set).")
         return
     }
 
@@ -43,17 +43,13 @@ val foundRun = client.runs().queryV2(
 runId = foundRun.id().get()
 startTime = foundRun.startTime().get().toString()
 // :remove-end:
-val run = client.runs().retrieveV2(
+client.runs().retrieveV2(
     runId,
     RunRetrieveV2Params.builder()
         .projectId(project.id())
         .startTime(OffsetDateTime.parse(startTime))
-        .addSelect(RunRetrieveV2Params.Select.NAME)
-        .addSelect(RunRetrieveV2Params.Select.STATUS)
-        .addSelect(RunRetrieveV2Params.Select.TOTAL_TOKENS)
         .build()
 )
-println("${run.name()} ${run.status()} ${run.totalTokens()}")
 // :remove-start:
 }
 // :remove-end:

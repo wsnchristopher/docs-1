@@ -1,4 +1,4 @@
-```kotlin
+```kotlin After
 import com.langchain.smith.client.LangsmithClient
 import com.langchain.smith.client.okhttp.LangsmithOkHttpClient
 import com.langchain.smith.models.runs.RunQueryV2Params
@@ -9,14 +9,11 @@ val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
 val project = client.sessions().list(
     SessionListParams.builder().name("default").limit(1L).build()
 ).items().first()
-
-var count = 0
-client.runs().queryV2(
-    RunQueryV2Params.builder()
-        .addProjectId(project.id())
-        .build()
-).autoPager().forEach { run ->
-    println("${run.id()} ${run.name()}")
-    if (++count >= 150) return@forEach
+val runs = mutableListOf<Any>()
+for (run in client.runs().queryV2(
+    RunQueryV2Params.builder().addProjectId(project.id()).build()
+).autoPager()) {
+    runs.add(run)
+    if (runs.size >= 150) break
 }
 ```

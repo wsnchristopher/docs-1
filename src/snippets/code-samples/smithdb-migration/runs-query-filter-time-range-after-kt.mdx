@@ -1,4 +1,4 @@
-```kotlin
+```kotlin After
 import java.time.OffsetDateTime
 
 import com.langchain.smith.client.LangsmithClient
@@ -11,12 +11,11 @@ val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
 val project = client.sessions().list(
     SessionListParams.builder().name("default").limit(1L).build()
 ).items().first()
-
-client.runs().queryV2(
+val runs = client.runs().queryV2(
     RunQueryV2Params.builder()
         .addProjectId(project.id())
-        .minStartTime(OffsetDateTime.parse("2024-01-01T00:00:00Z"))
+        .minStartTime(OffsetDateTime.now().minusDays(1))
         .runType(RunQueryV2Params.RunType.LLM)
         .build()
-).autoPager()
+).items()
 ```

@@ -1,14 +1,15 @@
-```kotlin
+```kotlin Before
 import com.langchain.smith.client.LangsmithClient
 import com.langchain.smith.client.okhttp.LangsmithOkHttpClient
-import com.langchain.smith.models.runs.RunQueryV1Params
+import com.langchain.smith.models.runs.RunQueryParams
+import com.langchain.smith.models.sessions.SessionListParams
 
 val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
 
-client.runs().query(
-    RunQueryV1Params.builder()
-        .addSession("<project-id>")
-        .isRoot(true)
-        .build()
-).runs()
+val project = client.sessions().list(
+    SessionListParams.builder().name("default").limit(1L).build()
+).items().first()
+val runs = client.runs().query(
+    RunQueryParams.builder().addSession(project.id()).isRoot(true).build()
+).items()
 ```
