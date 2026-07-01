@@ -309,7 +309,7 @@ export const sandbox = defineSandbox(LangSmithSandbox, {
 
 </CodeGroup>
 
-The supported sandbox reuse scopes are `thread`, `tenant`, and `actor`. `sandbox/setup.sh`, when present, runs once when a new managed sandbox is provisioned.
+Sandboxes are scoped per thread. `sandbox/setup.sh`, when present, runs once when a new managed sandbox is provisioned for a thread.
 
 ### Ignored paths
 

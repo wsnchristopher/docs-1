@@ -137,13 +137,7 @@ export const sandbox = defineSandbox(LangSmithSandbox, {
 
 </CodeGroup>
 
-Supported reuse scopes are:
-
-| Scope | Behavior |
-| --- | --- |
-| `thread` | One sandbox per durable thread or conversation. |
-| `tenant` | One sandbox shared across threads for the current tenant. |
-| `actor` | One sandbox shared across threads for the current actor. |
+Sandboxes are scoped per thread. Each durable thread or conversation gets its own sandbox.
 
 If `sandbox/setup.sh` exists, MDA runs it once when a new managed sandbox is provisioned. Use it to install packages, seed files, or prepare workspace state.
 
