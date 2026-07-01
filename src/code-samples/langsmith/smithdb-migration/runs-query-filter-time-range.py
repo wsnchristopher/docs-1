@@ -55,7 +55,7 @@ async def main():
         min_start_time=datetime.now() - timedelta(days=1),
         run_type="LLM",
     ):
-        print(run.id, run.name, run.status)
+        print(run.id)
 
 
 asyncio.run(main())

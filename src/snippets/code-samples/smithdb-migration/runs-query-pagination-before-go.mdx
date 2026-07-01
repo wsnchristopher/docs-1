@@ -11,10 +11,6 @@ client := langsmith.NewClient()
 var runs []langsmith.RunSchema
 response, err := client.Runs.Query(ctx, langsmith.RunQueryParams{
 	Session: langsmith.F([]string{"<project-id>"}),
-	Select: langsmith.F([]langsmith.RunQueryParamsSelect{
-		langsmith.RunQueryParamsSelectID,
-		langsmith.RunQueryParamsSelectName,
-	}),
 	Limit: langsmith.F(int64(100)),
 })
 if err != nil {

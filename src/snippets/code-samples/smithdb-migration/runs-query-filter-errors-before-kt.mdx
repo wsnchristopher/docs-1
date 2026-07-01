@@ -5,7 +5,7 @@ import com.langchain.smith.models.runs.RunQueryV1Params
 
 val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
 
-client.runs().queryV1(
+client.runs().query(
     RunQueryV1Params.builder()
         .addSession("<project-id>")
         .error(true)

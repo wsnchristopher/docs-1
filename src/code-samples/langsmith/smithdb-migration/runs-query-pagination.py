@@ -48,7 +48,6 @@ async def main():
     runs = []
     async for run in client.runs.query(
         project_ids=[str(project.id)],
-        selects=["ID", "NAME"],
     ):
         runs.append(run)
         if len(runs) >= 150:

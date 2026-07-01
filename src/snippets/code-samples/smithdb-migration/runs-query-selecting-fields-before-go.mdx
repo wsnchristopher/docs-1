@@ -17,6 +17,6 @@ if err != nil {
 	panic(err.Error())
 }
 for _, run := range response.Runs {
-	fmt.Println(run.ID, run.Name, run.Status)
+	fmt.Println(run.ID, run.Name, run.RunType, run.Status, run.StartTime, run.Inputs, run.Error)
 }
 ```

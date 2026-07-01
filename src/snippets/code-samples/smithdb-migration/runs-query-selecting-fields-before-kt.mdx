@@ -5,14 +5,18 @@ import com.langchain.smith.models.runs.RunQueryV1Params
 
 val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
 
-client.runs().queryV1(
+client.runs().query(
     RunQueryV1Params.builder()
         .addSession("<project-id>")
         .addSelect(RunQueryV1Params.Select.ID)
         .addSelect(RunQueryV1Params.Select.NAME)
+        .addSelect(RunQueryV1Params.Select.RUN_TYPE)
         .addSelect(RunQueryV1Params.Select.STATUS)
+        .addSelect(RunQueryV1Params.Select.START_TIME)
+        .addSelect(RunQueryV1Params.Select.INPUTS)
+        .addSelect(RunQueryV1Params.Select.ERROR)
         .build()
 ).runs().forEach { run ->
-    println("${run.id()} ${run.name()} ${run.status()}")
+    println("${run.id()} ${run.name()} ${run.runType()} ${run.status()} ${run.startTime()} ${run.inputs()} ${run.error()}")
 }
 ```

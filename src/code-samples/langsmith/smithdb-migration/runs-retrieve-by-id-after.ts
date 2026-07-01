@@ -29,4 +29,5 @@ const run = await client.runs.retrieve("<run-id>", {
   project_id: project.id,
   start_time: "2025-01-01T12:00:00Z",
 });
+console.log(run.id);
 // :snippet-end:

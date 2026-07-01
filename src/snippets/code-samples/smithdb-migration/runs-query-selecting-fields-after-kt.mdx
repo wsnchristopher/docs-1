@@ -15,9 +15,13 @@ client.runs().queryV2(
         .addProjectId(project.id())
         .addSelect(RunQueryV2Params.Select.ID)
         .addSelect(RunQueryV2Params.Select.NAME)
+        .addSelect(RunQueryV2Params.Select.RUN_TYPE)
         .addSelect(RunQueryV2Params.Select.STATUS)
+        .addSelect(RunQueryV2Params.Select.START_TIME)
+        .addSelect(RunQueryV2Params.Select.INPUTS)
+        .addSelect(RunQueryV2Params.Select.ERROR)
         .build()
 ).autoPager().forEach { run ->
-    println("${run.id()} ${run.name()} ${run.status()}")
+    println("${run.id()} ${run.name()} ${run.runType()} ${run.status()} ${run.startTime()} ${run.inputs()} ${run.error()}")
 }
 ```

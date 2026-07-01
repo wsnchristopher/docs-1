@@ -33,6 +33,6 @@ for await (const run of client.runs.query({
   project_ids: [project.id],
   filter: filterStr,
 })) {
-  /* use run */
+  console.log(run.id);
 }
 // :snippet-end:

@@ -26,6 +26,6 @@ const project = await client.projects
   .list({ name: "default", limit: 1 })
   .then((page) => page.getPaginatedItems()[0]);
 for await (const run of client.runs.query({ project_ids: [project.id] })) {
-  /* use run */
+  console.log(run.id);
 }
 // :snippet-end:

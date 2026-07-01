@@ -44,7 +44,7 @@ async def main():
     async for project in client.projects.list(name="default", limit=1):
         break
     async for run in client.runs.query(project_ids=[str(project.id)], is_root=True):
-        print(run.id, run.name, run.status)
+        print(run.id)
 
 
 asyncio.run(main())

@@ -109,16 +109,6 @@ The response from customers has been outstanding. SmithDB delivers leading perfo
 
 Today we are excited to bring SmithDB-powered methods to all SDK users.
 
-<Info>
-**Early preview for partner customers**
-
-Minimum SDK version requirements will be published at general availability. We are shipping new methods every week, building toward full feature parity with the existing methods before a general availability release and broader customer communication.
-
-These methods ship in minor SDK releases today. When a future v2 major release completes the transition, code already using these methods will require no further changes.
-
-Your feedback matters. Reach out in Slack or open a support ticket with questions or issues so we can address them quickly and make this migration as seamless as possible.
-</Info>
-
 <Tip>
 **Agent-assisted migration (coming soon)**
 
@@ -155,7 +145,7 @@ Query runs from a project with optional filtering and field projection. Returns 
   <Tab title="Java">
     | Before | After |
     |--------|-------|
-    | `client.runs().queryV1()` | `client.runs().queryV2()` |
+    | `client.runs().query()` | `client.runs().queryV2()` |
   </Tab>
   <Tab title="Go">
     | Before | After |

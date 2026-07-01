@@ -31,6 +31,6 @@ for await (const run of client.runs.query({
   min_start_time: oneDayAgo.toISOString(),
   run_type: "LLM",
 })) {
-  /* use run */
+  console.log(run.id);
 }
 // :snippet-end:

@@ -29,6 +29,6 @@ for await (const run of client.runs.query({
   project_ids: [project.id],
   has_error: true,
 })) {
-  /* use run */
+  console.log(run.id);
 }
 // :snippet-end:

@@ -8,7 +8,6 @@ const project = await client.projects
 const runs: unknown[] = [];
 for await (const run of client.runs.query({
   project_ids: [project.id],
-  selects: ["ID", "NAME"],
 })) {
   runs.push(run);
   if (runs.length >= 150) break;

@@ -48,6 +48,7 @@ async def main():
         project_id=str(project.id),
         start_time="2025-01-01T12:00:00Z",
     )
+    print(run.id)
 
 
 asyncio.run(main())
