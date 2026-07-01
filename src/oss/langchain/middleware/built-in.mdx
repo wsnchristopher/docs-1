@@ -30,6 +30,7 @@ The following middleware work with any LLM provider:
 | [File search](#file-search) | Provide Glob and Grep search tools over filesystem files. |
 | [Filesystem](#filesystem-middleware) | Provide agents with a filesystem for storing context and long-term memories. |
 | [Subagent](#subagent) | Add the ability to spawn subagents. |
+| [Rubric grading (Beta)](#rubric-grading) | Apply LLM-as-a-judge grading so agents self-evaluate and iterate until a rubric is satisfied. |
 
 :::
 
@@ -2852,6 +2853,37 @@ const agent = createAgent({
 :::
 
 In addition to any user-defined subagents, the main agent has access to a `general-purpose` subagent at all times. This subagent has the same instructions as the main agent and all the tools it has access to. The primary purpose of the `general-purpose` subagent is context isolation—the main agent can delegate a complex task to this subagent and get a concise answer back without bloat from intermediate tool calls.
+
+### Rubric grading
+
+:::python
+
+<Note>
+`RubricMiddleware` requires `deepagents>=0.6.5`. It is in [**beta**](/oss/versioning); the API may change in the future.
+</Note>
+
+Some tasks have a clear definition of "done" that an agent cannot reliably hit on the first try. `RubricMiddleware` lets you declare _what done looks like_ as a rubric and have the agent self-evaluate and iterate until the rubric is satisfied or a maximum iteration cap is hit.
+
+**API reference:** @[`RubricMiddleware`]
+
+```python
+from deepagents import RubricMiddleware, create_deep_agent
+from langgraph.checkpoint.memory import InMemorySaver
+
+agent = create_deep_agent(
+    model="openai:gpt-5.5",
+    middleware=[
+        RubricMiddleware(
+            model="anthropic:claude-haiku-4-5",
+            max_iterations=3,
+        ),
+    ],
+    checkpointer=InMemorySaver(),
+)
+```
+
+For full configuration options, streaming events, and a complete code generation example, see [Grading rubrics](/oss/deepagents/rubric).
+:::
 
 ## Provider-specific middleware
 
