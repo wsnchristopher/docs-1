@@ -13,7 +13,7 @@ Learn how to trace your LLM applications using OpenTelemetry with LangSmith.
 
 The following diagram shows the basic flow for OpenTelemetry tracing with LangSmith, including the fanout pattern where a single stream of spans is routed to multiple observability backends.
 
-```mermaid
+```mermaid actions={false}
 %%{init: {"theme": "base", "themeVariables": {"lineColor": "#40668D", "primaryColor": "#E5F4FF", "primaryTextColor": "#030710", "primaryBorderColor": "#006DDD"}}}%%
 flowchart TD
     App["Your application\n(LangChain, LangGraph,\nor any OTel-compatible app)"]
