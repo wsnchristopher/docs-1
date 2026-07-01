@@ -1,28 +1,3 @@
-# :remove-start:
-import os
-import sys
-
-if not os.environ.get("LANGSMITH_API_KEY"):
-    print("Skipping (LANGSMITH_API_KEY required).")
-    sys.exit(0)
-
-
-def _handle_expected_error(exc_type, exc_val, exc_tb):
-    import requests
-    _skip = (ValueError, requests.HTTPError)
-    try:
-        from langsmith.utils import LangSmithError, LangSmithUserError
-        _skip = _skip + (LangSmithError, LangSmithUserError)
-    except ImportError:
-        pass
-    if isinstance(exc_val, _skip) or "403" in str(exc_val) or "404" in str(exc_val) or "422" in str(exc_val):
-        print(f"Skipping (placeholder values in test env): {exc_val}")
-        sys.exit(0)
-    sys.__excepthook__(exc_type, exc_val, exc_tb)
-
-
-sys.excepthook = _handle_expected_error
-# :remove-end:
 
 # :snippet-start: runs-query-filter-root-before-py
 # :codegroup-tab: Before
