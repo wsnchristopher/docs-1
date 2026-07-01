@@ -2,5 +2,6 @@
 from langsmith import Client
 
 client = Client()
-run = client.read_run("<run-id>")
+run_id = "<run-id>"
+run = client.read_run(run_id)
 ```

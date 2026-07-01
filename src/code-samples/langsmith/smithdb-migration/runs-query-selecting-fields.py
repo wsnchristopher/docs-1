@@ -8,6 +8,9 @@ client = Client()
 runs = client.list_runs(project_name="default")
 for run in runs:
     print(run.id, run.name, run.run_type, run.status, run.start_time, run.inputs, run.error)
+    # :remove-start:
+    break
+    # :remove-end:
 # :snippet-end:
 
 # :snippet-start: runs-query-selecting-fields-after-py
@@ -27,6 +30,9 @@ async def main():
         selects=["ID", "NAME", "RUN_TYPE", "STATUS", "START_TIME", "INPUTS", "ERROR"],
     ):
         print(run.id, run.name, run.run_type, run.status, run.start_time, run.inputs, run.error)
+        # :remove-start:
+        break
+        # :remove-end:
 
 
 asyncio.run(main())

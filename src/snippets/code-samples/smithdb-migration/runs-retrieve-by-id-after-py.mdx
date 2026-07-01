@@ -8,10 +8,12 @@ async def main():
     client = Client()
     async for project in client.projects.list(name="default", limit=1):
         break
+    run_id = "<run-id>"
+    start_time="2026-06-01T12:00:00Z"
     run = await client.runs.retrieve(
-        run_id="<run-id>",
+        run_id=run_id,
         project_id=str(project.id),
-        start_time="2025-01-01T12:00:00Z",
+        start_time=start_time,
     )
 
 

@@ -13,5 +13,8 @@ for await (const run of client.runs.query({
   selects: ["ID", "NAME", "RUN_TYPE", "STATUS", "START_TIME", "INPUTS", "ERROR"],
 })) {
   console.log(run.id, run.name, run.run_type, run.status, run.start_time, run.inputs, run.error);
+  // :remove-start:
+  break;
+  // :remove-end:
 }
 // :snippet-end:

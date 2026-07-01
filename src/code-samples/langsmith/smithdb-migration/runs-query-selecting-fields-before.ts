@@ -8,5 +8,8 @@ const client = new Client();
 const runs = client.listRuns({ projectName: "default" });
 for await (const run of runs) {
   console.log(run.id, run.name, run.run_type, run.status, run.start_time, run.inputs, run.error);
+  // :remove-start:
+  break;
+  // :remove-end:
 }
 // :snippet-end:

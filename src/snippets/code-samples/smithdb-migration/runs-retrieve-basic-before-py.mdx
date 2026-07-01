@@ -2,6 +2,7 @@
 from langsmith import Client
 
 client = Client()
-run = client.read_run(run_id="<run-id>")
+run_id = "<run-id>"
+run = client.read_run(run_id=run_id)
 print(run.name, run.status, run.total_tokens)
 ```
