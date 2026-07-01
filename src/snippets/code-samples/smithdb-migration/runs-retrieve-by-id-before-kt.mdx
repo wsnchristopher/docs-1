@@ -5,5 +5,4 @@ import com.langchain.smith.client.okhttp.LangsmithOkHttpClient
 val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
 
 val run = client.runs().retrieveV1("<run-id>")
-println("${run.id()} ${run.name()} ${run.status()}")
 ```

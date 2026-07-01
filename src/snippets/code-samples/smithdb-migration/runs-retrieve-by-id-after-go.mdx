@@ -1,8 +1,6 @@
 ```go
 import (
 	"context"
-	"fmt"
-
 	"github.com/langchain-ai/langsmith-go"
 )
 
@@ -25,5 +23,5 @@ run, err := client.Runs.RetrieveV2(ctx, "<run-id>", langsmith.RunRetrieveV2Param
 if err != nil {
 	panic(err.Error())
 }
-fmt.Println(run.ID)
+_ = run
 ```
