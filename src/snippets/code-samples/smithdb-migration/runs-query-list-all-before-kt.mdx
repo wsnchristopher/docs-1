@@ -10,9 +10,7 @@ val project = client.sessions().list(
     SessionListParams.builder().name("default").limit(1L).build()
 ).items().first()
 
-client.runs().query(
+val runs = client.runs().query(
     RunQueryV1Params.builder().addSession(project.id()).build()
-).runs().forEach { run ->
-    println("${run.id()} ${run.name()} ${run.status()}")
-}
+).runs()
 ```

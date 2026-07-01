@@ -10,9 +10,7 @@ val project = client.sessions().list(
     SessionListParams.builder().name("default").limit(1L).build()
 ).items().first()
 
-client.runs().queryV2(
+val runs = client.runs().queryV2(
     RunQueryV2Params.builder().addProjectId(project.id()).build()
-).autoPager().forEach { run ->
-    println(run.id())
-}
+).autoPager()
 ```
