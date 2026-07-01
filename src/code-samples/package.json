@@ -22,12 +22,8 @@
     "@langchain/tavily": "^1.2.0",
     "@langchain/textsplitters": "^1.0.0",
     "cheerio": "^1.0.0",
-<<<<<<< HEAD
     "deepagents": "^1.10.5",
-=======
-    "deepagents": "^1.10.2",
     "dotenv": "^17.4.2",
->>>>>>> cb7d6906d (add dotenv)
     "langchain": "^1.4.5",
     "langsmith": "^0.7.0",
     "sqlite3": "^6.0.1",
