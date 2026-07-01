@@ -1,15 +1,15 @@
-```go
+```go Before
+package main
+
 import (
 	"context"
+
 	"github.com/langchain-ai/langsmith-go"
 )
 
 ctx := context.Background()
 client := langsmith.NewClient()
 
-run, err := client.Runs.Get(ctx, "<run-id>", langsmith.RunGetParams{})
-if err != nil {
-	panic(err.Error())
-}
-_ = run
+runID := "<run-id>"
+run, err := client.Runs.Get(ctx, runID, langsmith.RunGetParams{})
 ```

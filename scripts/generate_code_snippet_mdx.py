@@ -1,6 +1,6 @@
 """Generate MDX snippet files from extracted code snippet files.
 
-Reads .snippet.*.py, .snippet.*.ts, .snippet.*.java, and .snippet.*.kt files from src/code-samples-generated/
+Reads .snippet.*.py, .snippet.*.ts, .snippet.*.java, .snippet.*.kt, and .snippet.*.go files from src/code-samples-generated/
 (produced by ``scripts/extract_code_snippets.py``, Bluehawk-compatible layout).
 and creates corresponding MDX files in src/snippets/code-samples/ for use in docs.
 
@@ -255,9 +255,16 @@ def main() -> None:
         ("*.snippet.*.ts", "ts", "ts"),
         ("*.snippet.*.java", "java", "java"),
         ("*.snippet.*.kt", "kotlin", "kotlin"),
+        ("*.snippet.*.go", "go", "go"),
     ]
 
-    lang_suffix = {"python": "-py", "ts": "-js", "java": "-java", "kotlin": "-kt"}
+    lang_suffix = {
+        "python": "-py",
+        "ts": "-js",
+        "java": "-java",
+        "kotlin": "-kt",
+        "go": "-go",
+    }
 
     for glob_pattern, language, fence_lang in snippet_configs:
         for snippet_file in generated_dir.rglob(glob_pattern):

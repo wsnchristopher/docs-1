@@ -114,7 +114,20 @@ public class Example {
 // :snippet-end:
 ```
 
-Choose a unique `snippet-name` in kebab-case. All snippet names must include a language suffix: `-py` for Python files, `-js` for TypeScript/JavaScript files, `-java` for Java files, and `-kt` for Kotlin files (for example, `tool-return-values-py`, `tool-return-values-js`, `traceable-pipeline-java`, `traceable-pipeline-kt`). This becomes the base of the output filename.
+**Go:**
+```go
+// :snippet-start: snippet-name-go
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("hello")
+}
+// :snippet-end:
+```
+
+Choose a unique `snippet-name` in kebab-case. All snippet names must include a language suffix: `-py` for Python files, `-js` for TypeScript/JavaScript files, `-java` for Java files, `-kt` for Kotlin files, and `-go` for Go files (for example, `tool-return-values-py`, `tool-return-values-js`, `traceable-pipeline-java`, `traceable-pipeline-kt`, `traceable-pipeline-go`). This becomes the base of the output filename.
 
 ### 3. Add runnable test code in remove blocks
 
@@ -168,6 +181,8 @@ Java files (`.java`) under `src/code-samples/` are run using `jbang`. To keep CI
 - Fail fast (non-zero exit) when a key is required for the sample to run, for example `manage-prompts-0-push.java` without `LANGSMITH_API_KEY`
 
 `make test-code-samples` runs every `.java` file under `src/code-samples/` in **lexical path order** (after all Python and TypeScript samples). That order is unrelated to section order in the docs. If one sample must run before another (for example creating a hub prompt before pulling it), name the source files so they sort correctly. For example, `manage-prompts-pull.java` runs before `manage-prompts-push.java` because `pull` sorts before `push`; use prefixes such as `manage-prompts-0-push.java` and `manage-prompts-1-pull.java` when you need push to run first.
+
+Go files (`.go`) under `src/code-samples/` are run with `go run` from `src/code-samples/`, which shares a single `go.mod`/`go.sum` at that directory (add new dependencies there with `go get`, then `go mod tidy`, similar to how `.ts` samples share `src/code-samples/package.json`). `go run <file>.go` only compiles that one file, not its sibling files in the same directory, so — like Kotlin — put each snippet variant in its own file (`topic-before.go`, `topic-after.go`) rather than multiple snippets sharing one file: two files in the same package cannot both declare `func main()`. Go samples do not guard on missing keys — let the SDK call fail fast (matching Python's behavior) rather than skipping with a printed message. `make test-code-samples` runs `.go` files last, after Kotlin, in lexical path order.
 
 Check formatting with:
 
@@ -230,8 +245,8 @@ Replace the inline code blocks with the snippet components:
 
 | Element | Convention | Example |
 |--------|-------------|---------|
-| Code file | Descriptive, kebab-case | `return-a-string.py`, `return-a-string.ts`, `traceable-pipeline.java`, `traceable-pipeline.kt` |
-| Snippet name | Kebab-case with language suffix: `-py` for Python, `-js` for JS/TS, `-java` for Java, `-kt` for Kotlin | `tool-return-values-py`, `tool-return-values-js`, `traceable-pipeline-java`, `traceable-pipeline-kt` |
+| Code file | Descriptive, kebab-case | `return-a-string.py`, `return-a-string.ts`, `traceable-pipeline.java`, `traceable-pipeline.kt`, `traceable-pipeline.go` |
+| Snippet name | Kebab-case with language suffix: `-py` for Python, `-js` for JS/TS, `-java` for Java, `-kt` for Kotlin, `-go` for Go | `tool-return-values-py`, `tool-return-values-js`, `traceable-pipeline-java`, `traceable-pipeline-kt`, `traceable-pipeline-go` |
 | MDX snippet (Python) | `{snippet-name}.mdx` (snippet name ends in `-py`) | `tool-return-values-py.mdx` |
 | MDX snippet (JS) | `{snippet-name}.mdx` (snippet name ends in `-js`) | `tool-return-values-js.mdx` |
 | Component name | PascalCase | `ToolReturnValuesPy`, `ToolReturnValuesJs` |

@@ -1,4 +1,6 @@
-```go
+```go Before
+package main
+
 import (
 	"context"
 
@@ -8,11 +10,16 @@ import (
 ctx := context.Background()
 client := langsmith.NewClient()
 
-response, err := client.Runs.Query(ctx, langsmith.RunQueryParams{
-	ID: langsmith.F([]string{"<run-id-1>", "<run-id-2>"}),
+sessions, err := client.Sessions.List(ctx, langsmith.SessionListParams{
+	Name:  langsmith.F("default"),
+	Limit: langsmith.F(int64(1)),
 })
-if err != nil {
-	panic(err.Error())
-}
-_ = response
+project := sessions.Items[0]
+
+runID1 := "<run-id-1>"
+runID2 := "<run-id-2>"
+runs, err := client.Runs.Query(ctx, langsmith.RunQueryParams{
+	Session: langsmith.F([]string{project.ID}),
+	ID:      langsmith.F([]string{runID1, runID2}),
+})
 ```

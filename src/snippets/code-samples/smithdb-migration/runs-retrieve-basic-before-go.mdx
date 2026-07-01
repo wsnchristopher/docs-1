@@ -1,4 +1,6 @@
-```go
+```go Before
+package main
+
 import (
 	"context"
 	"fmt"
@@ -9,9 +11,7 @@ import (
 ctx := context.Background()
 client := langsmith.NewClient()
 
-run, err := client.Runs.Get(ctx, "<run-id>", langsmith.RunGetParams{})
-if err != nil {
-	panic(err.Error())
-}
-fmt.Println(run.ID)
+runID := "<run-id>"
+run, err := client.Runs.Get(ctx, runID, langsmith.RunGetParams{})
+fmt.Println(run.Name, run.Status, run.TotalTokens)
 ```

@@ -1391,7 +1391,7 @@ Fetch a single run by ID. Returns only the run ID by default—specify a field s
   <Tab title="Go">
     | Before | After |
     |--------|-------|
-    | `client.Runs.Get()` | `client.Runs.RetrieveV2()` |
+    | `client.Runs.Get()` | `client.Runs.GetV2()` |
   </Tab>
   <Tab title="cURL">
     | Before | After |
@@ -1446,7 +1446,7 @@ Fetch a single run by ID. Returns only the run ID by default—specify a field s
   <Tab title="Go">
     All parameters use `PascalCase` field names on the params struct.
 
-    | Before (`RunGetParams`) | After (`RunRetrieveV2Params`) | Notes |
+    | Before (`RunGetParams`) | After (`RunGetV2Params`) | Notes |
     |---|---|---|
     | `runID` (positional) | `runID` (positional) | Unchanged |
     | `ExcludeS3StoredAttributes` | *(removed)* | No equivalent |
@@ -1455,7 +1455,7 @@ Fetch a single run by ID. Returns only the run ID by default—specify a field s
     | `SessionID` | *(removed)* | Replaced by `ProjectID` |
     | `StartTime` | `StartTime` | Now **required**; used with `ProjectID` to locate the run in SmithDB |
     | *(not available)* | `ProjectID` | **Required**—UUID of the project that owns the run |
-    | *(all fields returned by default)* | `Selects` | Field projection; defaults to `["ID"]` only; field name constants are uppercase (e.g., `RunRetrieveV2ParamsSelectName`) |
+    | *(all fields returned by default)* | `Selects` | Field projection; defaults to `["ID"]` only; field name constants are uppercase (e.g., `RunGetV2ParamsSelectName`) |
   </Tab>
   <Tab title="cURL">
     `run_id` remains in the URL path. All other parameters are query string values with `snake_case` names.

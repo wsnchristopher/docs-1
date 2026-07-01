@@ -1,4 +1,6 @@
-```go
+```go After
+package main
+
 import (
 	"context"
 
@@ -12,14 +14,12 @@ sessions, err := client.Sessions.List(ctx, langsmith.SessionListParams{
 	Name:  langsmith.F("default"),
 	Limit: langsmith.F(int64(1)),
 })
-if err != nil {
-	panic(err.Error())
-}
 project := sessions.Items[0]
 
-pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
+runID1 := "<run-id-1>"
+runID2 := "<run-id-2>"
+runs, err := client.Runs.QueryV2(ctx, langsmith.RunQueryV2Params{
 	ProjectIDs: langsmith.F([]string{project.ID}),
-	IDs:        langsmith.F([]string{"<run-id-1>", "<run-id-2>"}),
+	IDs:        langsmith.F([]string{runID1, runID2}),
 })
-_ = pager
 ```
