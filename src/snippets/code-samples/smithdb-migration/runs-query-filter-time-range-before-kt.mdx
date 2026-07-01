@@ -14,7 +14,5 @@ client.runs().query(
         .startTime(OffsetDateTime.parse("2024-01-01T00:00:00Z"))
         .runType(RunTypeEnum.LLM)
         .build()
-).runs().forEach { run ->
-    println("${run.id()} ${run.name()} ${run.status()}")
-}
+).runs()
 ```

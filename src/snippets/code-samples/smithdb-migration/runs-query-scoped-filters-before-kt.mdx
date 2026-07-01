@@ -12,7 +12,5 @@ client.runs().query(
         .traceFilter("""and(eq(feedback_key, "user_score"), eq(feedback_score, 1))""")
         .treeFilter("""eq(name, "ExpandQuery")""")
         .build()
-).runs().forEach { run ->
-    println("${run.id()} ${run.name()} ${run.status()}")
-}
+).runs()
 ```

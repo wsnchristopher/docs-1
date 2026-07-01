@@ -6,11 +6,9 @@ const project = await client.projects
   .list({ name: "default", limit: 1 })
   .then((page) => page.getPaginatedItems()[0]);
 const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-for await (const run of client.runs.query({
+const runs = client.runs.query({
   project_ids: [project.id],
   min_start_time: oneDayAgo.toISOString(),
   run_type: "LLM",
-})) {
-  console.log(run.id);
-}
+});
 ```

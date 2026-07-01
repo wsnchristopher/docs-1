@@ -28,7 +28,4 @@ const runs = client.listRuns({
   traceFilter: 'and(eq(feedback_key, "user_score"), eq(feedback_score, 1))',
   treeFilter: 'eq(name, "ExpandQuery")',
 });
-for await (const run of runs) {
-  /* use run */
-}
 // :snippet-end:

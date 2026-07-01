@@ -1,7 +1,6 @@
 ```go
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/langchain-ai/langsmith-go"
@@ -24,11 +23,5 @@ pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
 	MinStartTime: langsmith.F(time.Now().Add(-24 * time.Hour)),
 	RunType:      langsmith.F(langsmith.RunQueryV2ParamsRunTypeLLM),
 })
-for pager.Next() {
-	run := pager.Current()
-	fmt.Println(run.ID)
-}
-if err := pager.Err(); err != nil {
-	panic(err.Error())
-}
+_ = pager
 ```

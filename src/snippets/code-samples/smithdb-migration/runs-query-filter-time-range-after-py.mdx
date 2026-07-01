@@ -9,12 +9,11 @@ async def main():
     client = Client()
     async for project in client.projects.list(name="default", limit=1):
         break
-    async for run in client.runs.query(
+    runs = client.runs.query(
         project_ids=[str(project.id)],
         min_start_time=datetime.now() - timedelta(days=1),
         run_type="LLM",
-    ):
-        print(run.id)
+    )
 
 
 asyncio.run(main())

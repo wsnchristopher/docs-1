@@ -1,7 +1,6 @@
 ```go
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/langchain-ai/langsmith-go"
@@ -18,7 +17,5 @@ response, err := client.Runs.Query(ctx, langsmith.RunQueryParams{
 if err != nil {
 	panic(err.Error())
 }
-for _, run := range response.Runs {
-	fmt.Println(run.ID, run.Name, run.Status)
-}
+_ = response
 ```

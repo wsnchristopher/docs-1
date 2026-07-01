@@ -27,7 +27,4 @@ const runs = client.listRuns({
   startTime: new Date(Date.now() - 24 * 60 * 60 * 1000),
   runType: "llm",
 });
-for await (const run of runs) {
-  /* use run */
-}
 // :snippet-end:

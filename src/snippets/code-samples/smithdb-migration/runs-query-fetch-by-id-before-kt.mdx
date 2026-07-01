@@ -10,7 +10,5 @@ client.runs().query(
         .addId("<run-id-1>")
         .addId("<run-id-2>")
         .build()
-).runs().forEach { run ->
-    println("${run.id()} ${run.name()} ${run.status()}")
-}
+).runs()
 ```

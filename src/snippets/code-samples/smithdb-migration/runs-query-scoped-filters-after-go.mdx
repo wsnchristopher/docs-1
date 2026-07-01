@@ -1,7 +1,6 @@
 ```go
 import (
 	"context"
-	"fmt"
 
 	"github.com/langchain-ai/langsmith-go"
 )
@@ -24,11 +23,5 @@ pager := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
 	TraceFilter: langsmith.F(`and(eq(feedback_key, "user_score"), eq(feedback_score, 1))`),
 	TreeFilter:  langsmith.F(`eq(name, "ExpandQuery")`),
 })
-for pager.Next() {
-	run := pager.Current()
-	fmt.Println(run.ID)
-}
-if err := pager.Err(); err != nil {
-	panic(err.Error())
-}
+_ = pager
 ```

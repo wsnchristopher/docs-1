@@ -16,7 +16,5 @@ client.runs().queryV2(
         .addId("<run-id-1>")
         .addId("<run-id-2>")
         .build()
-).autoPager().forEach { run ->
-    println(run.id())
-}
+).autoPager()
 ```

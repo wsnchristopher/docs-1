@@ -10,7 +10,5 @@ client.runs().query(
         .addSession("<project-id>")
         .filter("""eq(metadata_key("user_id"), "user-abc123")""")
         .build()
-).runs().forEach { run ->
-    println("${run.id()} ${run.name()} ${run.status()}")
-}
+).runs()
 ```

@@ -48,13 +48,12 @@ async def main():
     client = Client()
     async for project in client.projects.list(name="default", limit=1):
         break
-    async for run in client.runs.query(
+    runs = client.runs.query(
         project_ids=[str(project.id)],
         filter='eq(name, "RetrieveDocs")',
         trace_filter='and(eq(feedback_key, "user_score"), eq(feedback_score, 1))',
         tree_filter='eq(name, "ExpandQuery")',
-    ):
-        print(run.id)
+    )
 
 
 asyncio.run(main())

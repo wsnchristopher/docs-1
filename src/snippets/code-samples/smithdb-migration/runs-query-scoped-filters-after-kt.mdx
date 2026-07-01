@@ -17,7 +17,5 @@ client.runs().queryV2(
         .traceFilter("""and(eq(feedback_key, "user_score"), eq(feedback_score, 1))""")
         .treeFilter("""eq(name, "ExpandQuery")""")
         .build()
-).autoPager().forEach { run ->
-    println(run.id())
-}
+).autoPager()
 ```

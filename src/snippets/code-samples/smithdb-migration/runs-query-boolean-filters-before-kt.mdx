@@ -14,7 +14,5 @@ client.runs().query(
         .addSession("<project-id>")
         .filter(filterStr)
         .build()
-).runs().forEach { run ->
-    println("${run.id()} ${run.name()} ${run.status()}")
-}
+).runs()
 ```

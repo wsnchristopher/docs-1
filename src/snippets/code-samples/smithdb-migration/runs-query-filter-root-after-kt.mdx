@@ -15,7 +15,5 @@ client.runs().queryV2(
         .addProjectId(project.id())
         .isRoot(true)
         .build()
-).autoPager().forEach { run ->
-    println(run.id())
-}
+).autoPager()
 ```

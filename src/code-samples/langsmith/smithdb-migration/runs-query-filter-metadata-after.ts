@@ -26,10 +26,8 @@ const filterStr = "and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))
 const project = await client.projects
   .list({ name: "default", limit: 1 })
   .then((page) => page.getPaginatedItems()[0]);
-for await (const run of client.runs.query({
+const runs = client.runs.query({
   project_ids: [project.id],
   filter: filterStr,
-})) {
-  console.log(run.id);
-}
+});
 // :snippet-end:

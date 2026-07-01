@@ -24,7 +24,4 @@ import { Client } from "langsmith";
 const client = new Client();
 const filterStr = "and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))";
 const runs = client.listRuns({ projectName: "default", filter: filterStr });
-for await (const run of runs) {
-  /* use run */
-}
 // :snippet-end:

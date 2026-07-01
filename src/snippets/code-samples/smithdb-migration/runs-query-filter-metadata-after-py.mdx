@@ -9,8 +9,7 @@ async def main():
     filter_str = "and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))"
     async for project in client.projects.list(name="default", limit=1):
         break
-    async for run in client.runs.query(project_ids=[str(project.id)], filter=filter_str):
-        print(run.id)
+    runs = client.runs.query(project_ids=[str(project.id)], filter=filter_str)
 
 
 asyncio.run(main())

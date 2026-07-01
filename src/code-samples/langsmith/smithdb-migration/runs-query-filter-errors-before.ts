@@ -23,7 +23,4 @@ import { Client } from "langsmith";
 
 const client = new Client();
 const runs = client.listRuns({ projectName: "default", error: true });
-for await (const run of runs) {
-  /* use run */
-}
 // :snippet-end:

@@ -27,7 +27,4 @@ const filterStr =
   ' or(neq(status, "error"),' +
   '    and(eq(feedback_key, "Correctness"), eq(feedback_score, 0.0))))';
 const runs = client.listRuns({ projectName: "default", filter: filterStr });
-for await (const run of runs) {
-  /* use run */
-}
 // :snippet-end:

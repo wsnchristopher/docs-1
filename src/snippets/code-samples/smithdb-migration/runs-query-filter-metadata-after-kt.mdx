@@ -15,7 +15,5 @@ client.runs().queryV2(
         .addProjectId(project.id())
         .filter("""eq(metadata_key("user_id"), "user-abc123")""")
         .build()
-).autoPager().forEach { run ->
-    println(run.id())
-}
+).autoPager()
 ```
