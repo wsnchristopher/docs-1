@@ -14,7 +14,7 @@ Managed Deep Agents support the normal Deep Agents `middleware` configuration su
 
 The managed runtime still owns `backend`, `store`, `checkpointer`, `memory`, `skills`, and the system prompt. Middleware should focus on agent behavior around model calls, tool calls, and lifecycle hooks.
 
-For deeper hook, state, and context details, see [Python custom middleware](/oss/python/langchain/middleware/custom) and [TypeScript custom middleware](/oss/javascript/langchain/middleware/custom).
+For deeper hook, state, and context details, see [Custom middleware](/oss/langchain/middleware/custom).
 
 ## Add a middleware module
 
@@ -138,7 +138,7 @@ Middleware is the right place for cross-cutting behavior such as PII handling, r
 
 Middleware can read per-run context through the normal LangChain runtime APIs. Use context for user IDs, tenant IDs, feature flags, request metadata, or credentials that should not be part of the model prompt by default.
 
-For examples, see [Python custom middleware](/oss/python/langchain/middleware/custom) and [TypeScript custom middleware](/oss/javascript/langchain/middleware/custom).
+For examples, see [Custom middleware](/oss/langchain/middleware/custom).
 
 ## Test middleware locally
 
