@@ -296,6 +296,12 @@ The backends support the following file system operations:
 | `grep` | Search file contents with multiple output modes (files only, content with context, or counts) |
 | `execute` | Run shell commands in the environment (available with [sandbox backends](/oss/deepagents/sandboxes) only) |
 
+:::python
+Python also provides a `delete` tool, which removes a file or, recursively, a directory and its contents.
+
+<Note>The `delete` tool requires `deepagents>=0.7.0`. Backends that do not implement deletion return a "deletion not available" error instead of the tool succeeding.</Note>
+:::
+
 <Accordion title="Supported multimodal file extensions">
 
 | Type | Extensions |
@@ -317,7 +323,7 @@ The backends support the following file system operations:
         "anthropic:claude-sonnet-4-6",
         HarnessProfile(
             excluded_tools=frozenset(
-                {"ls", "read_file", "write_file", "edit_file", "glob", "grep"}
+                {"ls", "read_file", "write_file", "edit_file", "delete", "glob", "grep"}
             ),
         ),
     )
