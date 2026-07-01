@@ -1604,6 +1604,8 @@
                     "pages": [
                       "langsmith/managed-deep-agents-overview",
                       "langsmith/managed-deep-agents-quickstart",
+                      "langsmith/managed-deep-agents-tools",
+                      "langsmith/managed-deep-agents-middleware",
                       "langsmith/managed-deep-agents-mcp",
                       "langsmith/managed-deep-agents-deploy",
                       "langsmith/managed-deep-agents-cli"

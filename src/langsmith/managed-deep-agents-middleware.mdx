@@ -1,0 +1,159 @@
+---
+title: Add custom middleware to Managed Deep Agents
+sidebarTitle: Custom middleware
+description: Add built-in or custom middleware to Managed Deep Agents projects.
+---
+
+import ManagedDeepAgentsPrivateBetaNote from '/snippets/langsmith/managed-deep-agents-private-beta-note.mdx';
+
+Managed Deep Agents support the normal Deep Agents `middleware` configuration surface. Add LangChain middleware to `define_deep_agent` or `defineDeepAgent` to monitor tool calls, add guardrails, redact data, retry transient failures, or customize model calls.
+
+<Note>
+<ManagedDeepAgentsPrivateBetaNote />
+</Note>
+
+The managed runtime still owns `backend`, `store`, `checkpointer`, `memory`, `skills`, and the system prompt. Middleware should focus on agent behavior around model calls, tool calls, and lifecycle hooks.
+
+For deeper hook, state, and context details, see [Python custom middleware](/oss/python/langchain/middleware/custom) and [TypeScript custom middleware](/oss/javascript/langchain/middleware/custom).
+
+## Add a middleware module
+
+Put middleware code in your project and import it from the agent entry:
+
+```text
+my-agent/
+  agent.py | agent.ts
+  instructions.md
+  middleware/
+    audit.py | audit.ts
+```
+
+<CodeGroup>
+
+```python middleware/audit.py
+from collections.abc import Callable
+
+from langchain.agents.middleware import wrap_tool_call
+from langchain.messages import ToolMessage
+from langchain.tools.tool_node import ToolCallRequest
+from langgraph.types import Command
+
+
+@wrap_tool_call
+def log_tool_calls(
+    request: ToolCallRequest,
+    handler: Callable[[ToolCallRequest], ToolMessage | Command],
+) -> ToolMessage | Command:
+    print(f"Calling tool: {request.tool_call['name']}")
+    result = handler(request)
+    print(f"Finished tool: {request.tool_call['name']}")
+    return result
+```
+
+```ts middleware/audit.ts
+import { createMiddleware } from "langchain";
+
+export const logToolCalls = createMiddleware({
+  name: "LogToolCalls",
+  wrapToolCall: async (request, handler) => {
+    console.log(`Calling tool: ${request.toolCall.name}`);
+    const result = await handler(request);
+    console.log(`Finished tool: ${request.toolCall.name}`);
+    return result;
+  },
+});
+```
+
+</CodeGroup>
+
+## Attach middleware to the agent
+
+Import the middleware into the project-root agent entry and pass it in the `middleware` list.
+
+<CodeGroup>
+
+```python agent.py
+from managed_deepagents import define_deep_agent
+
+from middleware.audit import log_tool_calls
+
+agent = define_deep_agent(
+    model="openai:gpt-5.5",
+    middleware=[log_tool_calls],
+)
+```
+
+```ts agent.ts
+import { defineDeepAgent } from "managed-deepagents";
+
+import { logToolCalls } from "./middleware/audit";
+
+export const agent = defineDeepAgent({
+  model: "openai:gpt-5.5",
+  middleware: [logToolCalls],
+});
+```
+
+</CodeGroup>
+
+`mda build`, `mda dev`, and `mda deploy` copy the project files into the compiled build. Your middleware imports should work the same way they do in a normal local Python or TypeScript project.
+
+## Use prebuilt middleware
+
+You can also pass LangChain prebuilt middleware directly in the agent definition.
+
+<CodeGroup>
+
+```python agent.py
+from langchain.agents.middleware import ModelCallLimitMiddleware, PIIMiddleware
+from managed_deepagents import define_deep_agent
+
+agent = define_deep_agent(
+    model="openai:gpt-5.5",
+    middleware=[
+        PIIMiddleware("email", strategy="redact", apply_to_input=True),
+        ModelCallLimitMiddleware(run_limit=50),
+    ],
+)
+```
+
+```ts agent.ts
+import { defineDeepAgent } from "managed-deepagents";
+import { modelCallLimitMiddleware, piiMiddleware } from "langchain";
+
+export const agent = defineDeepAgent({
+  model: "openai:gpt-5.5",
+  middleware: [
+    piiMiddleware("email", { strategy: "redact", applyToInput: true }),
+    modelCallLimitMiddleware({ runLimit: 50 }),
+  ],
+});
+```
+
+</CodeGroup>
+
+Middleware is the right place for cross-cutting behavior such as PII handling, rate limits, retry policies, model fallbacks, dynamic model selection, and tool-call monitoring.
+
+## Use runtime context
+
+Middleware can read per-run context through the normal LangChain runtime APIs. Use context for user IDs, tenant IDs, feature flags, request metadata, or credentials that should not be part of the model prompt by default.
+
+For examples, see [Python custom middleware](/oss/python/langchain/middleware/custom) and [TypeScript custom middleware](/oss/javascript/langchain/middleware/custom).
+
+## Test middleware locally
+
+Run the local dev server before deploying:
+
+```bash
+mda dev .
+```
+
+The local server runs the compiled app from `.mda/build`, stages the project `.env`, and surfaces import errors or middleware runtime errors in the local logs and LangSmith traces.
+
+When the middleware works locally, deploy it:
+
+```bash
+mda deploy .
+```
+
+Open the deployment traces in LangSmith to inspect model calls, tool calls, middleware behavior, errors, and latency.
