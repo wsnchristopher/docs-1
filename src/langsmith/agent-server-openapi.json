@@ -1742,7 +1742,8 @@
                   "status",
                   "metadata",
                   "kwargs",
-                  "multitask_strategy"
+                  "multitask_strategy",
+                  "langsmith_session_name"
                 ]
               },
               "title": "Select",
@@ -4967,6 +4968,12 @@
             "enum": ["reject", "rollback", "interrupt", "enqueue"],
             "title": "Multitask Strategy",
             "description": "Strategy to handle concurrent runs on the same thread."
+          },
+          "langsmith_session_name": {
+            "type": "string",
+            "title": "Langsmith Session Name",
+            "description": "LangSmith tracing session (project) name for this run, when tracing is enabled at creation time.",
+            "nullable": true
           }
         },
         "type": "object",
