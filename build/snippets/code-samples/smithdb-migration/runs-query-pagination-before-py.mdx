@@ -1,0 +1,8 @@
+```python Before
+import itertools
+
+from langsmith import Client
+
+client = Client()
+runs = itertools.islice(client.list_runs(project_name="default"), 150)
+```
