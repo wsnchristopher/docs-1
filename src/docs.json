@@ -82,6 +82,9 @@
     "<link rel=\"stylesheet\" href=\"/style.css\">",
     "<script src=\"/ChatLangChainEmbed.js\" defer></script>"
   ],
+  "banner": {
+    "content": "Join our product experts for a \"Build More with LangSmith: Summer AMA Series\" from July 9-August 12, 2026. [RSVP today](https://events.langchain.com/ama-series/build-more-with-langsmith/)"
+  },
   "footer": {
     "links": [
       {
@@ -255,20 +258,6 @@
                           "oss/python/deepagents/acp",
                           "oss/python/deepagents/mcp",
                           "oss/python/deepagents/a2a"
-                        ]
-                      },
-                      {
-                        "group": "Deep Agents Code",
-                        "pages": [
-                          "oss/python/deepagents/code/overview",
-                          "oss/python/deepagents/code/goals-and-rubrics",
-                          "oss/python/deepagents/code/memory-and-skills",
-                          "oss/python/deepagents/code/remote-sandboxes",
-                          "oss/python/deepagents/code/subagents",
-                          "oss/python/deepagents/code/providers",
-                          "oss/python/deepagents/code/configuration",
-                          "oss/python/deepagents/code/mcp-tools",
-                          "oss/python/deepagents/code/data-locations"
                         ]
                       }
                     ]
@@ -727,20 +716,6 @@
                           "oss/javascript/deepagents/acp",
                           "oss/javascript/deepagents/mcp",
                           "oss/javascript/deepagents/a2a"
-                        ]
-                      },
-                      {
-                        "group": "Deep Agents Code",
-                        "pages": [
-                          "oss/javascript/deepagents/code/overview",
-                          "oss/javascript/deepagents/code/goals-and-rubrics",
-                          "oss/javascript/deepagents/code/memory-and-skills",
-                          "oss/javascript/deepagents/code/remote-sandboxes",
-                          "oss/javascript/deepagents/code/subagents",
-                          "oss/javascript/deepagents/code/providers",
-                          "oss/javascript/deepagents/code/configuration",
-                          "oss/javascript/deepagents/code/mcp-tools",
-                          "oss/javascript/deepagents/code/data-locations"
                         ]
                       }
                     ]
@@ -1421,6 +1396,14 @@
                     ]
                   },
                   {
+                    "group": "Deployment components",
+                    "pages": [
+                      "langsmith/components",
+                      "langsmith/data-plane",
+                      "langsmith/control-plane"
+                    ]
+                  },
+                  {
                     "group": "Develop & test",
                     "pages": [
                       "langsmith/local-dev-testing",
@@ -1473,13 +1456,6 @@
                           "langsmith/configure-ttl",
                           "langsmith/semantic-search"
                         ]
-                      },
-                      {
-                        "group": "Integrate with your deployment",
-                        "pages": [
-                          "langsmith/use-remote-graph",
-                          "langsmith/graph-rebuild"
-                        ]
                       }
                     ]
                   },
@@ -1487,14 +1463,6 @@
                     "group": "Agent server",
                     "pages": [
                       "langsmith/agent-server",
-                      {
-                        "group": "Deployment components",
-                        "pages": [
-                          "langsmith/components",
-                          "langsmith/data-plane",
-                          "langsmith/control-plane"
-                        ]
-                      },
                       {
                         "group": "Assistants",
                         "pages": [
@@ -1513,30 +1481,26 @@
                           "langsmith/cancel-run"
                         ]
                       },
+                      "langsmith/use-remote-graph",
                       "langsmith/cron-jobs",
+                      "langsmith/streaming",
+                      "langsmith/add-human-in-the-loop",
+                      "langsmith/human-in-the-loop-time-travel",
                       {
-                        "group": "Core capabilities",
+                        "group": "Double-texting",
                         "pages": [
-                          "langsmith/core-capabilities",
-                          "langsmith/streaming",
-                          "langsmith/add-human-in-the-loop",
-                          "langsmith/human-in-the-loop-time-travel",
-                          "langsmith/server-mcp",
-                          "langsmith/server-a2a",
-                          "langsmith/agent-server-distributed-tracing",
-                          "langsmith/use-webhooks",
-                          {
-                            "group": "Double-texting",
-                            "pages": [
-                              "langsmith/double-texting",
-                              "langsmith/interrupt-concurrent",
-                              "langsmith/rollback-concurrent",
-                              "langsmith/reject-concurrent",
-                              "langsmith/enqueue-concurrent"
-                            ]
-                          }
+                          "langsmith/double-texting",
+                          "langsmith/interrupt-concurrent",
+                          "langsmith/rollback-concurrent",
+                          "langsmith/reject-concurrent",
+                          "langsmith/enqueue-concurrent"
                         ]
-                      }
+                      },
+                      "langsmith/use-webhooks",
+                      "langsmith/agent-server-distributed-tracing",
+                      "langsmith/server-mcp",
+                      "langsmith/server-a2a",
+                      "langsmith/agent-server-changelog-link"
                     ]
                   },
                   {
@@ -1571,6 +1535,7 @@
                     "pages": [
                       "langsmith/caching",
                       "langsmith/encryption",
+                      "langsmith/graph-rebuild",
                       {
                         "group": "Replace built-in backends",
                         "pages": [
@@ -2334,6 +2299,10 @@
     }
   },
   "redirects": [
+    {
+      "source": "/langsmith/core-capabilities",
+      "destination": "/langsmith/agent-server"
+    },
     {
       "source": "/langsmith/sandbox-harbor",
       "destination": "/langsmith/harbor-integrations#sandboxes"
