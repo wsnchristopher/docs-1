@@ -516,7 +516,7 @@ Subclass @[`BackendProtocol`] and implement the following methods:
 | `edit` | `(file_path: str, old_string: str, new_string: str, replace_all: bool) -> EditResult` | Find-and-replace within an existing file. |
 | `glob` | `(pattern: str, path: str | None) -> GlobResult` | Return paths matching a glob pattern. |
 | `grep` | `(pattern: str, path: str | None, glob: str | None) -> GrepResult` | Search file contents for a literal string. |
-| `delete` | `(file_path: str) -> DeleteResult` | Optional. Remove a file or, recursively, a directory. Backends that do not override it inherit a default that raises `NotImplementedError`, and the `delete` tool surfaces that as a "deletion not available" error instead of failing the run. Use `supports_delete()` to check support without triggering it. |
+| `delete` | `(file_path: str) -> DeleteResult` | Optional. Remove a file or, recursively, a directory. If the backend does not support deletion, the tool is automatically hidden from the model at request time. |
 
 To also support the `execute` tool (running shell commands), implement @[`SandboxBackendProtocol`] instead, which extends `BackendProtocol` with an `execute` method.
 
