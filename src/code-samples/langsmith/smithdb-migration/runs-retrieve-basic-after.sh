@@ -20,6 +20,6 @@ START_TIME=$(echo "$FOUND" | jq -r '.items[0].start_time')
 [ -n "$RUN_ID" ] && [ "$RUN_ID" != "null" ] || { echo "error: could not resolve a run id" >&2; exit 1; }
 # :remove-end:
 
-curl "https://api.smith.langchain.com/v2/runs/$RUN_ID?project_id=$PROJECT_ID&start_time=$START_TIME&select=NAME&select=STATUS&select=TOTAL_TOKENS" \
+curl "https://api.smith.langchain.com/v2/runs/$RUN_ID?project_id=$PROJECT_ID&start_time=$START_TIME&selects=NAME&selects=STATUS&selects=TOTAL_TOKENS" \
   -H "x-api-key: $LANGSMITH_API_KEY"
 # :snippet-end:

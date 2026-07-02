@@ -25,7 +25,7 @@ if err != nil {
 // :remove-end:
 project := sessions.Items[0]
 
-runs := []langsmith.QueryRunResponse{}
+runs := []langsmith.Run{}
 iter := client.Runs.QueryV2AutoPaging(ctx, langsmith.RunQueryV2Params{
 	ProjectIDs: langsmith.F([]string{project.ID}),
 })

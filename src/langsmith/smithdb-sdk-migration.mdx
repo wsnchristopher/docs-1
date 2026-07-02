@@ -650,10 +650,9 @@ Pass SCREAMING_SNAKE_CASE strings to `selects` (eg. `"ID"`, `"NAME"`, `"STATUS"`
 
 #### List all runs in a project
 
-v2 does not accept a project name directly. Resolve the project UUID with `client.projects.list()` first, then pass it as a string in `project_ids`.
-
 <Tabs>
   <Tab title="Python">
+    `runs.query` does not accept a project name directly. Resolve the project UUID with `client.projects.list()` first, then pass it as a string in `project_ids`.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -666,6 +665,7 @@ v2 does not accept a project name directly. Resolve the project UUID with `clien
 
   </Tab>
   <Tab title="TypeScript">
+    `client.runs.query` does not accept a project name directly. Resolve the project UUID with `client.projects.list()` first, then pass it as a string in `project_ids`.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -678,6 +678,7 @@ v2 does not accept a project name directly. Resolve the project UUID with `clien
 
   </Tab>
   <Tab title="Java">
+    `queryV2()` does not accept a project name directly. Resolve the project UUID with `client.sessions().list()` first, then pass it as a string in `projectIds()`.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -690,6 +691,7 @@ v2 does not accept a project name directly. Resolve the project UUID with `clien
 
   </Tab>
   <Tab title="Go">
+    `QueryV2()` does not accept a project name directly. Resolve the project UUID with `client.Sessions.List()` first, then pass it as a string in `ProjectIDs`.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -702,6 +704,7 @@ v2 does not accept a project name directly. Resolve the project UUID with `clien
 
   </Tab>
   <Tab title="cURL">
+    `POST /v2/runs/query` does not accept a project name directly. Resolve the project UUID with a `GET /api/v1/sessions` request first, then pass it as a string in `project_ids`.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1491,8 +1494,6 @@ Pass SCREAMING_SNAKE_CASE strings to `selects` (eg. `"ID"`, `"NAME"`, `"STATUS"`
     | `run.completion_cost_details` | `run.completion_cost_details.raw` | Field now wraps the dict; access `.raw` to get `dict[str, float]` (was `dict[str, Decimal]`) |
   </Tab>
   <Tab title="TypeScript">
-    v1 TypeScript `Run` properties used `camelCase`; v2 `Run` properties use `snake_case`.
-
     | Before (v1 `Run` property) | After (v2 `Run` property) | Notes |
     |---|---|---|
     | `run.id` | `run.id` | Unchanged |
@@ -1545,8 +1546,6 @@ Pass SCREAMING_SNAKE_CASE strings to `selects` (eg. `"ID"`, `"NAME"`, `"STATUS"`
     | *(not available)* | `run.completion_cost_details` | New: per-category completion cost breakdown |
   </Tab>
   <Tab title="Java">
-    Java `Run` uses camelCase method accessors. Pass `SCREAMING_SNAKE_CASE` strings to `selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; unselected fields return empty `Optional` values. Fields stored as raw JSON (`inputs`, `outputs`, `extra`, `manifest`, `metadata`) are accessed via underscore-prefixed methods that return `JsonValue`.
-
     | Before (`RunSchema` method) | After (`Run` method) | Notes |
     |---|---|---|
     | `run.id()` | `run.id()` | Unchanged |
@@ -1610,8 +1609,6 @@ Pass SCREAMING_SNAKE_CASE strings to `selects` (eg. `"ID"`, `"NAME"`, `"STATUS"`
     | *(not available)* | `run.threadEvaluationTime()` | New |
   </Tab>
   <Tab title="Go">
-    Go `Run` uses PascalCase struct field access. Pass `SCREAMING_SNAKE_CASE` strings to `Selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; unselected fields are zero-valued on returned structs.
-
     | Before (`RunSchema` field) | After (`Run` field) | Notes |
     |---|---|---|
     | `run.ID` | `run.ID` | Unchanged |
@@ -1679,8 +1676,6 @@ Pass SCREAMING_SNAKE_CASE strings to `selects` (eg. `"ID"`, `"NAME"`, `"STATUS"`
     | *(not available)* | `run.ThreadEvaluationTime` | New |
   </Tab>
   <Tab title="cURL">
-    Field names in the JSON response match Python `snake_case`.
-
     | Before (v1 response field) | After (v2 response field) | Notes |
     |---|---|---|
     | `id` | `id` | Unchanged |
@@ -1751,6 +1746,76 @@ Pass SCREAMING_SNAKE_CASE strings to `selects` (eg. `"ID"`, `"NAME"`, `"STATUS"`
 
 ### Examples
 
+#### Fetch a single run by ID
+
+<Tabs>
+  <Tab title="Python">
+    `runs.retrieve` requires two additional parameters that `read_run` did not need: `project_id` (UUID) and `start_time`. Both are required by the SmithDB storage model to locate a run efficiently. Resolve the project UUID via `client.projects.list()` first.
+
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsRetrieveByIdBeforePy />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsRetrieveByIdAfterPy />
+  </Tab>
+</Tabs>
+
+  </Tab>
+  <Tab title="TypeScript">
+    `client.runs.retrieve` requires two additional parameters that `readRun` did not need: `project_id` (UUID) and `start_time`. Both are required by the SmithDB storage model to locate a run efficiently. Resolve the project UUID via `client.projects.list()` first.
+
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsRetrieveByIdBeforeJs />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsRetrieveByIdAfterJs />
+  </Tab>
+</Tabs>
+
+  </Tab>
+  <Tab title="Java">
+    `retrieveV2()` requires two additional parameters that `client.runs().retrieve()` did not need: `projectId()` (UUID) and `startTime()`. Both are required by the SmithDB storage model to locate a run efficiently. Resolve the project UUID via `client.sessions().list()` first.
+
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsRetrieveByIdBeforeKt />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsRetrieveByIdAfterKt />
+  </Tab>
+</Tabs>
+
+  </Tab>
+  <Tab title="Go">
+    `GetV2()` requires two additional parameters that `client.Runs.Get()` did not need: `ProjectID` (UUID) and `StartTime`. Both are required by the SmithDB storage model to locate a run efficiently. Resolve the project UUID via `client.Sessions.List()` first.
+
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsRetrieveByIdBeforeGo />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsRetrieveByIdAfterGo />
+  </Tab>
+</Tabs>
+
+  </Tab>
+  <Tab title="cURL">
+    `GET /v2/runs/{run_id}` requires two additional query parameters that `GET /api/v1/runs/{run_id}` did not need: `project_id` (UUID) and `start_time`. Both are required by the SmithDB storage model to locate a run efficiently. Resolve the project UUID via a `GET /api/v1/sessions` request first.
+
+<Tabs sync={false}>
+  <Tab title="Before">
+    <SmithdbRunsRetrieveByIdBeforeSh />
+  </Tab>
+  <Tab title="After">
+    <SmithdbRunsRetrieveByIdAfterSh />
+  </Tab>
+</Tabs>
+
+  </Tab>
+</Tabs>
+
 #### Selecting fields
 
 The API returns only the run ID by default—pass `selects` to request additional fields.
@@ -1813,73 +1878,6 @@ The API returns only the run ID by default—pass `selects` to request additiona
         <SmithdbRunsRetrieveBasicAfterSh />
       </Tab>
     </Tabs>
-  </Tab>
-</Tabs>
-
-#### Fetch a single run by ID
-
-v2 requires two additional parameters that `read_run` did not need: `project_id` (UUID) and `start_time`. Both are required by the SmithDB storage model to locate a run efficiently. Resolve the project UUID via `client.projects.list()` first.
-
-<Tabs>
-  <Tab title="Python">
-
-<Tabs sync={false}>
-  <Tab title="Before">
-    <SmithdbRunsRetrieveByIdBeforePy />
-  </Tab>
-  <Tab title="After">
-    <SmithdbRunsRetrieveByIdAfterPy />
-  </Tab>
-</Tabs>
-
-  </Tab>
-  <Tab title="TypeScript">
-
-<Tabs sync={false}>
-  <Tab title="Before">
-    <SmithdbRunsRetrieveByIdBeforeJs />
-  </Tab>
-  <Tab title="After">
-    <SmithdbRunsRetrieveByIdAfterJs />
-  </Tab>
-</Tabs>
-
-  </Tab>
-  <Tab title="Java">
-
-<Tabs sync={false}>
-  <Tab title="Before">
-    <SmithdbRunsRetrieveByIdBeforeKt />
-  </Tab>
-  <Tab title="After">
-    <SmithdbRunsRetrieveByIdAfterKt />
-  </Tab>
-</Tabs>
-
-  </Tab>
-  <Tab title="Go">
-
-<Tabs sync={false}>
-  <Tab title="Before">
-    <SmithdbRunsRetrieveByIdBeforeGo />
-  </Tab>
-  <Tab title="After">
-    <SmithdbRunsRetrieveByIdAfterGo />
-  </Tab>
-</Tabs>
-
-  </Tab>
-  <Tab title="cURL">
-
-<Tabs sync={false}>
-  <Tab title="Before">
-    <SmithdbRunsRetrieveByIdBeforeSh />
-  </Tab>
-  <Tab title="After">
-    <SmithdbRunsRetrieveByIdAfterSh />
-  </Tab>
-</Tabs>
-
   </Tab>
 </Tabs>
 

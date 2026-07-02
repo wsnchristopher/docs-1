@@ -50,6 +50,7 @@ async def main():
         run_id=run_id,
         project_id=str(project.id),
         start_time=start_time,
+        selects=["NAME", "STATUS", "TOTAL_TOKENS"],
     )
     print(run.name, run.status, run.total_tokens)
 

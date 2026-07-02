@@ -32,7 +32,7 @@ startTime = run.start_time;
 const retrievedRun = await client.runs.retrieve(runId, {
   project_id: projectId,
   start_time: startTime,
-  select: ["NAME", "STATUS", "TOTAL_TOKENS"],
+  selects: ["NAME", "STATUS", "TOTAL_TOKENS"],
 });
 console.log(retrievedRun.name, retrievedRun.status, retrievedRun.total_tokens);
 // :snippet-end:
