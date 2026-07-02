@@ -344,42 +344,97 @@ await client.onlineEvaluators.list({
 Retrieve estimated USD spend and trace counts for your evaluators.
 
 <Note>
-Pass exactly one of `group_by`, `evaluator_id`, `session_id`, or `dataset_id`.
+Pass exactly one of `group_by`, `evaluator_id`, `session_id` (the LangSmith tracing project UUID), or `dataset_id`.
 </Note>
 
 <CodeGroup>
 ```python Python
+evaluator_uuid = "<evaluator-uuid>"
+start_date = "<period-start-date>"" # for example, "2026-06-29"
+
 # Spend for a single evaluator
 spend = client.online_evaluators.spend(
-    period_start="2026-06-15",
-    evaluator_id=evaluator_id,
+    period_start=start_date, # defines a fixed 7-day window (period_end = start + 7 days)
+    evaluator_id=evaluator_uuid,
 )
 for group in spend.groups or []:
     print(group.evaluator_name, group.total_spend_usd, group.total_trace_count)
 
-# Group spend by evaluator, resource, or run rule
+# Group spend by evaluator
 spend_by_evaluator = client.online_evaluators.spend(
-    period_start="2026-06-15",
+    period_start=start_date,
     group_by="evaluator",
     type="llm",
 )
+print("Group by evaluator")
+for group in spend_by_evaluator.groups or []:
+    print(group.evaluator_name, group.total_spend_usd, group.total_trace_count)
+
+# Group spend by resource
+spend_by_resource = client.online_evaluators.spend(
+    period_start=start_date,
+    group_by="resource",
+    type="llm",
+)
+print("Group by resource")
+for group in spend_by_resource.groups or []:
+    print(group.session_name, group.dataset_name, group.total_spend_usd, group.total_trace_count)
+
+# Group spend by run_rule
+spend_by_run_rule = client.online_evaluators.spend(
+    period_start=start_date,
+    group_by="run_rule",
+    type="llm",
+)
+print("Group by run_rule")
+for group in spend_by_run_rule.groups or []:
+    print(group.run_rule_name, group.total_spend_usd, group.total_trace_count)
 ```
 ```typescript TypeScript
+const evaluatorUUID = "<evaluator-uuid>";
+const startDate = "<period-start-date>"; // for example, "2026-06-29"
+
 // Spend for a single evaluator
 const spend = await client.onlineEvaluators.spend({
-  period_start: "2026-06-15",
-  evaluator_id: evaluatorId,
+  period_start: startDate, // defines a fixed 7-day window (period_end = start + 7 days)
+  evaluator_id: evaluatorUUID,
 });
 for (const group of spend.groups ?? []) {
   console.log(group.evaluator_name, group.total_spend_usd, group.total_trace_count);
 }
 
-// Group spend by evaluator, resource, or run rule
+// Group spend by evaluator
 const spendByEvaluator = await client.onlineEvaluators.spend({
-  period_start: "2026-06-15",
+  period_start: startDate,
   group_by: "evaluator",
   type: "llm",
 });
+console.log("Group by evaluator");
+for (const group of spendByEvaluator.groups ?? []) {
+  console.log(group.evaluator_name, group.total_spend_usd, group.total_trace_count);
+}
+
+// Group spend by resource
+const spendByResource = await client.onlineEvaluators.spend({
+  period_start: startDate,
+  group_by: "resource",
+  type: "llm",
+});
+console.log("Group by resource");
+for (const group of spendByResource.groups ?? []) {
+  console.log(group.session_name, group.dataset_name, group.total_spend_usd, group.total_trace_count);
+}
+
+// Group spend by run_rule
+const spendByRunRule = await client.onlineEvaluators.spend({
+  period_start: startDate,
+  group_by: "run_rule",
+  type: "llm",
+});
+console.log("Group by run_rule");
+for (const group of spendByRunRule.groups ?? []) {
+  console.log(group.run_rule_name, group.total_spend_usd, group.total_trace_count);
+}
 ```
 </CodeGroup>
 
@@ -389,14 +444,18 @@ An evaluator cannot be deleted while it is attached to a tracing project or data
 
 <CodeGroup>
 ```python Python
+evaluator_id = "<evaluator-uuid>"
+
 client.online_evaluators.delete(
     evaluator_id,
-    delete_run_rules=True,
+    delete_run_rules=True, # deletes runes that reference the evaluator before deleting the evaluator
 )
 ```
 ```typescript TypeScript
+const evaluatorId = "<evaluator-uuid>";
+
 await client.onlineEvaluators.delete(evaluatorId, {
-  delete_run_rules: true,
+  delete_run_rules: true, // deletes run rules that reference the evaluator before deleting the evaluator
 });
 ```
 </CodeGroup>
@@ -405,7 +464,6 @@ await client.onlineEvaluators.delete(evaluatorId, {
 
 <CodeGroup>
 ```python Python
-# Evaluator UUIDs from LangSmith
 evaluator_id_1 = "<evaluator-uuid-1>"
 evaluator_id_2 = "<evaluator-uuid-2>"
 
@@ -417,7 +475,6 @@ print("Deleted:", result.succeeded)
 print("Failed:", result.failed)
 ```
 ```typescript TypeScript
-// Evaluator UUIDs from LangSmith
 const evaluatorId1 = "<evaluator-uuid-1>";
 const evaluatorId2 = "<evaluator-uuid-2>";
 
