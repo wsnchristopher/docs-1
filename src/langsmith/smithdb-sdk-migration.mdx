@@ -342,7 +342,7 @@ Pass SCREAMING_SNAKE_CASE strings to `selects` (eg. `"ID"`, `"NAME"`, `"STATUS"`
 
 <Tabs>
   <Tab title="Python">
-    | Before (`Run` attribute) | After (`QueryRunResponse` attribute) | Notes |
+    | Before (v1 `Run` attribute) | After (v2 `Run` attribute) | Notes |
     |---|---|---|
     | `run.id` | `run.id` | Unchanged; returned by default when `selects` is omitted |
     | `run.name` | `run.name` | Unchanged |
@@ -393,7 +393,7 @@ Pass SCREAMING_SNAKE_CASE strings to `selects` (eg. `"ID"`, `"NAME"`, `"STATUS"`
     | `run.completion_cost_details` | `run.completion_cost_details.raw` | Field now wraps the dict; access `.raw` to get `dict[str, float]` (was `dict[str, Decimal]`) |
   </Tab>
   <Tab title="TypeScript">
-    | Before (v1 `Run` property) | After (v2 `QueryRunResponse` property) | Notes |
+    | Before (v1 `Run` property) | After (v2 `Run` property) | Notes |
     |---|---|---|
     | `run.id` | `run.id` | Unchanged |
     | `run.name` | `run.name` | Unchanged |
@@ -446,7 +446,7 @@ Pass SCREAMING_SNAKE_CASE strings to `selects` (eg. `"ID"`, `"NAME"`, `"STATUS"`
   </Tab>
   <Tab title="Java">
 
-    | Before (`RunSchema` method) | After (`QueryRunResponse` method) | Notes |
+    | Before (`RunSchema` method) | After (`Run` method) | Notes |
     |---|---|---|
     | `run.id()` | `run.id()` | Unchanged |
     | `run.name()` | `run.name()` | Unchanged |
@@ -509,7 +509,7 @@ Pass SCREAMING_SNAKE_CASE strings to `selects` (eg. `"ID"`, `"NAME"`, `"STATUS"`
     | *(not available)* | `run.threadEvaluationTime()` | New |
   </Tab>
   <Tab title="Go">
-    | Before (`RunSchema` field) | After (`QueryRunResponse` field) | Notes |
+    | Before (`RunSchema` field) | After (`Run` field) | Notes |
     |---|---|---|
     | `run.ID` | `run.ID` | Unchanged |
     | `run.Name` | `run.Name` | Unchanged |
@@ -521,9 +521,9 @@ Pass SCREAMING_SNAKE_CASE strings to `selects` (eg. `"ID"`, `"NAME"`, `"STATUS"`
     | `run.StartTime` | `run.StartTime` | Unchanged |
     | `run.EndTime` | `run.EndTime` | Unchanged |
     | `run.Error` | `run.Error` | Unchanged |
-    | `run.Events` | `run.Events` | Unchanged; element type is now `QueryRunResponseEvent` (was `map[string]interface{}`) |
+    | `run.Events` | `run.Events` | Unchanged; element type is now `RunEvent` (was `map[string]interface{}`) |
     | `run.Extra` | `run.Extra` | Unchanged; type is now `interface{}` (was `map[string]interface{}`) |
-    | `run.FeedbackStats` | `run.FeedbackStats` | Unchanged; element type is now `QueryRunResponseFeedbackStat` |
+    | `run.FeedbackStats` | `run.FeedbackStats` | Unchanged; element type is now `RunFeedbackStat` |
     | `run.FirstTokenTime` | `run.FirstTokenTime` | Unchanged |
     | `run.Inputs` | `run.Inputs` | Unchanged; type is now `interface{}` (was `map[string]interface{}`) |
     | `run.InputsPreview` | `run.InputsPreview` | Unchanged |
@@ -1440,7 +1440,7 @@ Pass SCREAMING_SNAKE_CASE strings to `selects` (eg. `"ID"`, `"NAME"`, `"STATUS"`
 
 <Tabs>
   <Tab title="Python">
-    | Before (`Run` attribute) | After (`QueryRunResponse` attribute) | Notes |
+    | Before (v1 `Run` attribute) | After (v2 `Run` attribute) | Notes |
     |---|---|---|
     | `run.id` | `run.id` | Unchanged; returned by default when `selects` is omitted |
     | `run.name` | `run.name` | Unchanged |
@@ -1491,9 +1491,9 @@ Pass SCREAMING_SNAKE_CASE strings to `selects` (eg. `"ID"`, `"NAME"`, `"STATUS"`
     | `run.completion_cost_details` | `run.completion_cost_details.raw` | Field now wraps the dict; access `.raw` to get `dict[str, float]` (was `dict[str, Decimal]`) |
   </Tab>
   <Tab title="TypeScript">
-    v1 TypeScript `Run` properties used `camelCase`; v2 `QueryRunResponse` properties use `snake_case`.
+    v1 TypeScript `Run` properties used `camelCase`; v2 `Run` properties use `snake_case`.
 
-    | Before (v1 `Run` property) | After (v2 `QueryRunResponse` property) | Notes |
+    | Before (v1 `Run` property) | After (v2 `Run` property) | Notes |
     |---|---|---|
     | `run.id` | `run.id` | Unchanged |
     | `run.name` | `run.name` | Unchanged |
@@ -1545,9 +1545,9 @@ Pass SCREAMING_SNAKE_CASE strings to `selects` (eg. `"ID"`, `"NAME"`, `"STATUS"`
     | *(not available)* | `run.completion_cost_details` | New: per-category completion cost breakdown |
   </Tab>
   <Tab title="Java">
-    Java `QueryRunResponse` uses camelCase method accessors. Pass `SCREAMING_SNAKE_CASE` strings to `selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; unselected fields return empty `Optional` values. Fields stored as raw JSON (`inputs`, `outputs`, `extra`, `manifest`, `metadata`) are accessed via underscore-prefixed methods that return `JsonValue`.
+    Java `Run` uses camelCase method accessors. Pass `SCREAMING_SNAKE_CASE` strings to `selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; unselected fields return empty `Optional` values. Fields stored as raw JSON (`inputs`, `outputs`, `extra`, `manifest`, `metadata`) are accessed via underscore-prefixed methods that return `JsonValue`.
 
-    | Before (`RunSchema` method) | After (`QueryRunResponse` method) | Notes |
+    | Before (`RunSchema` method) | After (`Run` method) | Notes |
     |---|---|---|
     | `run.id()` | `run.id()` | Unchanged |
     | `run.name()` | `run.name()` | Unchanged |
@@ -1610,9 +1610,9 @@ Pass SCREAMING_SNAKE_CASE strings to `selects` (eg. `"ID"`, `"NAME"`, `"STATUS"`
     | *(not available)* | `run.threadEvaluationTime()` | New |
   </Tab>
   <Tab title="Go">
-    Go `QueryRunResponse` uses PascalCase struct field access. Pass `SCREAMING_SNAKE_CASE` strings to `Selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; unselected fields are zero-valued on returned structs.
+    Go `Run` uses PascalCase struct field access. Pass `SCREAMING_SNAKE_CASE` strings to `Selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; unselected fields are zero-valued on returned structs.
 
-    | Before (`RunSchema` field) | After (`QueryRunResponse` field) | Notes |
+    | Before (`RunSchema` field) | After (`Run` field) | Notes |
     |---|---|---|
     | `run.ID` | `run.ID` | Unchanged |
     | `run.Name` | `run.Name` | Unchanged |
@@ -1624,9 +1624,9 @@ Pass SCREAMING_SNAKE_CASE strings to `selects` (eg. `"ID"`, `"NAME"`, `"STATUS"`
     | `run.StartTime` | `run.StartTime` | Unchanged |
     | `run.EndTime` | `run.EndTime` | Unchanged |
     | `run.Error` | `run.Error` | Unchanged |
-    | `run.Events` | `run.Events` | Unchanged; element type is now `QueryRunResponseEvent` (was `map[string]interface{}`) |
+    | `run.Events` | `run.Events` | Unchanged; element type is now `RunEvent` (was `map[string]interface{}`) |
     | `run.Extra` | `run.Extra` | Unchanged; type is now `interface{}` (was `map[string]interface{}`) |
-    | `run.FeedbackStats` | `run.FeedbackStats` | Unchanged; element type is now `QueryRunResponseFeedbackStat` |
+    | `run.FeedbackStats` | `run.FeedbackStats` | Unchanged; element type is now `RunFeedbackStat` |
     | `run.FirstTokenTime` | `run.FirstTokenTime` | Unchanged |
     | `run.Inputs` | `run.Inputs` | Unchanged; type is now `interface{}` (was `map[string]interface{}`) |
     | `run.InputsPreview` | `run.InputsPreview` | Unchanged |
@@ -1757,7 +1757,7 @@ The API returns only the run ID by default—pass `selects` to request additiona
 
 <Tabs>
   <Tab title="Python">
-    <Note>Requires `langsmith>=0.9.2`.</Note>
+    <Note>Requires `langsmith>=0.9.6`.</Note>
 
     <Tabs sync={false}>
       <Tab title="Before">
@@ -1769,7 +1769,7 @@ The API returns only the run ID by default—pass `selects` to request additiona
     </Tabs>
   </Tab>
   <Tab title="TypeScript">
-    <Note>Requires `langsmith@>=0.7.12`.</Note>
+    <Note>Requires `langsmith@>=0.7.15`.</Note>
 
     <Tabs sync={false}>
       <Tab title="Before">
@@ -1781,7 +1781,7 @@ The API returns only the run ID by default—pass `selects` to request additiona
     </Tabs>
   </Tab>
   <Tab title="Java">
-    <Note>Requires `langsmith-java` 0.1.0-beta.8.</Note>
+    <Note>Requires `langsmith-java` 0.1.0-beta.10.</Note>
 
     <Tabs sync={false}>
       <Tab title="Before">
@@ -1793,7 +1793,7 @@ The API returns only the run ID by default—pass `selects` to request additiona
     </Tabs>
   </Tab>
   <Tab title="Go">
-    <Note>Requires `langsmith-go` v0.16.0.</Note>
+    <Note>Requires `langsmith-go` v0.17.0.</Note>
 
     <Tabs sync={false}>
       <Tab title="Before">

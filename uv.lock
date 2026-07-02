@@ -707,7 +707,7 @@ requires-dist = [
     { name = "langgraph", specifier = ">=1.2.5" },
     { name = "langgraph-checkpoint-postgres" },
     { name = "langgraph-checkpoint-sqlite", specifier = ">=3.1.0" },
-    { name = "langsmith", specifier = ">=0.9.4" },
+    { name = "langsmith", specifier = ">=0.9.6" },
     { name = "markdownify", specifier = ">=0.13.0" },
     { name = "nbconvert", specifier = ">=7.17.1" },
     { name = "nbformat", specifier = ">=5.0.0" },
@@ -1378,7 +1378,7 @@ wheels = [
 
 [[package]]
 name = "langsmith"
-version = "0.9.4"
+version = "0.9.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -1396,9 +1396,9 @@ dependencies = [
     { name = "xxhash" },
     { name = "zstandard" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fe/a7/a78b4105d1c01ee8d404d122d9acc047b8b9f628f3733cb837a321b2f6c6/langsmith-0.9.4.tar.gz", hash = "sha256:36c15e5a692e7812ee927e43d777c6166c839eb02b1d482ba9a805b438b1d91c", size = 4576594, upload-time = "2026-06-30T10:20:43.373Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/85/dc/ca2ab3b74f3a5a2089aee1483e86b6aa7ae15fba96f73866a16e31356319/langsmith-0.9.6.tar.gz", hash = "sha256:1df590a40352b2f40a36229d90e2ef6af276a0bc9f1e44a87b829f879eed2130", size = 4714803, upload-time = "2026-07-02T11:14:30.636Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c3/15/79367a3d159141fe4fc138f41db4ef21eb4759cd64cf8f635f41d55ded67/langsmith-0.9.4-py3-none-any.whl", hash = "sha256:f10f07438c7c6f9f907e8c810d8f338268fe863a74c37ded3d8a90830bb25451", size = 603804, upload-time = "2026-06-30T10:20:41.052Z" },
+    { url = "https://files.pythonhosted.org/packages/bf/8f/6e8f1f3e12be9848993c297c879f63f225361eb594f8343ff42c2b26c6fd/langsmith-0.9.6-py3-none-any.whl", hash = "sha256:c5e5f2425dcb8fe363b9e1fa87a9cb9cf5631389bf7e168aa4f325f580ca284c", size = 660131, upload-time = "2026-07-02T11:14:28.552Z" },
 ]
 
 [[package]]
