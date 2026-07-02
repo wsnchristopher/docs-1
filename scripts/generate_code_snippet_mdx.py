@@ -1,6 +1,6 @@
 """Generate MDX snippet files from extracted code snippet files.
 
-Reads .snippet.*.py, .snippet.*.ts, .snippet.*.java, .snippet.*.kt, and .snippet.*.go files from src/code-samples-generated/
+Reads .snippet.*.py, .snippet.*.ts, .snippet.*.java, .snippet.*.kt, .snippet.*.go, and .snippet.*.sh files from src/code-samples-generated/
 (produced by ``scripts/extract_code_snippets.py``, Bluehawk-compatible layout).
 and creates corresponding MDX files in src/snippets/code-samples/ for use in docs.
 
@@ -256,6 +256,7 @@ def main() -> None:
         ("*.snippet.*.java", "java", "java"),
         ("*.snippet.*.kt", "kotlin", "kotlin"),
         ("*.snippet.*.go", "go", "go"),
+        ("*.snippet.*.sh", "bash", "bash"),
     ]
 
     lang_suffix = {
@@ -264,6 +265,7 @@ def main() -> None:
         "java": "-java",
         "kotlin": "-kt",
         "go": "-go",
+        "bash": "-sh",
     }
 
     for glob_pattern, language, fence_lang in snippet_configs:

@@ -100,6 +100,30 @@ import SmithdbRunsQueryScopedFiltersBeforeKt from '/snippets/code-samples/smithd
 import SmithdbRunsQueryScopedFiltersAfterKt from '/snippets/code-samples/smithdb-migration/runs-query-scoped-filters-after-kt.mdx';
 import SmithdbRunsRetrieveByIdBeforeKt from '/snippets/code-samples/smithdb-migration/runs-retrieve-by-id-before-kt.mdx';
 import SmithdbRunsRetrieveByIdAfterKt from '/snippets/code-samples/smithdb-migration/runs-retrieve-by-id-after-kt.mdx';
+import SmithdbRunsQueryListAllBeforeSh from '/snippets/code-samples/smithdb-migration/runs-query-list-all-before-sh.mdx';
+import SmithdbRunsQueryListAllAfterSh from '/snippets/code-samples/smithdb-migration/runs-query-list-all-after-sh.mdx';
+import SmithdbRunsQuerySelectingFieldsBeforeSh from '/snippets/code-samples/smithdb-migration/runs-query-selecting-fields-before-sh.mdx';
+import SmithdbRunsQuerySelectingFieldsAfterSh from '/snippets/code-samples/smithdb-migration/runs-query-selecting-fields-after-sh.mdx';
+import SmithdbRunsQueryFilterTimeRangeBeforeSh from '/snippets/code-samples/smithdb-migration/runs-query-filter-time-range-before-sh.mdx';
+import SmithdbRunsQueryFilterTimeRangeAfterSh from '/snippets/code-samples/smithdb-migration/runs-query-filter-time-range-after-sh.mdx';
+import SmithdbRunsQueryFilterRootBeforeSh from '/snippets/code-samples/smithdb-migration/runs-query-filter-root-before-sh.mdx';
+import SmithdbRunsQueryFilterRootAfterSh from '/snippets/code-samples/smithdb-migration/runs-query-filter-root-after-sh.mdx';
+import SmithdbRunsQueryFetchByIdBeforeSh from '/snippets/code-samples/smithdb-migration/runs-query-fetch-by-id-before-sh.mdx';
+import SmithdbRunsQueryFetchByIdAfterSh from '/snippets/code-samples/smithdb-migration/runs-query-fetch-by-id-after-sh.mdx';
+import SmithdbRunsQueryPaginationBeforeSh from '/snippets/code-samples/smithdb-migration/runs-query-pagination-before-sh.mdx';
+import SmithdbRunsQueryPaginationAfterSh from '/snippets/code-samples/smithdb-migration/runs-query-pagination-after-sh.mdx';
+import SmithdbRunsQueryFilterErrorsBeforeSh from '/snippets/code-samples/smithdb-migration/runs-query-filter-errors-before-sh.mdx';
+import SmithdbRunsQueryFilterErrorsAfterSh from '/snippets/code-samples/smithdb-migration/runs-query-filter-errors-after-sh.mdx';
+import SmithdbRunsQueryFilterMetadataBeforeSh from '/snippets/code-samples/smithdb-migration/runs-query-filter-metadata-before-sh.mdx';
+import SmithdbRunsQueryFilterMetadataAfterSh from '/snippets/code-samples/smithdb-migration/runs-query-filter-metadata-after-sh.mdx';
+import SmithdbRunsQueryBooleanFiltersBeforeSh from '/snippets/code-samples/smithdb-migration/runs-query-boolean-filters-before-sh.mdx';
+import SmithdbRunsQueryBooleanFiltersAfterSh from '/snippets/code-samples/smithdb-migration/runs-query-boolean-filters-after-sh.mdx';
+import SmithdbRunsQueryScopedFiltersBeforeSh from '/snippets/code-samples/smithdb-migration/runs-query-scoped-filters-before-sh.mdx';
+import SmithdbRunsQueryScopedFiltersAfterSh from '/snippets/code-samples/smithdb-migration/runs-query-scoped-filters-after-sh.mdx';
+import SmithdbRunsRetrieveBasicBeforeSh from '/snippets/code-samples/smithdb-migration/runs-retrieve-basic-before-sh.mdx';
+import SmithdbRunsRetrieveBasicAfterSh from '/snippets/code-samples/smithdb-migration/runs-retrieve-basic-after-sh.mdx';
+import SmithdbRunsRetrieveByIdBeforeSh from '/snippets/code-samples/smithdb-migration/runs-retrieve-by-id-before-sh.mdx';
+import SmithdbRunsRetrieveByIdAfterSh from '/snippets/code-samples/smithdb-migration/runs-retrieve-by-id-after-sh.mdx';
 
 ## Context
 
@@ -149,7 +173,7 @@ Query runs from a project with optional filtering and field projection. Returns 
   <Tab title="cURL">
     | Before | After |
     |--------|-------|
-    | `GET /api/v1/runs` | `POST /v2/runs/query` |
+    | `POST /api/v1/runs/query` | `POST /v2/runs/query` |
   </Tab>
 </Tabs>
 
@@ -273,21 +297,20 @@ Query runs from a project with optional filtering and field projection. Returns 
     | *(not available)* | `ReferenceDatasetID` | Alternative to `ProjectIDs` |
   </Tab>
   <Tab title="cURL">
-    v1 used `GET /api/v1/runs` with query parameters; v2 uses `POST /v2/runs/query` with a JSON body. Field names in the JSON body match Python `snake_case`.
+    v1 uses `POST /api/v1/runs/query` with a JSON body; v2 uses `POST /v2/runs/query` with a JSON body. Both accept only project UUIDs, not a project name—resolve the UUID with `GET /api/v1/sessions?name=...` first (see warning above).
 
-    | Before (v1 `GET /api/v1/runs` query param) | After (v2 `POST /v2/runs/query` JSON body field) | Notes |
+    | Before (v1 `POST /api/v1/runs/query` body field) | After (v2 `POST /v2/runs/query` body field) | Notes |
     |---|---|---|
-    | `project_name` | *(removed)* | Use `project_ids` with UUID(s)—see warning above |
-    | `project_id` | `project_ids` | Now takes an array; mutually exclusive with `reference_dataset_id` |
+    | `session` | `project_ids` | Renamed; both take an array of project UUIDs. `project_ids` is mutually exclusive with `reference_dataset_id` |
     | `run_type` | `run_type` | Values must now be uppercase: `"LLM"`, `"CHAIN"`, `"TOOL"`, `"RETRIEVER"`, `"EMBEDDING"`, `"PROMPT"`, `"PARSER"` |
-    | `trace_id` | `trace_id` | Unchanged |
-    | `reference_example_id` | `reference_examples` | Now takes an array of UUIDs |
+    | `trace` | `trace_id` | Renamed |
+    | `reference_example` | `reference_examples` | Renamed to plural; now takes an array of UUIDs |
     | `query` | *(removed)* | No equivalent |
     | `filter` | `filter` | Syntax unchanged |
     | `trace_filter` | `trace_filter` | Unchanged |
     | `tree_filter` | `tree_filter` | Unchanged |
     | `is_root` | `is_root` | Unchanged |
-    | `parent_run_id` | *(removed)* | No equivalent |
+    | `parent_run` | *(removed)* | No equivalent |
     | `start_time` | `min_start_time` | Renamed; defaults to 1 day ago—see warning above |
     | `error` | `has_error` | Renamed |
     | `id` | `ids` | Renamed to plural |
@@ -605,21 +628,10 @@ v2 does not accept a project name directly. Resolve the project UUID with `clien
 
 <Tabs sync={false}>
   <Tab title="Before">
-```bash
-curl "https://api.smith.langchain.com/api/v1/runs?project_name=default" \
-  -H "x-api-key: $LANGSMITH_API_KEY"
-```
+    <SmithdbRunsQueryListAllBeforeSh />
   </Tab>
   <Tab title="After">
-```bash
-PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
-  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
-
-curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
-  -H "x-api-key: $LANGSMITH_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d "$(jq -n --arg pid "$PROJECT_ID" '{"project_ids": [$pid]}')"
-```
+    <SmithdbRunsQueryListAllAfterSh />
   </Tab>
 </Tabs>
 
@@ -683,21 +695,10 @@ curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
 
 <Tabs sync={false}>
   <Tab title="Before">
-```bash
-curl "https://api.smith.langchain.com/api/v1/runs?project_name=default" \
-  -H "x-api-key: $LANGSMITH_API_KEY"
-```
+    <SmithdbRunsQuerySelectingFieldsBeforeSh />
   </Tab>
   <Tab title="After">
-```bash
-PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
-  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
-
-curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
-  -H "x-api-key: $LANGSMITH_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d "$(jq -n --arg pid "$PROJECT_ID" '{"project_ids": [$pid], "selects": ["ID", "NAME", "RUN_TYPE", "STATUS", "START_TIME", "INPUTS", "ERROR"]}')"
-```
+    <SmithdbRunsQuerySelectingFieldsAfterSh />
   </Tab>
 </Tabs>
 
@@ -761,21 +762,10 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 
 <Tabs sync={false}>
   <Tab title="Before">
-```bash
-curl "https://api.smith.langchain.com/api/v1/runs?project_name=default&run_type=llm&start_time=2025-01-01T00:00:00Z" \
-  -H "x-api-key: $LANGSMITH_API_KEY"
-```
+    <SmithdbRunsQueryFilterTimeRangeBeforeSh />
   </Tab>
   <Tab title="After">
-```bash
-PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
-  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
-
-curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
-  -H "x-api-key: $LANGSMITH_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d "$(jq -n --arg pid "$PROJECT_ID" '{"project_ids": [$pid], "run_type": "LLM", "min_start_time": "2025-01-01T00:00:00Z"}')"
-```
+    <SmithdbRunsQueryFilterTimeRangeAfterSh />
   </Tab>
 </Tabs>
 
@@ -839,21 +829,10 @@ curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
 
 <Tabs sync={false}>
   <Tab title="Before">
-```bash
-curl "https://api.smith.langchain.com/api/v1/runs?project_name=default&is_root=true" \
-  -H "x-api-key: $LANGSMITH_API_KEY"
-```
+    <SmithdbRunsQueryFilterRootBeforeSh />
   </Tab>
   <Tab title="After">
-```bash
-PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
-  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
-
-curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
-  -H "x-api-key: $LANGSMITH_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d "$(jq -n --arg pid "$PROJECT_ID" '{"project_ids": [$pid], "is_root": true}')"
-```
+    <SmithdbRunsQueryFilterRootAfterSh />
   </Tab>
 </Tabs>
 
@@ -917,21 +896,10 @@ curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
 
 <Tabs sync={false}>
   <Tab title="Before">
-```bash
-curl "https://api.smith.langchain.com/api/v1/runs?id=<run-id-1>&id=<run-id-2>" \
-  -H "x-api-key: $LANGSMITH_API_KEY"
-```
+    <SmithdbRunsQueryFetchByIdBeforeSh />
   </Tab>
   <Tab title="After">
-```bash
-PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
-  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
-
-curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
-  -H "x-api-key: $LANGSMITH_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d "$(jq -n --arg pid "$PROJECT_ID" '{"project_ids": [$pid], "ids": ["<run-id-1>", "<run-id-2>"]}')"
-```
+    <SmithdbRunsQueryFetchByIdAfterSh />
   </Tab>
 </Tabs>
 
@@ -995,30 +963,10 @@ curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
 
 <Tabs sync={false}>
   <Tab title="Before">
-```bash
-curl "https://api.smith.langchain.com/api/v1/runs?project_name=default" \
-  -H "x-api-key: $LANGSMITH_API_KEY"
-```
+    <SmithdbRunsQueryPaginationBeforeSh />
   </Tab>
   <Tab title="After">
-```bash
-PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
-  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
-
-# First page
-RESPONSE=$(curl -s -X POST "https://api.smith.langchain.com/v2/runs/query" \
-  -H "x-api-key: $LANGSMITH_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d "$(jq -n --arg pid "$PROJECT_ID" '{"project_ids": [$pid], "selects": ["ID", "NAME"]}')")
-echo "$RESPONSE" | jq '.runs'
-
-# Next page: pass cursor from previous response
-CURSOR=$(echo "$RESPONSE" | jq -r '.next_cursor // empty')
-curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
-  -H "x-api-key: $LANGSMITH_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d "$(jq -n --arg pid "$PROJECT_ID" --arg cursor "$CURSOR" '{"project_ids": [$pid], "selects": ["ID", "NAME"], "cursor": $cursor}')"
-```
+    <SmithdbRunsQueryPaginationAfterSh />
   </Tab>
 </Tabs>
 
@@ -1082,21 +1030,10 @@ The typed boolean `error=True/False` is renamed to `has_error=True/False` in v2.
 
 <Tabs sync={false}>
   <Tab title="Before">
-```bash
-curl "https://api.smith.langchain.com/api/v1/runs?project_name=default&error=true" \
-  -H "x-api-key: $LANGSMITH_API_KEY"
-```
+    <SmithdbRunsQueryFilterErrorsBeforeSh />
   </Tab>
   <Tab title="After">
-```bash
-PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
-  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
-
-curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
-  -H "x-api-key: $LANGSMITH_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d "$(jq -n --arg pid "$PROJECT_ID" '{"project_ids": [$pid], "has_error": true}')"
-```
+    <SmithdbRunsQueryFilterErrorsAfterSh />
   </Tab>
 </Tabs>
 
@@ -1160,25 +1097,10 @@ The metadata filter syntax is unchanged. Use `eq(metadata_key, ...)` to check fo
 
 <Tabs sync={false}>
   <Tab title="Before">
-```bash
-curl -G "https://api.smith.langchain.com/api/v1/runs" \
-  -H "x-api-key: $LANGSMITH_API_KEY" \
-  --data-urlencode "project_name=default" \
-  --data-urlencode "filter=and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))"
-```
+    <SmithdbRunsQueryFilterMetadataBeforeSh />
   </Tab>
   <Tab title="After">
-```bash
-PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
-  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
-
-FILTER="and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))"
-
-curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
-  -H "x-api-key: $LANGSMITH_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d "$(jq -n --arg pid "$PROJECT_ID" --arg f "$FILTER" '{"project_ids": [$pid], "filter": $f}')"
-```
+    <SmithdbRunsQueryFilterMetadataAfterSh />
   </Tab>
 </Tabs>
 
@@ -1242,25 +1164,10 @@ Nested `and()` / `or()` filter expressions are unchanged between v1 and v2.
 
 <Tabs sync={false}>
   <Tab title="Before">
-```bash
-curl -G "https://api.smith.langchain.com/api/v1/runs" \
-  -H "x-api-key: $LANGSMITH_API_KEY" \
-  --data-urlencode "project_name=default" \
-  --data-urlencode 'filter=and(gt(start_time, "2023-07-15T12:34:56Z"), or(neq(status, "error"), and(eq(feedback_key, "Correctness"), eq(feedback_score, 0.0))))'
-```
+    <SmithdbRunsQueryBooleanFiltersBeforeSh />
   </Tab>
   <Tab title="After">
-```bash
-PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
-  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
-
-FILTER='and(gt(start_time, "2023-07-15T12:34:56Z"), or(neq(status, "error"), and(eq(feedback_key, "Correctness"), eq(feedback_score, 0.0))))'
-
-curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
-  -H "x-api-key: $LANGSMITH_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d "$(jq -n --arg pid "$PROJECT_ID" --arg f "$FILTER" '{"project_ids": [$pid], "filter": $f}')"
-```
+    <SmithdbRunsQueryBooleanFiltersAfterSh />
   </Tab>
 </Tabs>
 
@@ -1324,34 +1231,10 @@ All three filter parameters are unchanged between v1 and v2. `filter` applies to
 
 <Tabs sync={false}>
   <Tab title="Before">
-```bash
-curl -G "https://api.smith.langchain.com/api/v1/runs" \
-  -H "x-api-key: $LANGSMITH_API_KEY" \
-  --data-urlencode "project_name=default" \
-  --data-urlencode 'filter=eq(name, "RetrieveDocs")' \
-  --data-urlencode 'trace_filter=and(eq(feedback_key, "user_score"), eq(feedback_score, 1))' \
-  --data-urlencode 'tree_filter=eq(name, "ExpandQuery")'
-```
+    <SmithdbRunsQueryScopedFiltersBeforeSh />
   </Tab>
   <Tab title="After">
-```bash
-PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
-  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
-
-FILTER='eq(name, "RetrieveDocs")'
-TRACE_FILTER='and(eq(feedback_key, "user_score"), eq(feedback_score, 1))'
-TREE_FILTER='eq(name, "ExpandQuery")'
-
-curl -X POST "https://api.smith.langchain.com/v2/runs/query" \
-  -H "x-api-key: $LANGSMITH_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d "$(jq -n \
-    --arg pid "$PROJECT_ID" \
-    --arg f "$FILTER" \
-    --arg tf "$TRACE_FILTER" \
-    --arg treef "$TREE_FILTER" \
-    '{"project_ids": [$pid], "filter": $f, "trace_filter": $tf, "tree_filter": $treef}')"
-```
+    <SmithdbRunsQueryScopedFiltersAfterSh />
   </Tab>
 </Tabs>
 
@@ -1768,16 +1651,10 @@ The API returns only the run ID by default—pass `selects` to request additiona
   <Tab title="cURL">
     <Tabs sync={false}>
       <Tab title="Before">
-    ```bash
-    curl "https://api.smith.langchain.com/api/v1/runs/<run-id>" \
-      -H "x-api-key: $LANGSMITH_API_KEY"
-    ```
+        <SmithdbRunsRetrieveBasicBeforeSh />
       </Tab>
       <Tab title="After">
-    ```bash
-    curl "https://api.smith.langchain.com/v2/runs/<run-id>?select=NAME&select=STATUS&select=TOTAL_TOKENS" \
-      -H "x-api-key: $LANGSMITH_API_KEY"
-    ```
+        <SmithdbRunsRetrieveBasicAfterSh />
       </Tab>
     </Tabs>
   </Tab>
@@ -1840,19 +1717,10 @@ v2 requires two additional parameters that `read_run` did not need: `project_id`
 
 <Tabs sync={false}>
   <Tab title="Before">
-```bash
-curl "https://api.smith.langchain.com/api/v1/runs/<run-id>" \
-  -H "x-api-key: $LANGSMITH_API_KEY"
-```
+    <SmithdbRunsRetrieveByIdBeforeSh />
   </Tab>
   <Tab title="After">
-```bash
-PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=default&limit=1" \
-  -H "x-api-key: $LANGSMITH_API_KEY" | jq -r '.[0].id')
-
-curl "https://api.smith.langchain.com/v2/runs/<run-id>?project_id=$PROJECT_ID&start_time=2025-01-01T12:00:00Z" \
-  -H "x-api-key: $LANGSMITH_API_KEY"
-```
+    <SmithdbRunsRetrieveByIdAfterSh />
   </Tab>
 </Tabs>
 

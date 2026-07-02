@@ -12,7 +12,8 @@ Supported markers (same as this repo's Bluehawk usage):
 - ``// :snippet-start: <id>`` / ``// :snippet-end:`` (TypeScript, Java)
 - ``// :snippet-start: <id>`` / ``// :snippet-end:`` (Kotlin)
 - ``// :snippet-start: <id>`` / ``// :snippet-end:`` (Go)
-- ``# :remove-start:`` / ``# :remove-end:`` inside Python snippet bodies
+- ``# :snippet-start: <id>`` / ``# :snippet-end:`` (bash)
+- ``# :remove-start:`` / ``# :remove-end:`` inside Python/bash snippet bodies
 - ``// :remove-start:`` / ``// :remove-end:`` inside TypeScript/Java/Kotlin/Go snippet bodies
 
 Output files match Bluehawk: ``<source-basename>.snippet.<snippet-id>.<ext>`` in
@@ -24,7 +25,7 @@ or via ``make code-snippets``.
 Optional environment variable:
 
 - ``CODE_SNIPPET_SOURCES``: space-separated repo-relative paths under ``src/code-samples/``
-  (``.py``, ``.ts``, ``.java``, ``.kt``, ``.go``). When set, only those files are extracted; existing
+  (``.py``, ``.ts``, ``.java``, ``.kt``, ``.go``, ``.sh``). When set, only those files are extracted; existing
   generated snippet files for those stems are replaced. Other stems in
   ``src/code-samples-generated/`` are left unchanged. Use ``make code-snippets-langsmith``
   for the LangSmith JVM subset.
@@ -82,7 +83,7 @@ def extract_snippets(
     language: str,
 ) -> list[tuple[str, str]]:
     """Return (snippet_id, body) for each ``:snippet-start:`` block in *text*."""
-    if language == "python":
+    if language in ("python", "bash", "shell", "sh"):
         start_re, end_re = _RE_SNIP_START_PY, _RE_SNIP_END_PY
         rs, re_ = _RE_REMOVE_START_PY, _RE_REMOVE_END_PY
     elif language in ("ts", "typescript", "javascript", "java", "kotlin", "go"):
@@ -143,6 +144,10 @@ def _iter_source_files(root: Path) -> list[Path]:
         if "node_modules" in path.parts:
             continue
         out.append(path)
+    for path in sorted(root.rglob("*.sh")):
+        if "node_modules" in path.parts:
+            continue
+        out.append(path)
     return out
 
 
@@ -157,7 +162,9 @@ def _language_for_path(path: Path) -> str:
         return "kotlin"
     if path.suffix == ".go":
         return "go"
-    msg = f"expected .py, .ts, .java, .kt, or .go, got {path.suffix!r}"
+    if path.suffix == ".sh":
+        return "bash"
+    msg = f"expected .py, .ts, .java, .kt, .go, or .sh, got {path.suffix!r}"
     raise ValueError(msg)
 
 
@@ -197,8 +204,8 @@ def _resolve_partial_sources(repo_root: Path, code_samples: Path) -> list[Path] 
         except ValueError as e:
             msg = f"CODE_SNIPPET_SOURCES must be under {code_samples}: {part}"
             raise ValueError(msg) from e
-        if path.suffix not in (".py", ".ts", ".java", ".kt", ".go"):
-            msg = f"CODE_SNIPPET_SOURCES must be .py, .ts, .java, .kt, or .go: {part}"
+        if path.suffix not in (".py", ".ts", ".java", ".kt", ".go", ".sh"):
+            msg = f"CODE_SNIPPET_SOURCES must be .py, .ts, .java, .kt, .go, or .sh: {part}"
             raise ValueError(msg)
         out.append(path)
     return out
@@ -223,7 +230,7 @@ def main() -> int:
 
     if partial_sources is None:
         for p in out_dir.rglob("*"):
-            if p.suffix in (".py", ".ts", ".java", ".kt", ".go") and p.is_file():
+            if p.suffix in (".py", ".ts", ".java", ".kt", ".go", ".sh") and p.is_file():
                 p.unlink()
         paths_to_process = _iter_source_files(code_samples)
     else:
