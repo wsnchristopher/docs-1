@@ -75,7 +75,7 @@ agent = create_deep_agent(
 | [`backend=`](#backends) | Filesystem backend (StateBackend by default) |
 | [`permissions=`](/oss/deepagents/permissions) | Path-level access control for the filesystem |
 | [`subagents=`](#subagents) | Custom subagents for delegated tasks |
-| [`middleware=`](#middleware) | Extra middleware appended to the [default stack](#default-stack-main-agent) |
+| [`middleware=`](#middleware) | Extra middleware merged into the [default stack](#default-stack-main-agent); an instance whose `.name` matches a default replaces it in place |
 | [`interrupt_on=`](#human-in-the-loop) | Pause before tool calls for human approval |
 | [`response_format=`](#structured-output) | Structured output schema |
 | [`state_schema=`](/oss/deepagents/context-engineering#custom-state-schema) | Custom graph state schema |
@@ -350,7 +350,7 @@ agent = create_deep_agent(
 Deep Agents support any [middleware](/oss/langchain/middleware/overview), including the built-in middleware listed below, prebuilt middleware from LangChain, provider-specific middleware, and custom middleware you write yourself.
 
 :::python
-Pass middleware to the `middleware` argument of `create_deep_agent`. Custom middleware is appended after @[`PatchToolCallsMiddleware`] in the [default stack](#default-stack-main-agent).
+Pass middleware to the `middleware` argument of `create_deep_agent`. Each instance is merged into the [default stack](#default-stack-main-agent) by matching its `.name` against the defaults already in the stack: a match replaces the default instance in place, and anything that does not match is inserted after @[`PatchToolCallsMiddleware`]. See [Override a default middleware instance](#override-a-default-middleware-instance).
 :::
 
 :::js
@@ -372,7 +372,7 @@ From first to last:
 5. @[`SummarizationMiddleware`]: Condenses message history to stay within context limits when conversations grow long (via @[create_summarization_middleware]).
 6. @[`PatchToolCallsMiddleware`]: Repairs dangling tool calls in message history when a run resumes after an interruption or receives malformed tool-call arguments. Runs **before** Anthropic prompt caching and the tail stack below.
 7. @[`AsyncSubAgentMiddleware`]: Only when you configure async subagents.
-8. **Your middleware argument**: Optional middleware you pass as the `middleware` argument is appended here (after Patch, before the tail stack).
+8. **Your middleware argument**: Optional middleware you pass as the `middleware` argument is merged here (after Patch, before the tail stack)—an instance whose `.name` matches one of the defaults above replaces that default in place instead of duplicating it; anything else lands here. See [Override a default middleware instance](#override-a-default-middleware-instance).
 9. **Harness profile extras**: Provider-specific middleware from the resolved model profile, if any.
 10. **Excluded-tool filtering**: When the harness profile lists excluded tools, middleware removes those tools from the agent.
 11. **Prompt caching** (@[`AnthropicPromptCachingMiddleware`] and @[`BedrockPromptCachingMiddleware`]): Both are always registered and run **after** Patch and after your middleware so the cached prefix matches what is actually sent to the model. Each no-ops on models it does not support (`unsupported_model_behavior="ignore"`), so the Anthropic middleware applies on Anthropic models and the Bedrock middleware on AWS Bedrock models with cache support.
@@ -502,6 +502,34 @@ Mutation in place, such as modifying `state.x` in `beforeAgent`, mutating a shar
 
 If you must use mutation in custom middleware, consider what happens when subagents, parallel tools, or concurrent agent invocations run at the same time.
 </Warning>
+
+### Override a default middleware instance
+
+:::python
+Pass a middleware instance whose `.name` matches an entry in the [default stack](#default-stack-main-agent), such as @[`SummarizationMiddleware`], to replace that default in place instead of appending a duplicate:
+
+```python
+from deepagents import create_deep_agent
+from deepagents.backends import StateBackend
+from deepagents.middleware import SummarizationMiddleware
+
+backend = StateBackend()
+model = "openai:gpt-5.5"
+
+custom_summarization = SummarizationMiddleware(
+    model=model,
+    backend=backend,
+    summary_prompt="Your custom summary prompt here.",
+)
+
+agent = create_deep_agent(
+    model=model,
+    middleware=[custom_summarization],  # replaces the default SummarizationMiddleware
+)
+```
+
+The same rule applies to the `middleware` field on a [`SubAgent`](/oss/deepagents/subagents#subagent-dictionary-based) dictionary, matched against that subagent's own default stack. Declarative subagents build their stacks independently, so a main-agent override does not carry over to them—pass the override directly in the subagent's `middleware` field instead. The auto-added general-purpose subagent is an exception: it inherits a main-agent override when the override's `.name` matches one of the general-purpose subagent's own default middleware slots.
+:::
 
 ### Interpreters
 
