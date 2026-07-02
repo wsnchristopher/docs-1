@@ -179,17 +179,15 @@ Query runs from a project with optional filtering and field projection. Returns 
 
 #### Query parameters
 
-<Warning>
-`project_name` is not supported in `runs.query`. Pass `project_ids` with the project UUID instead. To look up a UUID by name, use `client.projects.list(name="my-project", limit=1)`.
-</Warning>
-
-<Warning>
-`min_start_time` defaults to **1 day ago** when omitted. `list_runs` with no `start_time` returned all historical runs; `runs.query` without `min_start_time` silently scopes the query to the last 24 hours. Pass an explicit `min_start_time` if you need a wider window.
-</Warning>
-
 <Tabs>
   <Tab title="Python">
-    All parameters use `snake_case`.
+    <Warning>
+    `project_name` is not supported in `runs.query`. Pass `project_ids` with the project UUID instead. To look up a UUID by name, use `client.projects.list(name="my-project", limit=1)`.
+    </Warning>
+
+    <Warning>
+    `min_start_time` defaults to **1 day ago** when omitted. `list_runs` with no `start_time` returned all historical runs; `runs.query` without `min_start_time` silently scopes the query to the last 24 hours. Pass an explicit `min_start_time` if you need a wider window.
+    </Warning>
 
     | Before (`list_runs`) | After (`runs.query`) | Notes |
     |---|---|---|
@@ -215,7 +213,13 @@ Query runs from a project with optional filtering and field projection. Returns 
     | *(not available)* | `cursor` | Pass `next_cursor` from previous response to fetch next page |
   </Tab>
   <Tab title="TypeScript">
-    The v2 API uses `snake_case` parameter names, unlike v1 which used `camelCase`.
+    <Warning>
+    `projectName` is not supported in `client.runs.query`. Pass `project_ids` with the project UUID instead. To look up a UUID by name, use `client.projects.list({ name: "my-project", limit: 1 })`.
+    </Warning>
+
+    <Warning>
+    `min_start_time` defaults to **1 day ago** when omitted. `listRuns` with no `startTime` returned all historical runs; `client.runs.query` without `min_start_time` silently scopes the query to the last 24 hours. Pass an explicit `min_start_time` if you need a wider window.
+    </Warning>
 
     | Before (`listRuns`) | After (`client.runs.query`) | Notes |
     |---|---|---|
@@ -243,7 +247,9 @@ Query runs from a project with optional filtering and field projection. Returns 
     | *(not available)* | `cursor` | Pass `next_cursor` from previous response to fetch next page |
   </Tab>
   <Tab title="Java">
-    All parameters use `camelCase` builder methods (e.g., `projectIds()`, `minStartTime()`).
+    <Warning>
+    `minStartTime()` defaults to **1 day ago** when omitted. `query()` with no `startTime()` returned all historical runs; `queryV2()` without `minStartTime()` silently scopes the query to the last 24 hours. Pass an explicit `minStartTime()` if you need a wider window.
+    </Warning>
 
     | Before (`RunQueryParams`) | After (`RunQueryV2Params`) | Notes |
     |---|---|---|
@@ -270,7 +276,9 @@ Query runs from a project with optional filtering and field projection. Returns 
     | *(not available)* | `referenceDatasetId()` | Alternative to `projectIds()` |
   </Tab>
   <Tab title="Go">
-    All parameters use `PascalCase` field names on the params struct.
+    <Warning>
+    `MinStartTime` defaults to **1 day ago** when omitted. `Query()` with no `StartTime` returned all historical runs; `QueryV2()` without `MinStartTime` silently scopes the query to the last 24 hours. Pass an explicit `MinStartTime` if you need a wider window.
+    </Warning>
 
     | Before (`RunQueryParams`) | After (`RunQueryV2Params`) | Notes |
     |---|---|---|
@@ -297,7 +305,10 @@ Query runs from a project with optional filtering and field projection. Returns 
     | *(not available)* | `ReferenceDatasetID` | Alternative to `ProjectIDs` |
   </Tab>
   <Tab title="cURL">
-    v1 uses `POST /api/v1/runs/query` with a JSON body; v2 uses `POST /v2/runs/query` with a JSON body. Both accept only project UUIDs, not a project name—resolve the UUID with `GET /api/v1/sessions?name=...` first (see warning above).
+
+    <Warning>
+    `min_start_time` defaults to **1 day ago** when omitted. `POST /api/v1/runs/query` with no `start_time` returned all historical runs; `POST /v2/runs/query` without `min_start_time` silently scopes the query to the last 24 hours. Pass an explicit `min_start_time` if you need a wider window.
+    </Warning>
 
     | Before (v1 `POST /api/v1/runs/query` body field) | After (v2 `POST /v2/runs/query` body field) | Notes |
     |---|---|---|
@@ -325,7 +336,9 @@ Query runs from a project with optional filtering and field projection. Returns 
 
 #### Response fields
 
-v1 `list_runs` returns `Run` objects with attribute access (`run.name`). v2 `runs.query` returns `QueryRunResponse` objects with the same snake_case attribute access—no dict-key indexing. Pass SCREAMING_SNAKE_CASE strings to `selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; only selected fields are non-`None` on returned objects.
+<Warning>
+Pass SCREAMING_SNAKE_CASE strings to `selects` (eg. `"ID"`, `"NAME"`, `"STATUS"`) to control which fields are populated; only selected fields are non-`None` on returned objects. Default `selects` contains only `"ID"`.
+</Warning>
 
 <Tabs>
   <Tab title="Python">
@@ -342,7 +355,7 @@ v1 `list_runs` returns `Run` objects with attribute access (`run.name`). v2 `run
     | `run.outputs` | `run.outputs` | Unchanged |
     | `run.tags` | `run.tags` | Unchanged |
     | `run.extra` | `run.extra` | Unchanged |
-    | `run.metadata` (property) | `run.metadata` | Was derived from `extra["metadata"]`; now an explicit field |
+    | `run.metadata` | `run.metadata` | Unchanged |
     | `run.events` | `run.events` | Unchanged |
     | `run.reference_example_id` | `run.reference_example_id` | Unchanged |
     | `run.trace_id` | `run.trace_id` | Unchanged |
@@ -374,14 +387,12 @@ v1 `list_runs` returns `Run` objects with attribute access (`run.name`). v2 `run
     | *(not available)* | `run.thread_id` | New: conversation thread UUID |
     | *(not available)* | `run.reference_dataset_id` | New: dataset UUID for the reference example |
     | *(not available)* | `run.share_url` | New: public share URL (only set when the run has been shared) |
-    | *(not available)* | `run.prompt_token_details` | New: per-category prompt token breakdown |
-    | *(not available)* | `run.completion_token_details` | New: per-category completion token breakdown |
-    | *(not available)* | `run.prompt_cost_details` | New: per-category prompt cost breakdown |
-    | *(not available)* | `run.completion_cost_details` | New: per-category completion cost breakdown |
+    | `run.prompt_token_details` | `run.prompt_token_details.raw` | Field now wraps the dict; access `.raw` to get `dict[str, int]` (element type unchanged) |
+    | `run.completion_token_details` | `run.completion_token_details.raw` | Field now wraps the dict; access `.raw` to get `dict[str, int]` (element type unchanged) |
+    | `run.prompt_cost_details` | `run.prompt_cost_details.raw` | Field now wraps the dict; access `.raw` to get `dict[str, float]` (was `dict[str, Decimal]`) |
+    | `run.completion_cost_details` | `run.completion_cost_details.raw` | Field now wraps the dict; access `.raw` to get `dict[str, float]` (was `dict[str, Decimal]`) |
   </Tab>
   <Tab title="TypeScript">
-    v1 TypeScript `Run` properties used `camelCase`; v2 `QueryRunResponse` properties use `snake_case`.
-
     | Before (v1 `Run` property) | After (v2 `QueryRunResponse` property) | Notes |
     |---|---|---|
     | `run.id` | `run.id` | Unchanged |
@@ -395,7 +406,7 @@ v1 `list_runs` returns `Run` objects with attribute access (`run.name`). v2 `run
     | `run.outputs` | `run.outputs` | Unchanged |
     | `run.tags` | `run.tags` | Unchanged |
     | `run.extra` | `run.extra` | Unchanged |
-    | `run.metadata` | `run.metadata` | Was derived from `extra.metadata`; now an explicit field |
+    | *(not available)* | `run.metadata` | New: previously accessed via `run.extra.metadata` |
     | `run.events` | `run.events` | Unchanged |
     | `run.referenceExampleId` | `run.reference_example_id` | Renamed to `snake_case` |
     | `run.traceId` | `run.trace_id` | Renamed to `snake_case` |
@@ -434,7 +445,6 @@ v1 `list_runs` returns `Run` objects with attribute access (`run.name`). v2 `run
     | *(not available)* | `run.completion_cost_details` | New: per-category completion cost breakdown |
   </Tab>
   <Tab title="Java">
-    Java `QueryRunResponse` uses camelCase method accessors. Pass `SCREAMING_SNAKE_CASE` strings to `selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; unselected fields return empty `Optional` values. Fields stored as raw JSON (`inputs`, `outputs`, `extra`, `manifest`, `metadata`) are accessed via underscore-prefixed methods that return `JsonValue`.
 
     | Before (`RunSchema` method) | After (`QueryRunResponse` method) | Notes |
     |---|---|---|
@@ -499,8 +509,6 @@ v1 `list_runs` returns `Run` objects with attribute access (`run.name`). v2 `run
     | *(not available)* | `run.threadEvaluationTime()` | New |
   </Tab>
   <Tab title="Go">
-    Go `QueryRunResponse` uses PascalCase struct field access. Pass `SCREAMING_SNAKE_CASE` strings to `Selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; unselected fields are zero-valued on returned structs.
-
     | Before (`RunSchema` field) | After (`QueryRunResponse` field) | Notes |
     |---|---|---|
     | `run.ID` | `run.ID` | Unchanged |
@@ -524,12 +532,12 @@ v1 `list_runs` returns `Run` objects with attribute access (`run.name`). v2 `run
     | `run.ParentRunIDs` | `run.ParentRunIDs` | Unchanged |
     | `run.PriceModelID` | `run.PriceModelID` | Unchanged |
     | `run.PromptCost` | `run.PromptCost` | Unchanged |
-    | `run.PromptCostDetails` | `run.PromptCostDetails` | Unchanged; type is now `QueryRunResponsePromptCostDetails` |
-    | `run.PromptTokenDetails` | `run.PromptTokenDetails` | Unchanged; type is now `QueryRunResponsePromptTokenDetails` |
+    | `run.PromptCostDetails` | `run.PromptCostDetails.Raw` | Field now wraps the map; access `.Raw` to get `map[string]float64` (was `map[string]string`) |
+    | `run.PromptTokenDetails` | `run.PromptTokenDetails.Raw` | Field now wraps the map; access `.Raw` to get `map[string]int64` (element type unchanged) |
     | `run.PromptTokens` | `run.PromptTokens` | Unchanged |
     | `run.CompletionCost` | `run.CompletionCost` | Unchanged |
-    | `run.CompletionCostDetails` | `run.CompletionCostDetails` | Unchanged; type is now `QueryRunResponseCompletionCostDetails` |
-    | `run.CompletionTokenDetails` | `run.CompletionTokenDetails` | Unchanged; type is now `QueryRunResponseCompletionTokenDetails` |
+    | `run.CompletionCostDetails` | `run.CompletionCostDetails.Raw` | Field now wraps the map; access `.Raw` to get `map[string]float64` (was `map[string]string`) |
+    | `run.CompletionTokenDetails` | `run.CompletionTokenDetails.Raw` | Field now wraps the map; access `.Raw` to get `map[string]int64` (element type unchanged) |
     | `run.CompletionTokens` | `run.CompletionTokens` | Unchanged |
     | `run.TotalCost` | `run.TotalCost` | Unchanged |
     | `run.TotalTokens` | `run.TotalTokens` | Unchanged |
@@ -1279,13 +1287,11 @@ Fetch a single run by ID. Returns only the run ID by default—specify a field s
 
 #### Query parameters
 
-<Warning>
-`runs.retrieve` requires two new fields—`project_id` and `start_time`—that `read_run` did not need. Both are required to locate the run in SmithDB.
-</Warning>
-
 <Tabs>
   <Tab title="Python">
-    All parameters use `snake_case`.
+    <Warning>
+    `runs.retrieve` requires two new fields—`project_id` and `start_time`—that `read_run` did not need. Both are required to locate the run in SmithDB.
+    </Warning>
 
     | Before (`read_run`) | After (`runs.retrieve`) | Notes |
     |---|---|---|
@@ -1296,7 +1302,9 @@ Fetch a single run by ID. Returns only the run ID by default—specify a field s
     | *(all fields returned by default)* | `selects` | Field projection; defaults to `["ID"]` only; field names are uppercase |
   </Tab>
   <Tab title="TypeScript">
-    The v2 API uses `snake_case` parameter names, unlike v1 which used `camelCase`.
+    <Warning>
+    `client.runs.retrieve` requires two new fields—`project_id` and `start_time`—that `readRun` did not need. Both are required to locate the run in SmithDB.
+    </Warning>
 
     | Before (`readRun`) | After (`client.runs.retrieve`) | Notes |
     |---|---|---|
@@ -1307,7 +1315,9 @@ Fetch a single run by ID. Returns only the run ID by default—specify a field s
     | *(all fields returned by default)* | `selects` | Field projection; defaults to `["ID"]` only; field names are uppercase |
   </Tab>
   <Tab title="Java">
-    All parameters use `camelCase` builder methods.
+    <Warning>
+    `retrieveV2()` requires `projectId()`, which replaces the removed `sessionId()`, and makes `startTime()` required (previously optional). Both are needed to locate the run in SmithDB.
+    </Warning>
 
     | Before (`RunRetrieveParams`) | After (`RunRetrieveV2Params`) | Notes |
     |---|---|---|
@@ -1321,7 +1331,9 @@ Fetch a single run by ID. Returns only the run ID by default—specify a field s
     | *(all fields returned by default)* | `selects()` | Field projection; defaults to `["ID"]` only; field names are uppercase |
   </Tab>
   <Tab title="Go">
-    All parameters use `PascalCase` field names on the params struct.
+    <Warning>
+    `GetV2()` requires `ProjectID`, which replaces the removed `SessionID`, and makes `StartTime` required (previously optional). Both are needed to locate the run in SmithDB.
+    </Warning>
 
     | Before (`RunGetParams`) | After (`RunGetV2Params`) | Notes |
     |---|---|---|
@@ -1337,19 +1349,25 @@ Fetch a single run by ID. Returns only the run ID by default—specify a field s
   <Tab title="cURL">
     `run_id` remains in the URL path. All other parameters are query string values with `snake_case` names.
 
+    <Warning>
+    `GET /v2/runs/{run_id}` requires a new `project_id` query param and makes `start_time` required (previously optional). Both are needed to locate the run in SmithDB.
+    </Warning>
+
     | Before (`GET /api/v1/runs/{run_id}` param) | After (`GET /v2/runs/{run_id}` param) | Notes |
     |---|---|---|
     | `run_id` (path) | `run_id` (path) | Unchanged |
     | `load_child_runs` (query) | *(removed)* | No equivalent |
     | *(not available)* | `project_id` (query) | **Required**—UUID of the project that owns the run |
-    | *(not available)* | `start_time` (query) | **Required**—run's start time (RFC3339), used with `project_id` to locate the run |
+    | `start_time` (query) | `start_time` (query) | Now **required**; used with `project_id` to locate the run in SmithDB |
     | *(all fields returned by default)* | `selects` (query, repeatable) | Field projection; defaults to `["ID"]` only; field names are uppercase |
   </Tab>
 </Tabs>
 
 #### Response fields
 
-v1 `read_run` returns a `Run` object with attribute access (`run.name`). v2 `runs.retrieve` returns a `QueryRunResponse` object with the same snake_case attribute access—no dict-key indexing. Pass SCREAMING_SNAKE_CASE strings to `selects` (`"NAME"`, `"STATUS"`) to control which fields are populated; only selected fields are non-`None` on the returned object. Field names and renamed/removed fields are identical to the query response table above.
+<Warning>
+Pass SCREAMING_SNAKE_CASE strings to `selects` (eg. `"ID"`, `"NAME"`, `"STATUS"`) to control which fields are populated; only selected fields are non-`None` on returned objects. Default `selects` contains only `"ID"`.
+</Warning>
 
 <Tabs>
   <Tab title="Python">
@@ -1366,7 +1384,7 @@ v1 `read_run` returns a `Run` object with attribute access (`run.name`). v2 `run
     | `run.outputs` | `run.outputs` | Unchanged |
     | `run.tags` | `run.tags` | Unchanged |
     | `run.extra` | `run.extra` | Unchanged |
-    | `run.metadata` (property) | `run.metadata` | Was derived from `extra["metadata"]`; now an explicit field |
+    | `run.metadata` | `run.metadata` | Unchanged |
     | `run.events` | `run.events` | Unchanged |
     | `run.reference_example_id` | `run.reference_example_id` | Unchanged |
     | `run.trace_id` | `run.trace_id` | Unchanged |
@@ -1398,10 +1416,10 @@ v1 `read_run` returns a `Run` object with attribute access (`run.name`). v2 `run
     | *(not available)* | `run.thread_id` | New: conversation thread UUID |
     | *(not available)* | `run.reference_dataset_id` | New: dataset UUID for the reference example |
     | *(not available)* | `run.share_url` | New: public share URL (only set when the run has been shared) |
-    | *(not available)* | `run.prompt_token_details` | New: per-category prompt token breakdown |
-    | *(not available)* | `run.completion_token_details` | New: per-category completion token breakdown |
-    | *(not available)* | `run.prompt_cost_details` | New: per-category prompt cost breakdown |
-    | *(not available)* | `run.completion_cost_details` | New: per-category completion cost breakdown |
+    | `run.prompt_token_details` | `run.prompt_token_details.raw` | Field now wraps the dict; access `.raw` to get `dict[str, int]` (element type unchanged) |
+    | `run.completion_token_details` | `run.completion_token_details.raw` | Field now wraps the dict; access `.raw` to get `dict[str, int]` (element type unchanged) |
+    | `run.prompt_cost_details` | `run.prompt_cost_details.raw` | Field now wraps the dict; access `.raw` to get `dict[str, float]` (was `dict[str, Decimal]`) |
+    | `run.completion_cost_details` | `run.completion_cost_details.raw` | Field now wraps the dict; access `.raw` to get `dict[str, float]` (was `dict[str, Decimal]`) |
   </Tab>
   <Tab title="TypeScript">
     v1 TypeScript `Run` properties used `camelCase`; v2 `QueryRunResponse` properties use `snake_case`.
@@ -1419,7 +1437,7 @@ v1 `read_run` returns a `Run` object with attribute access (`run.name`). v2 `run
     | `run.outputs` | `run.outputs` | Unchanged |
     | `run.tags` | `run.tags` | Unchanged |
     | `run.extra` | `run.extra` | Unchanged |
-    | `run.metadata` | `run.metadata` | Was derived from `extra.metadata`; now an explicit field |
+    | *(not available)* | `run.metadata` | New: previously accessed via `run.extra.metadata` |
     | `run.events` | `run.events` | Unchanged |
     | `run.referenceExampleId` | `run.reference_example_id` | Renamed to `snake_case` |
     | `run.traceId` | `run.trace_id` | Renamed to `snake_case` |
@@ -1548,12 +1566,12 @@ v1 `read_run` returns a `Run` object with attribute access (`run.name`). v2 `run
     | `run.ParentRunIDs` | `run.ParentRunIDs` | Unchanged |
     | `run.PriceModelID` | `run.PriceModelID` | Unchanged |
     | `run.PromptCost` | `run.PromptCost` | Unchanged |
-    | `run.PromptCostDetails` | `run.PromptCostDetails` | Unchanged; type is now `QueryRunResponsePromptCostDetails` |
-    | `run.PromptTokenDetails` | `run.PromptTokenDetails` | Unchanged; type is now `QueryRunResponsePromptTokenDetails` |
+    | `run.PromptCostDetails` | `run.PromptCostDetails.Raw` | Field now wraps the map; access `.Raw` to get `map[string]float64` (was `map[string]string`) |
+    | `run.PromptTokenDetails` | `run.PromptTokenDetails.Raw` | Field now wraps the map; access `.Raw` to get `map[string]int64` (element type unchanged) |
     | `run.PromptTokens` | `run.PromptTokens` | Unchanged |
     | `run.CompletionCost` | `run.CompletionCost` | Unchanged |
-    | `run.CompletionCostDetails` | `run.CompletionCostDetails` | Unchanged; type is now `QueryRunResponseCompletionCostDetails` |
-    | `run.CompletionTokenDetails` | `run.CompletionTokenDetails` | Unchanged; type is now `QueryRunResponseCompletionTokenDetails` |
+    | `run.CompletionCostDetails` | `run.CompletionCostDetails.Raw` | Field now wraps the map; access `.Raw` to get `map[string]float64` (was `map[string]string`) |
+    | `run.CompletionTokenDetails` | `run.CompletionTokenDetails.Raw` | Field now wraps the map; access `.Raw` to get `map[string]int64` (element type unchanged) |
     | `run.CompletionTokens` | `run.CompletionTokens` | Unchanged |
     | `run.TotalCost` | `run.TotalCost` | Unchanged |
     | `run.TotalTokens` | `run.TotalTokens` | Unchanged |
