@@ -139,18 +139,13 @@ Each conversation gets its own sandbox. The first run creates it; follow-up turn
 When users can return after idle time, configure a TTL on the sandbox so the provider deletes or archives idle environments automatically.
 </Tip>
 
-<Tabs>
-    <Tab title="Python">
-
-<SandboxLifecycleFactoryThreadPy />
-
-    </Tab>
-    <Tab title="TypeScript">
-
+:::js
 <SandboxLifecycleFactoryThreadTs />
+:::
 
-    </Tab>
-</Tabs>
+:::python
+<SandboxLifecycleFactoryThreadPy />
+:::
 
 ### Assistant-scoped
 
@@ -160,18 +155,13 @@ Every thread on the same assistant reuses one sandbox. Files, installed packages
 Assistant-scoped sandboxes accumulate in-sandbox state over time. Configure a TTL with your sandbox provider, use snapshots to reset periodically, or implement cleanup logic so disk and memory do not grow without bound.
 </Warning>
 
-<Tabs>
-    <Tab title="Python">
-
-<SandboxLifecycleFactoryAssistantPy />
-
-    </Tab>
-    <Tab title="TypeScript">
-
+:::js
 <SandboxLifecycleFactoryAssistantTs />
+:::
 
-    </Tab>
-</Tabs>
+:::python
+<SandboxLifecycleFactoryAssistantPy />
+:::
 
 For manual create, execute, and teardown outside a graph factory, see [Basic usage](#basic-usage) and [sandbox integrations](/oss/integrations/sandboxes) for provider-specific APIs.
 
@@ -232,7 +222,7 @@ from langsmith.sandbox import SandboxClient
 
 load_dotenv()
 
-# Can also do this with AgentCore, Daytona, E2B, Modal, Runloop, or Vercel
+# Can also do this with AgentCore, Daytona, E2B, Modal, NVIDIA OpenShell, Runloop, or Vercel
 client = SandboxClient()
 ls_sandbox = client.create_sandbox()
 backend = LangSmithSandbox(sandbox=ls_sandbox)
@@ -451,6 +441,29 @@ You can also call the backend `execute()` method directly in your application co
 
         result = backend.execute("python --version")
         print(result.output)
+        ```
+    </Tab>
+    <Tab title="NVIDIA OpenShell">
+        <CodeGroup>
+            ```bash pip
+            pip install langchain-nvidia-openshell
+            ```
+
+            ```bash uv
+            uv add langchain-nvidia-openshell
+            ```
+        </CodeGroup>
+
+        ```python
+        import openshell
+
+        from langchain_nvidia_openshell import OpenShellSandbox
+
+        with openshell.Sandbox(delete_on_exit=True) as sandbox:
+            backend = OpenShellSandbox(sandbox=sandbox)
+
+            result = backend.execute("python3 --version")
+            print(result.output)
         ```
     </Tab>
     <Tab title="Runloop">
