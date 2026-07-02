@@ -529,7 +529,8 @@ agent = create_deep_agent(
 ```
 
 <Note>
-An override replaces the default instance entirely rather than merging with it, so you must construct the replacement with every parameter it needs. This matters most for @[`FilesystemMiddleware`]: overriding it means passing `backend` (and `permissions`, if you rely on them) directly to your custom instance, since it no longer inherits the values you passed to `create_deep_agent`'s own `backend=` and `permissions=` arguments. This is also how you restrict the tool surface itself—pass a `tools` allowlist to your custom @[`FilesystemMiddleware`] instance; see [Virtual filesystem access](/oss/deepagents/overview#virtual-filesystem-access) for the "Restricting filesystem tools" example.
+An override **replaces** the default middleware instance, it is not merged with it. That means your replacement must be fully configured with any settings it needs. This is especially important for `FilesystemMiddleware`: if you override it, you must pass the `backend` (and `permissions`, if applicable) directly to your custom instance, since it won't inherit the `backend=` and `permissions=` passed to `create_deep_agent()`. To restrict the available filesystem tools, pass a `tools` allowlist to your custom @[`FilesystemMiddleware`] instance; see [Virtual filesystem access](/oss/deepagents/overview#virtual-filesystem-access) for the "Restricting filesystem tools" example.
+
 </Note>
 
 The general-purpose subagent, which Deep Agents adds automatically, inherits the same middleware customization you pass to the main agent.
