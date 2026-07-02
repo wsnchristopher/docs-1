@@ -67,7 +67,7 @@ console.log("Created evaluator:", evaluatorId);
 An LLM-as-a-judge evaluator references a prompt from the [prompt hub](/langsmith/prompt-engineering-quickstart) and maps your run or example fields to the prompt variables.
 
 <Note>
-The prompt must be a structured prompt (type `StructuredPrompt`), created in the [LangSmith UI](https://smith.langchain.com). A `StructuredPrompt` combines a prompt template with an output schema, ensuring the model returns data in a defined structure.
+The prompt must be a structured prompt (type `StructuredPrompt`). A `StructuredPrompt` combines a prompt template with an output schema, ensuring the model returns data in a defined structure.
 </Note>
 
 <CodeGroup>
@@ -164,7 +164,7 @@ console.log(evaluator.run_rules);
 
 ## Update an evaluator
 
-Pass the field that matches the evaluator type: `code_evaluator` for a code evaluator or `llm_evaluator` for an LLM-as-a-judge evaluator.
+Pass the field that matches the evaluator type: `code_evaluator` for a code evaluator or `llm_evaluator` for an LLM-as-a-judge evaluator. `update` changes only the fields you pass.
 
 <CodeGroup>
 ```python Python
@@ -181,7 +181,7 @@ updated = client.online_evaluators.update(
 )
 print(updated.evaluator.name if updated.evaluator else None)
 
-# Update an LLM-as-a-judge evaluator
+# Update the name and prompt of an LLM-as-a-judge evaluator
 llm_evaluator_id = "<llm-evaluator-uuid>"
 
 client.online_evaluators.update(
@@ -190,12 +190,6 @@ client.online_evaluators.update(
     llm_evaluator={
         "prompt_repo_handle": "<prompt-repo-handle>",
         "commit_hash_or_tag": "<commit-hash-or-tag>",
-        "variable_mapping": {
-            "input": "inputs.question",
-            "output": "outputs.answer",
-        },
-        "use_corrections_dataset": True,
-        "num_few_shot_examples": 3,
     },
 )
 ```
@@ -212,11 +206,52 @@ const updated = await client.onlineEvaluators.update(codeEvaluatorId, {
 });
 console.log(updated.evaluator?.name);
 
-// Update an LLM-as-a-judge evaluator
+// Update the name and prompt of an LLM-as-a-judge evaluator
 const llmEvaluatorId = "<llm-evaluator-uuid>";
 
 await client.onlineEvaluators.update(llmEvaluatorId, {
   name: "Updated LLM judge",
+  llm_evaluator: {
+    prompt_repo_handle: "<prompt-repo-handle>",
+    commit_hash_or_tag: "<commit-hash-or-tag>",
+  },
+});
+```
+</CodeGroup>
+
+### Configure runtime settings
+
+An LLM-as-a-judge evaluator accepts additional settings that control how it scores traces:
+
+- **`variable_mapping`**: Maps run or example fields to the judge prompt variables. It applies when the evaluator runs.
+- **`use_corrections_dataset`** and **`num_few_shot_examples`**: Enable few-shot learning from human score corrections. They apply only when the evaluator is attached to a project or dataset and corrections have been submitted.
+
+<Note>
+These settings take effect on the next evaluation run, not when you call `update`.
+</Note>
+
+<CodeGroup>
+```python Python
+llm_evaluator_id = "<llm-evaluator-uuid>"
+
+client.online_evaluators.update(
+    llm_evaluator_id,
+    llm_evaluator={
+        "prompt_repo_handle": "<prompt-repo-handle>",
+        "commit_hash_or_tag": "<commit-hash-or-tag>",
+        "variable_mapping": {
+            "input": "inputs.question",
+            "output": "outputs.answer",
+        },
+        "use_corrections_dataset": True,
+        "num_few_shot_examples": 3,
+    },
+)
+```
+```typescript TypeScript
+const llmEvaluatorId = "<llm-evaluator-uuid>";
+
+await client.onlineEvaluators.update(llmEvaluatorId, {
   llm_evaluator: {
     prompt_repo_handle: "<prompt-repo-handle>",
     commit_hash_or_tag: "<commit-hash-or-tag>",
@@ -237,40 +272,70 @@ Filter by name, type, feedback key, attached resource, or tag value, and sort or
 
 <CodeGroup>
 ```python Python
+# List evaluators and iterate over the results
+page = client.online_evaluators.list(
+    name_contains="correctness",
+    type="code",
+    limit=10, # page size per request (server-capped 1-100), NOT a total cap
+)
+# `page.evaluators` is just this one page's list (≤ limit items) — no auto-pagination
+# (iterating `page` directly instead would auto-page through ALL matches)
+for evaluator in page.evaluators:
+    print(evaluator.id, evaluator.name, evaluator.type)
+
+# Collect the results into a list
+evaluators = list(
+    client.online_evaluators.list(
+        feedback_key="correctness",
+        limit=20, # page size per request (server-capped 1-100), NOT a total cap
+    )
+)
+
+# Filter, sort, and paginate the results
 evaluators = client.online_evaluators.list(
     feedback_key="correctness",
     name_contains="judge",
     resource_id=["<project-or-dataset-uuid>"],
     tag_value_id=["<tag-value-uuid>"],
     type="llm",
-    sort_by="updated_at", # must be one of "created_at" or "updated_at"
+    sort_by="updated_at",  # must be one of "created_at" or "updated_at"
     sort_by_desc=False,
     limit=20,
     offset=0,
 )
-for evaluator in evaluators:
-    print(evaluator.id, evaluator.name, evaluator.type)
 ```
 ```typescript TypeScript
+// List evaluators and iterate over the results
 const page = await client.onlineEvaluators.list({
-  feedback_key: "correctness",
-  name_contains: "judge",
-  resource_id: ["project-or-dataset-id"],
-  tag_value_id: ["tag-value-id"],
-  type: "llm",
-  sort_by: "name",
-  sort_by_desc: false,
-  limit: 20,
-  offset: 0,
+  name_contains: "correctness",
+  type: "code",
+  limit: 10, // await => single page: caps results at 10 (page.total has the full count)
 });
 for (const evaluator of page.evaluators) {
   console.log(evaluator.id, evaluator.name, evaluator.type);
 }
 
-// Auto-paginate across all pages
-for await (const evaluator of client.onlineEvaluators.list({ type: "llm", limit: 50 })) {
-  console.log(evaluator.id, evaluator.name);
+// Collect the results into an array
+const evaluators = [];
+for await (const evaluator of client.onlineEvaluators.list({
+  feedback_key: "correctness",
+  limit: 20, // for await => page size only: still auto-pages through ALL matches
+})) {
+  evaluators.push(evaluator);
 }
+
+// Filter, sort, and paginate the results
+await client.onlineEvaluators.list({
+  feedback_key: "correctness",
+  name_contains: "judge",
+  resource_id: ["<project-or-dataset-uuid>"],
+  tag_value_id: ["<tag-value-uuid>"],
+  type: "llm",
+  sort_by: "updated_at", // must be one of "created_at" or "updated_at"
+  sort_by_desc: false,
+  limit: 20,
+  offset: 0,
+});
 ```
 </CodeGroup>
 
