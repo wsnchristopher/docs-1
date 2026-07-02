@@ -575,6 +575,75 @@ Pass SCREAMING_SNAKE_CASE strings to `selects` (eg. `"ID"`, `"NAME"`, `"STATUS"`
     | *(not available)* | `run.ShareURL` | New: public share URL (only set when the run has been shared) |
     | *(not available)* | `run.ThreadEvaluationTime` | New |
   </Tab>
+  <Tab title="cURL">
+    Field names in the JSON response match Python `snake_case`.
+
+    | Before (v1 response field) | After (v2 response field) | Notes |
+    |---|---|---|
+    | `id` | `id` | Unchanged |
+    | `name` | `name` | Unchanged |
+    | `run_type` | `run_type` | Values changed to uppercase: `"LLM"`, `"CHAIN"`, etc. |
+    | `status` | `status` | Values: `"SUCCESS"`, `"ERROR"`, `"PENDING"` |
+    | `trace_id` | `trace_id` | Unchanged |
+    | `dotted_order` | `dotted_order` | Unchanged |
+    | `app_path` | `app_path` | Unchanged |
+    | `start_time` | `start_time` | Unchanged |
+    | `end_time` | `end_time` | Unchanged |
+    | `error` | `error` | Unchanged |
+    | `events` | `events` | Unchanged |
+    | `extra` | `extra` | Unchanged |
+    | `feedback_stats` | `feedback_stats` | Unchanged |
+    | `first_token_time` | `first_token_time` | Unchanged |
+    | `inputs` | `inputs` | Unchanged |
+    | `inputs_preview` | `inputs_preview` | Unchanged |
+    | `outputs` | `outputs` | Unchanged |
+    | `outputs_preview` | `outputs_preview` | Unchanged |
+    | `parent_run_ids` | `parent_run_ids` | Unchanged |
+    | `price_model_id` | `price_model_id` | Unchanged |
+    | `prompt_cost` | `prompt_cost` | Unchanged |
+    | `prompt_cost_details` | `prompt_cost_details.raw` | Field now wraps the object; read `.raw` for the same `{category: cost}` mapping, now with numeric values (was strings) |
+    | `prompt_token_details` | `prompt_token_details.raw` | Field now wraps the object; read `.raw` for the same `{category: count}` mapping (values unchanged) |
+    | `prompt_tokens` | `prompt_tokens` | Unchanged |
+    | `completion_cost` | `completion_cost` | Unchanged |
+    | `completion_cost_details` | `completion_cost_details.raw` | Field now wraps the object; read `.raw` for the same `{category: cost}` mapping, now with numeric values (was strings) |
+    | `completion_token_details` | `completion_token_details.raw` | Field now wraps the object; read `.raw` for the same `{category: count}` mapping (values unchanged) |
+    | `completion_tokens` | `completion_tokens` | Unchanged |
+    | `total_cost` | `total_cost` | Unchanged |
+    | `total_tokens` | `total_tokens` | Unchanged |
+    | `reference_dataset_id` | `reference_dataset_id` | Unchanged |
+    | `reference_example_id` | `reference_example_id` | Unchanged |
+    | `tags` | `tags` | Unchanged |
+    | `thread_id` | `thread_id` | Unchanged |
+    | `session_id` | `project_id` | Renamed |
+    | `in_dataset` | `is_in_dataset` | Renamed |
+    | `child_run_ids` | *(removed)* | No equivalent |
+    | `direct_child_run_ids` | *(removed)* | No equivalent |
+    | `execution_order` | *(removed)* | No equivalent |
+    | `inputs_s3_urls` | *(removed)* | Internal storage URL; not exposed in v2 |
+    | `last_queued_at` | *(removed)* | No equivalent |
+    | `manifest_id` | *(removed)* | Use `manifest` |
+    | `manifest_s3_id` | *(removed)* | Internal storage URL; not exposed in v2 |
+    | `messages` | *(removed)* | No equivalent |
+    | `outputs_s3_urls` | *(removed)* | Internal storage URL; not exposed in v2 |
+    | `parent_run_id` | *(removed)* | Use `parent_run_ids` |
+    | `s3_urls` | *(removed)* | Internal storage URL; not exposed in v2 |
+    | `serialized` | *(removed)* | Use `manifest` |
+    | `share_token` | *(removed)* | Use `share_url` |
+    | `trace_first_received_at` | *(removed)* | No equivalent |
+    | `trace_max_start_time` | *(removed)* | No equivalent |
+    | `trace_min_start_time` | *(removed)* | No equivalent |
+    | `trace_tier` | *(removed)* | No equivalent |
+    | `trace_upgrade` | *(removed)* | No equivalent |
+    | `ttl_seconds` | *(removed)* | No equivalent |
+    | *(not available)* | `attachments` | New: maps attachment filename to pre-signed download URL |
+    | *(not available)* | `error_preview` | New: truncated error snippet |
+    | *(not available)* | `is_root` | New |
+    | *(not available)* | `latency_seconds` | New: wall-clock duration in seconds |
+    | *(not available)* | `manifest` | New: full manifest object (replaces `serialized` and `manifest_id`) |
+    | *(not available)* | `metadata` | New: previously nested under `extra.metadata` |
+    | *(not available)* | `share_url` | New: public share URL (only set when the run has been shared) |
+    | *(not available)* | `thread_evaluation_time` | New |
+  </Tab>
 </Tabs>
 
 ### Examples
@@ -1608,6 +1677,75 @@ Pass SCREAMING_SNAKE_CASE strings to `selects` (eg. `"ID"`, `"NAME"`, `"STATUS"`
     | *(not available)* | `run.Metadata` | New: arbitrary user-defined JSON metadata |
     | *(not available)* | `run.ShareURL` | New: public share URL (only set when the run has been shared) |
     | *(not available)* | `run.ThreadEvaluationTime` | New |
+  </Tab>
+  <Tab title="cURL">
+    Field names in the JSON response match Python `snake_case`.
+
+    | Before (v1 response field) | After (v2 response field) | Notes |
+    |---|---|---|
+    | `id` | `id` | Unchanged |
+    | `name` | `name` | Unchanged |
+    | `run_type` | `run_type` | Values changed to uppercase: `"LLM"`, `"CHAIN"`, etc. |
+    | `status` | `status` | Values: `"SUCCESS"`, `"ERROR"`, `"PENDING"` |
+    | `trace_id` | `trace_id` | Unchanged |
+    | `dotted_order` | `dotted_order` | Unchanged |
+    | `app_path` | `app_path` | Unchanged |
+    | `start_time` | `start_time` | Unchanged |
+    | `end_time` | `end_time` | Unchanged |
+    | `error` | `error` | Unchanged |
+    | `events` | `events` | Unchanged |
+    | `extra` | `extra` | Unchanged |
+    | `feedback_stats` | `feedback_stats` | Unchanged |
+    | `first_token_time` | `first_token_time` | Unchanged |
+    | `inputs` | `inputs` | Unchanged |
+    | `inputs_preview` | `inputs_preview` | Unchanged |
+    | `outputs` | `outputs` | Unchanged |
+    | `outputs_preview` | `outputs_preview` | Unchanged |
+    | `parent_run_ids` | `parent_run_ids` | Unchanged |
+    | `price_model_id` | `price_model_id` | Unchanged |
+    | `prompt_cost` | `prompt_cost` | Unchanged |
+    | `prompt_cost_details` | `prompt_cost_details.raw` | Field now wraps the object; read `.raw` for the same `{category: cost}` mapping, now with numeric values (was strings) |
+    | `prompt_token_details` | `prompt_token_details.raw` | Field now wraps the object; read `.raw` for the same `{category: count}` mapping (values unchanged) |
+    | `prompt_tokens` | `prompt_tokens` | Unchanged |
+    | `completion_cost` | `completion_cost` | Unchanged |
+    | `completion_cost_details` | `completion_cost_details.raw` | Field now wraps the object; read `.raw` for the same `{category: cost}` mapping, now with numeric values (was strings) |
+    | `completion_token_details` | `completion_token_details.raw` | Field now wraps the object; read `.raw` for the same `{category: count}` mapping (values unchanged) |
+    | `completion_tokens` | `completion_tokens` | Unchanged |
+    | `total_cost` | `total_cost` | Unchanged |
+    | `total_tokens` | `total_tokens` | Unchanged |
+    | `reference_dataset_id` | `reference_dataset_id` | Unchanged |
+    | `reference_example_id` | `reference_example_id` | Unchanged |
+    | `tags` | `tags` | Unchanged |
+    | `thread_id` | `thread_id` | Unchanged |
+    | `session_id` | `project_id` | Renamed |
+    | `in_dataset` | `is_in_dataset` | Renamed |
+    | `child_run_ids` | *(removed)* | No equivalent |
+    | `direct_child_run_ids` | *(removed)* | No equivalent |
+    | `execution_order` | *(removed)* | No equivalent |
+    | `inputs_s3_urls` | *(removed)* | Internal storage URL; not exposed in v2 |
+    | `last_queued_at` | *(removed)* | No equivalent |
+    | `manifest_id` | *(removed)* | Use `manifest` |
+    | `manifest_s3_id` | *(removed)* | Internal storage URL; not exposed in v2 |
+    | `messages` | *(removed)* | No equivalent |
+    | `outputs_s3_urls` | *(removed)* | Internal storage URL; not exposed in v2 |
+    | `parent_run_id` | *(removed)* | Use `parent_run_ids` |
+    | `s3_urls` | *(removed)* | Internal storage URL; not exposed in v2 |
+    | `serialized` | *(removed)* | Use `manifest` |
+    | `share_token` | *(removed)* | Use `share_url` |
+    | `trace_first_received_at` | *(removed)* | No equivalent |
+    | `trace_max_start_time` | *(removed)* | No equivalent |
+    | `trace_min_start_time` | *(removed)* | No equivalent |
+    | `trace_tier` | *(removed)* | No equivalent |
+    | `trace_upgrade` | *(removed)* | No equivalent |
+    | `ttl_seconds` | *(removed)* | No equivalent |
+    | *(not available)* | `attachments` | New: maps attachment filename to pre-signed download URL |
+    | *(not available)* | `error_preview` | New: truncated error snippet |
+    | *(not available)* | `is_root` | New |
+    | *(not available)* | `latency_seconds` | New: wall-clock duration in seconds |
+    | *(not available)* | `manifest` | New: full manifest object (replaces `serialized` and `manifest_id`) |
+    | *(not available)* | `metadata` | New: previously nested under `extra.metadata` |
+    | *(not available)* | `share_url` | New: public share URL (only set when the run has been shared) |
+    | *(not available)* | `thread_evaluation_time` | New |
   </Tab>
 </Tabs>
 
