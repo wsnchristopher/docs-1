@@ -1635,8 +1635,6 @@
                   {
                     "group": "Reference",
                     "pages": [
-                      "langsmith/langgraph-python-sdk",
-                      "langsmith/langgraph-js-ts-sdk",
                       "langsmith/smith-deployments-sdk",
                       "langsmith/cli",
                       "langsmith/remote-graph",
@@ -1671,6 +1669,13 @@
                         }
                       },
                       "langsmith/agent-server-changelog"
+                    ]
+                  },
+                  {
+                    "group": "Related",
+                    "pages": [
+                      "langsmith/langgraph-python-sdk",
+                      "langsmith/langgraph-js-ts-sdk"
                     ]
                   }
                 ]
@@ -1759,6 +1764,7 @@
                           {
                             "group": "Developer tools",
                             "pages": [
+                              "langsmith/coding-agent-metadata-contract",
                               "langsmith/trace-claude-code",
                               "langsmith/trace-with-codex",
                               "langsmith/trace-with-opencode",
