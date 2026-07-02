@@ -328,6 +328,10 @@ The backends support the following file system operations:
 
 <Accordion title="Restricting filesystem tools" icon="filter">
     :::python
+    <Note>
+    The `tools` allowlist on `FilesystemMiddleware` require `deepagents` 0.7 alpha versions.
+    </Note>
+
     To expose only a subset of the filesystem tools listed above, instead of hiding them all, pass a `tools` allowlist to @[`FilesystemMiddleware`] and provide the instance through `middleware=`. Any built-in filesystem tool left out of the list is removed from both the model's tool list and the middleware's dynamic system prompt section.
 
     ```python
