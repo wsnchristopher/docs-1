@@ -528,7 +528,13 @@ agent = create_deep_agent(
 )
 ```
 
-The same rule applies to the `middleware` field on a [`SubAgent`](/oss/deepagents/subagents#subagent-dictionary-based) dictionary, matched against that subagent's own default stack. Declarative subagents build their stacks independently, so a main-agent override does not carry over to them—pass the override directly in the subagent's `middleware` field instead. The auto-added general-purpose subagent is an exception: it inherits a main-agent override when the override's `.name` matches one of the general-purpose subagent's own default middleware slots.
+<Note>
+An override replaces the default instance entirely rather than merging with it, so you must construct the replacement with every parameter it needs. This matters most for @[`FilesystemMiddleware`]: overriding it means passing `backend` (and `permissions`, if you rely on them) directly to your custom instance, since it no longer inherits the values you passed to `create_deep_agent`'s own `backend=` and `permissions=` arguments.
+</Note>
+
+The general-purpose subagent, which Deep Agents adds automatically, inherits the same middleware customization you pass to the main agent.
+
+Declarative subagents defined via `subagents=` do not inherit the main agent's middleware customization. Pass the override directly in that subagent's own [`middleware`](/oss/deepagents/subagents#subagent-dictionary-based) field to apply it there; that field is matched against the subagent's own default stack, the same way `middleware=` is matched against the main agent's.
 :::
 
 ### Interpreters
