@@ -6,7 +6,7 @@ description: Overview of Managed Deep Agents private beta features, workflows, a
 
 import ManagedDeepAgentsPrivateBetaNote from '/snippets/langsmith/managed-deep-agents-private-beta-note.mdx';
 
-Managed Deep Agents is a hosted runtime for deploying and operating code-first Deep Agents in LangSmith. You author an agent in Python or TypeScript, then use the `mda` CLI to compile and deploy it to the managed runtime.
+Managed Deep Agents is a hosted runtime for deploying and operating code-first Deep Agents in LangSmith. You author an agent in Python or TypeScript, then use the `mda` CLI to test and deploy it to the managed runtime.
 
 It pairs the [Deep Agents](/oss/deepagents/overview) harness with managed infrastructure: durable runs, [LangSmith sandboxes](/langsmith/sandboxes), Context Hub-backed instructions, skills, memory, traces, and hosted LangGraph deployment.
 
@@ -21,13 +21,13 @@ The recommended workflow is:
 1. Install `managed-deepagents` for Python or TypeScript.
 2. Create or edit a local code-first agent project.
 3. Put the agent system prompt in `instructions.md`.
-4. Add authored tools, middleware, skills, MCP connectors, and an optional sandbox.
+4. Add authored tools, middleware, schedules, skills, MCP connectors, and an optional sandbox.
 5. Use `mda dev` to test your agent locally in LangSmith Studio, then `mda deploy` to deploy to LangSmith.
 6. Inspect deployment status, traces, runtime state, Context Hub files, and revisions in LangSmith.
 
 ## Project layout
 
-Managed Deep Agents are packaged from a local directory. The path you pass to `mda build`, `mda dev`, or `mda deploy` is the project root, and the CLI reads that directory to find the agent entry, managed context, connectors, sandbox configuration, and imported project code.
+Managed Deep Agents are packaged from a local directory. The path you pass to `mda dev` or `mda deploy` is the project root, and the CLI reads that directory to find the agent entry, managed context, connectors, sandbox configuration, and imported project code.
 
 ```text
 my-agent/
@@ -36,6 +36,7 @@ my-agent/
   pyproject.toml | package.json         # Recommended: project dependencies
   .env                                  # Recommended: deploy auth and runtime secrets; not archived
   skills/<name>/SKILL.md                # Optional: deploy-owned skills
+  schedules/<name>.py | schedules/<name>.ts # Optional: managed cron schedules
   tools/                                # Optional: conventional authored tools
   middleware/                           # Optional: conventional middleware
   connectors/mcp.py | connectors/mcp.ts # Optional: MCP connector declarations
@@ -45,7 +46,7 @@ my-agent/
 
 At minimum, the project root must contain a supported agent entry file: `agent.py`, `agent.ts`, or `agent.tsx`. That file must export a named `agent` definition created with `define_deep_agent` or `defineDeepAgent`. The `tools/` and `middleware/` folders are conventions, not special registries; MDA packages regular project files, so any local modules imported by the agent can be used.
 
-During build and deploy, MDA copies project files into `.mda/build`, generates a LangGraph entrypoint, and excludes generated, dependency, memory, and secret paths such as `node_modules/`, `.git/`, `.mda/`, `memories/`, `dist/`, `build/`, `.env`, and `.env.*`. `mda dev` starts the local LangGraph dev server from `.mda/build` and stages the root `.env` file there for local credentials. `mda deploy` reads `LANGSMITH_API_KEY` from `.env` to authenticate, forwards non-reserved `.env` values such as model provider keys as hosted deployment secrets, syncs `instructions.md` and `skills/**` to Context Hub, preserves existing Context Hub memories, archives the compiled `.mda/build` directory, uploads it, and triggers the hosted deployment build.
+During local dev and deploy, MDA copies project files into `.mda/build`, generates a LangGraph entrypoint, and excludes generated, dependency, memory, and secret paths such as `node_modules/`, `.git/`, `.mda/`, `memories/`, `dist/`, `build/`, `.env`, and `.env.*`. `mda dev` starts the local LangGraph dev server from `.mda/build` and stages the root `.env` file there for local credentials. `mda deploy` reads `LANGSMITH_API_KEY` from `.env` to authenticate, forwards non-reserved `.env` values such as model provider keys as hosted deployment secrets, syncs `instructions.md` and `skills/**` to Context Hub, preserves existing Context Hub memories, archives the compiled `.mda/build` directory, uploads it, and triggers the hosted deployment build.
 
 ## Follow the workflow
 
@@ -62,11 +63,14 @@ During build and deploy, MDA copies project files into `.mda/build`, generates a
   <Card title="Connect MCP tools" icon="plug" href="/langsmith/managed-deep-agents-mcp">
     Declare remote MCP servers with Managed Deep Agents connectors.
   </Card>
+  <Card title="Schedules" icon="calendar" href="/langsmith/managed-deep-agents-schedules">
+    Run agents on managed cron schedules.
+  </Card>
   <Card title="Deploy an agent" icon="upload" href="/langsmith/managed-deep-agents-deploy">
-    Build, test, and deploy Managed Deep Agents with `mda`.
+    Test and deploy Managed Deep Agents with `mda`.
   </Card>
   <Card title="CLI reference" icon="terminal" href="/langsmith/managed-deep-agents-cli">
-    Review `mda init`, `mda build`, `mda dev`, and `mda deploy`.
+    Review `mda init`, `mda dev`, and `mda deploy`.
   </Card>
 </CardGroup>
 
@@ -77,6 +81,7 @@ Use Managed Deep Agents to:
 - Deploy Python or TypeScript Deep Agents without standing up a custom agent server.
 - Keep agent behavior in source code with `defineDeepAgent` or `define_deep_agent`.
 - Add authored [custom tools](/langsmith/managed-deep-agents-tools) and [custom middleware](/langsmith/managed-deep-agents-middleware).
+- Run agents on managed [cron schedules](/langsmith/managed-deep-agents-schedules).
 - Store the managed system prompt in `instructions.md` next to the agent file.
 - Declare remote MCP servers in `connectors/mcp.ts` or `connectors/mcp.py`.
 - Sync deploy-owned `instructions.md` and `skills/**` to Context Hub.
@@ -90,9 +95,9 @@ You can also deploy Deep Agents with a standard [LangSmith Deployment](/langsmit
 
 ## Created resources
 
-When you deploy a Managed Deep Agent, LangSmith creates or updates a hosted LangGraph deployment and creates a Context Hub agent repo for managed context.
+When you deploy a Managed Deep Agent, LangSmith creates or updates a hosted LangGraph deployment, creates a Context Hub agent repo for managed context, and reconciles any managed cron schedules declared under `schedules/`.
 
-The deployment runs the compiled app from `.mda/build`. The Context Hub repo stores deploy-owned instructions and skills, and preserves runtime-created memory. Each deploy syncs the Context Hub context first, compiles the project, uploads a source archive, and triggers a remote build for the hosted deployment.
+The deployment runs the compiled app from `.mda/build`. The Context Hub repo stores deploy-owned instructions and skills, and preserves runtime-created memory. Each deploy syncs the Context Hub context first, compiles the project, uploads a source archive, triggers a remote build for the hosted deployment, and replaces MDA-owned LangSmith cron jobs with the current local schedule declarations.
 
 Open the deployment page in LangSmith to inspect build status and revisions. Open traces in LangSmith to inspect user inputs, final responses, model calls, tool calls, sandbox activity, files, and runtime state created during runs.
 
@@ -120,7 +125,7 @@ export const agent = defineDeepAgent({
 
 </CodeGroup>
 
-The managed runtime owns backend, store, checkpointer, memory, skills, and the system prompt. Do not set those fields in the agent definition. Configure the system prompt in `instructions.md`, MCP connectors in `connectors/mcp.ts` or `connectors/mcp.py`, skills in `skills/**`, and sandboxes under `sandbox/`.
+The managed runtime owns backend, store, checkpointer, memory, skills, and the system prompt. Do not set those fields in the agent definition. Configure the system prompt in `instructions.md`, MCP connectors in `connectors/mcp.ts` or `connectors/mcp.py`, schedules in `schedules/**`, skills in `skills/**`, and sandboxes under `sandbox/`.
 
 ## Sandboxes
 
