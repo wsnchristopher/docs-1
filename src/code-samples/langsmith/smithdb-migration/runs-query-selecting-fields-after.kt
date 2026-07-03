@@ -1,7 +1,7 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 //JAVA 21
 //KOTLIN 2.2.0
-//DEPS com.langchain.smith:langsmith-java:0.1.0-beta.10
+//DEPS com.langchain.smith:langsmith-java:0.1.0-beta.11
 
 // :snippet-start: runs-query-selecting-fields-after-kt
 // :codegroup-tab: After
@@ -37,7 +37,7 @@ val runs = client.runs().queryV2(
         .build()
 ).items()
 for (run in runs) {
-    println("${run.id()} ${run.name()} ${run.runType()} ${run.status()} ${run.startTime()} ${run._inputs()} ${run.error()}")
+    println("${run.id()} ${run.name()} ${run.runType()} ${run.status()} ${run.startTime()} ${run.inputs()} ${run.error()}")
     // :remove-start:
     break
     // :remove-end:

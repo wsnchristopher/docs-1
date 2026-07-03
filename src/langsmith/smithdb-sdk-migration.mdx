@@ -456,10 +456,10 @@ Query runs from a project with optional filtering and field projection. Returns 
     | `run.startTime()` | `run.startTime()` | Unchanged |
     | `run.endTime()` | `run.endTime()` | Unchanged |
     | `run.error()` | `run.error()` | Unchanged |
-    | `run.inputs()` | `run._inputs()` | Now a raw `JsonValue`; use `_inputs()` to access |
-    | `run.outputs()` | `run._outputs()` | Now a raw `JsonValue`; use `_outputs()` to access |
+    | `run.inputs()` | `run.inputs()` | Unchanged |
+    | `run.outputs()` | `run.outputs()` | Unchanged |
     | `run.tags()` | `run.tags()` | Unchanged |
-    | `run.extra()` | `run._extra()` | Now a raw `JsonValue`; use `_extra()` to access |
+    | `run.extra()` | `run.extra()` | Unchanged |
     | `run.events()` | `run.events()` | Unchanged |
     | `run.feedbackStats()` | `run.feedbackStats()` | Unchanged |
     | `run.inputsPreview()` | `run.inputsPreview()` | Unchanged |
@@ -489,8 +489,8 @@ Query runs from a project with optional filtering and field projection. Returns 
     | `run.shareToken()` | *(removed)* | Use `run.shareUrl()` (full URL, only set when the run has been shared) |
     | `run.childRunIds()` | *(removed)* | No equivalent |
     | `run.directChildRunIds()` | *(removed)* | No equivalent |
-    | `run.serialized()` | *(removed)* | Use `run._manifest()` |
-    | `run.manifestId()` | *(removed)* | Use `run._manifest()` |
+    | `run.serialized()` | *(removed)* | Use `run.manifest()` |
+    | `run.manifestId()` | *(removed)* | Use `run.manifest()` |
     | `run.messages()` | *(removed)* | No equivalent |
     | `run.executionOrder()` | *(removed)* | No equivalent |
     | `run.lastQueuedAt()` | *(removed)* | No equivalent |
@@ -504,8 +504,8 @@ Query runs from a project with optional filtering and field projection. Returns 
     | *(not available)* | `run.latencySeconds()` | New: wall-clock duration in seconds |
     | *(not available)* | `run.isRoot()` | New |
     | *(not available)* | `run.errorPreview()` | New: truncated error snippet |
-    | *(not available)* | `run._manifest()` | New: full manifest as raw `JsonValue` (replaces `serialized()` and `manifestId()`) |
-    | *(not available)* | `run._metadata()` | New: metadata as raw `JsonValue` (was derived from `extra.metadata`) |
+    | *(not available)* | `run.manifest()` | New: full manifest, typed as `Optional<Manifest>` (replaces `serialized()` and `manifestId()`) |
+    | *(not available)* | `run.metadata()` | New: metadata, typed as `Optional<Metadata>` (was derived from `extra.metadata`) |
     | *(not available)* | `run.shareUrl()` | New: public share URL (only set when the run has been shared) |
     | *(not available)* | `run.threadEvaluationTime()` | New |
   </Tab>
@@ -1562,10 +1562,10 @@ Fetch a single run by ID. Returns only the run ID by default—specify a field s
     | `run.startTime()` | `run.startTime()` | Unchanged |
     | `run.endTime()` | `run.endTime()` | Unchanged |
     | `run.error()` | `run.error()` | Unchanged |
-    | `run.inputs()` | `run._inputs()` | Now a raw `JsonValue`; use `_inputs()` to access |
-    | `run.outputs()` | `run._outputs()` | Now a raw `JsonValue`; use `_outputs()` to access |
+    | `run.inputs()` | `run.inputs()` | Unchanged |
+    | `run.outputs()` | `run.outputs()` | Unchanged |
     | `run.tags()` | `run.tags()` | Unchanged |
-    | `run.extra()` | `run._extra()` | Now a raw `JsonValue`; use `_extra()` to access |
+    | `run.extra()` | `run.extra()` | Unchanged |
     | `run.events()` | `run.events()` | Unchanged |
     | `run.feedbackStats()` | `run.feedbackStats()` | Unchanged |
     | `run.inputsPreview()` | `run.inputsPreview()` | Unchanged |
@@ -1595,8 +1595,8 @@ Fetch a single run by ID. Returns only the run ID by default—specify a field s
     | `run.shareToken()` | *(removed)* | Use `run.shareUrl()` (full URL, only set when the run has been shared) |
     | `run.childRunIds()` | *(removed)* | No equivalent |
     | `run.directChildRunIds()` | *(removed)* | No equivalent |
-    | `run.serialized()` | *(removed)* | Use `run._manifest()` |
-    | `run.manifestId()` | *(removed)* | Use `run._manifest()` |
+    | `run.serialized()` | *(removed)* | Use `run.manifest()` |
+    | `run.manifestId()` | *(removed)* | Use `run.manifest()` |
     | `run.messages()` | *(removed)* | No equivalent |
     | `run.executionOrder()` | *(removed)* | No equivalent |
     | `run.lastQueuedAt()` | *(removed)* | No equivalent |
@@ -1610,8 +1610,8 @@ Fetch a single run by ID. Returns only the run ID by default—specify a field s
     | *(not available)* | `run.latencySeconds()` | New: wall-clock duration in seconds |
     | *(not available)* | `run.isRoot()` | New |
     | *(not available)* | `run.errorPreview()` | New: truncated error snippet |
-    | *(not available)* | `run._manifest()` | New: full manifest as raw `JsonValue` (replaces `serialized()` and `manifestId()`) |
-    | *(not available)* | `run._metadata()` | New: metadata as raw `JsonValue` (was derived from `extra.metadata`) |
+    | *(not available)* | `run.manifest()` | New: full manifest, typed as `Optional<Manifest>` (replaces `serialized()` and `manifestId()`) |
+    | *(not available)* | `run.metadata()` | New: metadata, typed as `Optional<Metadata>` (was derived from `extra.metadata`) |
     | *(not available)* | `run.shareUrl()` | New: public share URL (only set when the run has been shared) |
     | *(not available)* | `run.threadEvaluationTime()` | New |
   </Tab>
@@ -1857,7 +1857,7 @@ The API returns only the run ID by default—pass `selects` to request additiona
     </Tabs>
   </Tab>
   <Tab title="Java">
-    <Note>Requires `langsmith-java` 0.1.0-beta.10.</Note>
+    <Note>Requires `langsmith-java` 0.1.0-beta.11.</Note>
 
     <Tabs sync={false}>
       <Tab title="Before">
