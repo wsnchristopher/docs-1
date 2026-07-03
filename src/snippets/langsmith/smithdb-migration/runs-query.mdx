@@ -683,10 +683,9 @@ Query runs from a project with optional filtering and field projection. Returns 
 
 #### Selecting fields
 
-`list_runs` returns a default set of fields without requiring explicit selection. `runs.query` returns only `id` by default—you must declare every field you need via `selects=[...]`. Two renames: `select` → `selects` (plural), and field names are now **uppercase** (`"name"` → `"NAME"`).
-
 <Tabs>
   <Tab title="Python">
+    `list_runs` returns a default set of fields with no selection needed. `runs.query` returns only `id` by default—pass `selects=[...]` to request more. Field names are now uppercase (`"name"` → `"NAME"`).
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -699,6 +698,7 @@ Query runs from a project with optional filtering and field projection. Returns 
 
   </Tab>
   <Tab title="TypeScript">
+    `listRuns` returns a default set of fields with no selection needed. `client.runs.query` returns only `id` by default—pass `selects: [...]` to request more. Field names are now uppercase (`"name"` → `"NAME"`).
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -711,6 +711,7 @@ Query runs from a project with optional filtering and field projection. Returns 
 
   </Tab>
   <Tab title="Java">
+    `query()` returns a default set of fields with no selection needed. `queryV2()` returns only `id` by default—call `.addSelect(RunQueryV2Params.Select.X)` for each field you need.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -723,6 +724,7 @@ Query runs from a project with optional filtering and field projection. Returns 
 
   </Tab>
   <Tab title="Go">
+    `Query` returns a default set of fields with no selection needed. `QueryV2` returns only `ID` by default—pass `Selects` with the uppercase field constants you need (e.g. `RunQueryV2ParamsSelectName`).
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -735,6 +737,7 @@ Query runs from a project with optional filtering and field projection. Returns 
 
   </Tab>
   <Tab title="cURL">
+    `POST /api/v1/runs/query` returns a default set of fields with no selection needed. `POST /v2/runs/query` returns only `id` by default—pass `selects` with the uppercase field names you need (e.g. `"NAME"`).
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -750,10 +753,9 @@ Query runs from a project with optional filtering and field projection. Returns 
 
 #### Filter by run type and time range
 
-Two parameter renames: `start_time` → `min_start_time`, and `run_type` values are now **uppercase** (`"llm"` → `"LLM"`).
-
 <Tabs>
   <Tab title="Python">
+    `start_time` is renamed to `min_start_time`, and `run_type` values are now uppercase (`"llm"` → `"LLM"`).
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -766,6 +768,7 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 
   </Tab>
   <Tab title="TypeScript">
+    `startTime` (camelCase) becomes `min_start_time` (snake_case, matching the v2 request body), and `runType` values are now uppercase (`"llm"` → `"LLM"`).
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -778,6 +781,7 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 
   </Tab>
   <Tab title="Java">
+    `.startTime()` is renamed to `.minStartTime()`, and `.runType()` now takes the new `RunQueryV2Params.RunType` enum instead of `RunTypeEnum`.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -790,6 +794,7 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 
   </Tab>
   <Tab title="Go">
+    `StartTime` is renamed to `MinStartTime`, and `RunType` now takes the new `RunQueryV2ParamsRunType` enum instead of `RunTypeEnum`.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -802,6 +807,7 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 
   </Tab>
   <Tab title="cURL">
+    `start_time` is renamed to `min_start_time`, and `run_type` values are now uppercase (`"llm"` → `"LLM"`).
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -817,10 +823,9 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 
 #### Filter root runs only
 
-`is_root=True` is unchanged. Only the project identifier changes: pass `project_ids` instead of `project_name`.
-
 <Tabs>
   <Tab title="Python">
+    `is_root` is unchanged.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -833,6 +838,7 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 
   </Tab>
   <Tab title="TypeScript">
+    `isRoot` (camelCase) becomes `is_root` (snake_case, matching the v2 request body).
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -845,6 +851,7 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 
   </Tab>
   <Tab title="Java">
+    `.isRoot()` is unchanged.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -857,6 +864,7 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 
   </Tab>
   <Tab title="Go">
+    `IsRoot` is unchanged.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -869,6 +877,7 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 
   </Tab>
   <Tab title="cURL">
+    `is_root` is unchanged.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -884,10 +893,9 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 
 #### Fetch runs by ID list
 
-`id=[...]` is renamed to `ids=[...]`. `project_ids` is now required even when filtering by run IDs—v1 allowed omitting the project context.
-
 <Tabs>
   <Tab title="Python">
+    `id=[...]` is renamed to `ids=[...]`. `project_ids` is now required even when filtering by run IDs—v1 allowed omitting the project context.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -900,6 +908,7 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 
   </Tab>
   <Tab title="TypeScript">
+    `id: [...]` is renamed to `ids: [...]`. `project_ids` is now required even when filtering by run IDs—v1 allowed omitting the project context.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -912,6 +921,7 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 
   </Tab>
   <Tab title="Java">
+    `.addId(...)` is unchanged—call it once per run ID. `.addProjectId(...)` is now required even when filtering by run IDs—v1 allowed omitting the project context.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -924,6 +934,7 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 
   </Tab>
   <Tab title="Go">
+    `ID: [...]` is renamed to `IDs: [...]`. `ProjectIDs` is now required even when filtering by run IDs—v1 allowed omitting the project context.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -936,6 +947,7 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 
   </Tab>
   <Tab title="cURL">
+    `id` is renamed to `ids`. `project_ids` is now required in the request body even when filtering by run IDs—v1 allowed omitting the project context.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -951,10 +963,9 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 
 #### Iterate through runs
 
-`list_runs` auto-paginates transparently—the SDK fetches 100 runs per API call and advances the cursor internally. Use `itertools.islice()` to stop iteration client-side. `runs.query` exposes pagination explicitly: iterate with `async for` and a `break` to stop. For page-level control, `runs.query` also provides `page.has_next_page()` and `await page.get_next_page()`.
-
 <Tabs>
   <Tab title="Python">
+    `list_runs` auto-paginates transparently, fetching up to 100 runs per API call and stopping once `limit` results are returned. `runs.query` does not accept a total `limit`; iterate with `async for` and `break` once you have enough, or use the returned page's `has_next_page()`/`get_next_page()` for manual page-by-page control.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -967,6 +978,7 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 
   </Tab>
   <Tab title="TypeScript">
+    `listRuns` auto-paginates transparently. `client.runs.query` returns an async iterable of individual runs—use `for await` and `break` once you have enough.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -979,6 +991,7 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 
   </Tab>
   <Tab title="Java">
+    `.autoPager()` is used the same way on both `query()` and `queryV2()`—break out of the loop once you have enough runs.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -991,6 +1004,7 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 
   </Tab>
   <Tab title="Go">
+    `QueryAutoPaging` is renamed to `QueryV2AutoPaging`; both use the same `iter.Next()`/`iter.Current()` pattern—break out of the loop once you have enough runs.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1003,6 +1017,7 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 
   </Tab>
   <Tab title="cURL">
+    The v1 API returns all matching runs in one response with no cursor. The v2 API paginates—pass the `cursor` from a response's `next_cursor` field to fetch the next page.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1018,10 +1033,9 @@ Two parameter renames: `start_time` → `min_start_time`, and `run_type` values 
 
 #### Filter runs with errors
 
-The typed boolean `error=True/False` is renamed to `has_error=True/False` in v2.
-
 <Tabs>
   <Tab title="Python">
+    `error=True/False` is renamed to `has_error=True/False`.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1034,6 +1048,7 @@ The typed boolean `error=True/False` is renamed to `has_error=True/False` in v2.
 
   </Tab>
   <Tab title="TypeScript">
+    `error: true/false` is renamed to `has_error: true/false`.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1046,6 +1061,7 @@ The typed boolean `error=True/False` is renamed to `has_error=True/False` in v2.
 
   </Tab>
   <Tab title="Java">
+    `.error(true/false)` is renamed to `.hasError(true/false)`.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1058,6 +1074,7 @@ The typed boolean `error=True/False` is renamed to `has_error=True/False` in v2.
 
   </Tab>
   <Tab title="Go">
+    `Error` is renamed to `HasError`.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1070,6 +1087,7 @@ The typed boolean `error=True/False` is renamed to `has_error=True/False` in v2.
 
   </Tab>
   <Tab title="cURL">
+    `error` is renamed to `has_error`.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1085,10 +1103,9 @@ The typed boolean `error=True/False` is renamed to `has_error=True/False` in v2.
 
 #### Filter by metadata
 
-The metadata filter syntax is unchanged. Use `eq(metadata_key, ...)` to check for key presence, or combine with `eq(metadata_value, ...)` to match a specific value.
-
 <Tabs>
   <Tab title="Python">
+    The `filter` string syntax is unchanged: `eq(metadata_key, ...)` checks for key presence, combined with `eq(metadata_value, ...)` to match a specific value.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1101,6 +1118,7 @@ The metadata filter syntax is unchanged. Use `eq(metadata_key, ...)` to check fo
 
   </Tab>
   <Tab title="TypeScript">
+    The `filter` string syntax is unchanged: `eq(metadata_key, ...)` checks for key presence, combined with `eq(metadata_value, ...)` to match a specific value.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1113,6 +1131,7 @@ The metadata filter syntax is unchanged. Use `eq(metadata_key, ...)` to check fo
 
   </Tab>
   <Tab title="Java">
+    The `.filter(...)` string syntax is unchanged: `eq(metadata_key, ...)` checks for key presence, combined with `eq(metadata_value, ...)` to match a specific value.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1125,6 +1144,7 @@ The metadata filter syntax is unchanged. Use `eq(metadata_key, ...)` to check fo
 
   </Tab>
   <Tab title="Go">
+    The `Filter` string syntax is unchanged: `eq(metadata_key, ...)` checks for key presence, combined with `eq(metadata_value, ...)` to match a specific value.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1137,6 +1157,7 @@ The metadata filter syntax is unchanged. Use `eq(metadata_key, ...)` to check fo
 
   </Tab>
   <Tab title="cURL">
+    The `filter` string syntax is unchanged: `eq(metadata_key, ...)` checks for key presence, combined with `eq(metadata_value, ...)` to match a specific value.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1152,10 +1173,9 @@ The metadata filter syntax is unchanged. Use `eq(metadata_key, ...)` to check fo
 
 #### Complex boolean filters
 
-Nested `and()` / `or()` filter expressions are unchanged between v1 and v2.
-
 <Tabs>
   <Tab title="Python">
+    Nested `and()` / `or()` filter expressions are unchanged.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1168,6 +1188,7 @@ Nested `and()` / `or()` filter expressions are unchanged between v1 and v2.
 
   </Tab>
   <Tab title="TypeScript">
+    Nested `and()` / `or()` filter expressions are unchanged.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1180,6 +1201,7 @@ Nested `and()` / `or()` filter expressions are unchanged between v1 and v2.
 
   </Tab>
   <Tab title="Java">
+    Nested `and()` / `or()` filter expressions are unchanged.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1192,6 +1214,7 @@ Nested `and()` / `or()` filter expressions are unchanged between v1 and v2.
 
   </Tab>
   <Tab title="Go">
+    Nested `and()` / `or()` filter expressions are unchanged.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1204,6 +1227,7 @@ Nested `and()` / `or()` filter expressions are unchanged between v1 and v2.
 
   </Tab>
   <Tab title="cURL">
+    Nested `and()` / `or()` filter expressions are unchanged.
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1219,10 +1243,9 @@ Nested `and()` / `or()` filter expressions are unchanged between v1 and v2.
 
 #### Scoped filters: filter, trace_filter, tree_filter
 
-All three filter parameters are unchanged between v1 and v2. `filter` applies to the matched run, `trace_filter` to the root of its trace, and `tree_filter` to other runs in the trace tree (siblings and children).
-
 <Tabs>
   <Tab title="Python">
+    `filter`, `trace_filter`, and `tree_filter` are unchanged. `filter` applies to the matched run, `trace_filter` to the root of its trace, and `tree_filter` to other runs in the trace tree (siblings and children).
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1235,6 +1258,7 @@ All three filter parameters are unchanged between v1 and v2. `filter` applies to
 
   </Tab>
   <Tab title="TypeScript">
+    `filter`, `trace_filter`, and `tree_filter` are unchanged. `filter` applies to the matched run, `trace_filter` to the root of its trace, and `tree_filter` to other runs in the trace tree (siblings and children).
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1247,6 +1271,7 @@ All three filter parameters are unchanged between v1 and v2. `filter` applies to
 
   </Tab>
   <Tab title="Java">
+    `.filter()`, `.traceFilter()`, and `.treeFilter()` are unchanged. `filter` applies to the matched run, `traceFilter` to the root of its trace, and `treeFilter` to other runs in the trace tree (siblings and children).
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1259,6 +1284,7 @@ All three filter parameters are unchanged between v1 and v2. `filter` applies to
 
   </Tab>
   <Tab title="Go">
+    `Filter`, `TraceFilter`, and `TreeFilter` are unchanged. `Filter` applies to the matched run, `TraceFilter` to the root of its trace, and `TreeFilter` to other runs in the trace tree (siblings and children).
 
 <Tabs sync={false}>
   <Tab title="Before">
@@ -1271,6 +1297,7 @@ All three filter parameters are unchanged between v1 and v2. `filter` applies to
 
   </Tab>
   <Tab title="cURL">
+    `filter`, `trace_filter`, and `tree_filter` are unchanged. `filter` applies to the matched run, `trace_filter` to the root of its trace, and `tree_filter` to other runs in the trace tree (siblings and children).
 
 <Tabs sync={false}>
   <Tab title="Before">

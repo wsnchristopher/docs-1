@@ -1,12 +1,10 @@
 
 # :snippet-start: runs-query-pagination-before-py
 # :codegroup-tab: Before
-import itertools
-
 from langsmith import Client
 
 client = Client()
-runs = itertools.islice(client.list_runs(project_name="default"), 150)
+runs = client.list_runs(project_name="default", limit=150)
 # :snippet-end:
 
 # :snippet-start: runs-query-pagination-after-py

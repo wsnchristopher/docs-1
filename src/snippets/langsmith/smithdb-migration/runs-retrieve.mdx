@@ -522,10 +522,10 @@ Fetch a single run by ID. Returns only the run ID by default—specify a field s
 
 #### Selecting fields
 
-The API returns only the run ID by default—pass `selects` to request additional fields.
-
 <Tabs>
   <Tab title="Python">
+    `read_run` returns a full run object with no selection needed. `runs.retrieve` returns only `id` by default—pass `selects=[...]` to request more.
+
     <Note>Requires `langsmith>=0.9.6`.</Note>
 
     <Tabs sync={false}>
@@ -538,6 +538,8 @@ The API returns only the run ID by default—pass `selects` to request additiona
     </Tabs>
   </Tab>
   <Tab title="TypeScript">
+    `readRun` returns a full run object with no selection needed. `client.runs.retrieve` returns only `id` by default—pass `selects: [...]` to request more.
+
     <Note>Requires `langsmith@>=0.7.15`.</Note>
 
     <Tabs sync={false}>
@@ -550,6 +552,8 @@ The API returns only the run ID by default—pass `selects` to request additiona
     </Tabs>
   </Tab>
   <Tab title="Java">
+    `.retrieve()` returns a full run object with no selection needed. `.retrieveV2()` returns only `id` by default—call `.addSelect(...)` for each field you need.
+
     <Note>Requires `langsmith-java` 0.1.0-beta.11.</Note>
 
     <Tabs sync={false}>
@@ -562,6 +566,8 @@ The API returns only the run ID by default—pass `selects` to request additiona
     </Tabs>
   </Tab>
   <Tab title="Go">
+    `Get` returns a full run struct with no selection needed. `GetV2` returns only `ID` by default—pass `Selects` with the fields you need.
+
     <Note>Requires `langsmith-go` v0.17.0.</Note>
 
     <Tabs sync={false}>
@@ -574,6 +580,8 @@ The API returns only the run ID by default—pass `selects` to request additiona
     </Tabs>
   </Tab>
   <Tab title="cURL">
+    `GET /api/v1/runs/{run_id}` returns a full run object with no selection needed. `GET /v2/runs/{run_id}` returns only `id` by default—pass `selects` query parameters for the fields you need.
+
     <Tabs sync={false}>
       <Tab title="Before">
         <SmithdbRunsRetrieveBasicBeforeSh />

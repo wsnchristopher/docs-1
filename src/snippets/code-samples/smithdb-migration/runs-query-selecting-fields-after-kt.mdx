@@ -23,6 +23,6 @@ val runs = client.runs().queryV2(
         .build()
 ).items()
 for (run in runs) {
-    println("${run.id()} ${run.name()} ${run.runType()} ${run.status()} ${run.startTime()} ${run._inputs()} ${run.error()}")
+    println("${run.id()} ${run.name()} ${run.runType()} ${run.status()} ${run.startTime()} ${run.inputs()} ${run.error()}")
 }
 ```
