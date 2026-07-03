@@ -11,5 +11,5 @@ PROJECT_ID=$(curl -s "https://api.smith.langchain.com/api/v1/sessions?name=defau
 curl -X POST "https://api.smith.langchain.com/api/v1/runs/query" \
   -H "x-api-key: $LANGSMITH_API_KEY" \
   -H "Content-Type: application/json" \
-  -d "$(jq -n --arg pid "$PROJECT_ID" '{"session": [$pid]}')"
+  -d "$(jq -n --arg pid "$PROJECT_ID" '{"session": [$pid], "limit": 150}')"
 # :snippet-end:

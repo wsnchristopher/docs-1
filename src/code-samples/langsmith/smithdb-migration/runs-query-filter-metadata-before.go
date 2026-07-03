@@ -25,7 +25,7 @@ if err != nil {
 // :remove-end:
 project := sessions.Items[0]
 
-filterStr := "and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))"
+filterStr := `and(eq(metadata_key, "user_id"), eq(metadata_value, "u_123"))`
 runs, err := client.Runs.Query(ctx, langsmith.RunQueryParams{
 	Session: langsmith.F([]string{project.ID}),
 	Filter:  langsmith.F(filterStr),

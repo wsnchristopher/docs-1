@@ -23,7 +23,7 @@ val client: LangsmithClient = LangsmithOkHttpClient.fromEnv()
 val project = client.sessions().list(
     SessionListParams.builder().name("default").limit(1L).build()
 ).items().first()
-val filterStr = "and(eq(metadata_key, 'user_id'), eq(metadata_value, 'u_123'))"
+val filterStr = "and(eq(metadata_key, \"user_id\"), eq(metadata_value, \"u_123\"))"
 val runs = client.runs().query(
     RunQueryParams.builder().addSession(project.id()).filter(filterStr).build()
 ).items()

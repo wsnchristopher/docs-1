@@ -13,7 +13,7 @@ async function findRun(projectId: string) {
 import { Client } from "langsmith";
 
 const client = new Client();
-const projectPage = await client.projects.list();
+const projectPage = await client.projects.list({ name: "default", limit: 1 });
 const project = projectPage.getPaginatedItems()[0];
 let runId = "<run-id>";
 let startTime = "2026-06-01T12:00:00Z";
