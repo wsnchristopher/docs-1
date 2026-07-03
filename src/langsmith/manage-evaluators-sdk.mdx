@@ -6,11 +6,11 @@ icon: "code"
 tag: "SDK"
 ---
 
-Use the LangSmith SDK to create and manage [evaluators](/langsmith/evaluation-concepts#evaluators) programmatically. Evaluators created through the SDK are [workspace-level](/langsmith/administration-overview#workspaces) resources that appear in the **Evaluators** table in the [LangSmith UI](https://smith.langchain.com), the same as [evaluators created in the UI](/langsmith/evaluators#create-an-evaluator-in-the-ui). You can attach them to datasets to run [offline evaluations](/langsmith/evaluation-concepts#offline-evaluations) and to tracing projects to run [online evaluations](/langsmith/evaluation-concepts#online-evaluations).
+Use the LangSmith SDK to create and manage [evaluators](/langsmith/evaluation-concepts#evaluators) programmatically. Evaluators created through the SDK are [workspace-level](/langsmith/administration-overview#workspaces) resources that appear in the **Evaluators** table in the [LangSmith UI](https://smith.langchain.com), the same as [evaluators created in the UI](/langsmith/evaluators#create-an-evaluator-in-the-ui). You can attach them to datasets to run [offline evaluations](/langsmith/evaluation-concepts#offline-evaluations) and to tracing projects to run [online evaluations](/langsmith/evaluation-concepts#online-evaluations). Use the SDK to automate evaluator management and integrate evaluation into your existing workflows.
 
-<Callout icon="code">
+<Note>
 This guide uses the Python and TypeScript SDKs. For installation and setup, refer to the [Python SDK documentation](https://reference.langchain.com/python/langsmith) and [TypeScript SDK documentation](https://reference.langchain.com/javascript/modules/langsmith.html).
-</Callout>
+</Note>
 
 ## Prerequisites
 
@@ -106,8 +106,8 @@ const evaluatorId = created.evaluator?.id;
 </CodeGroup>
 
 The `prompt_repo_handle` is the prompt's internal repository name, not its display title or URL. To find it, list your workspace prompts and read the `repo_handle` field, or retrieve a specific prompt by its identifier in LangSmith. The identifier of a prompt can be in the format:
-- "promptName" (for private prompts), for example `my-prompt`.
-- "owner/promptName" (for public prompts), for example `langchain-ai/correctness`
+- `promptName` (for private prompts), for example `my-prompt`.
+- `owner/promptName` (for public prompts), for example `langchain-ai/correctness`.
 
 <CodeGroup>
 ```python Python
@@ -268,70 +268,65 @@ await client.onlineEvaluators.update(llmEvaluatorId, {
 
 ## List evaluators
 
-Filter by name, type, feedback key, attached resource, or tag value, and sort or paginate the results.
+Filter by name, type, feedback key, attached resource, or tag value, and sort or paginate the results. `list()` auto-paginates through every match when you iterate the returned object directly. `limit` sets the per-request page size (1 to 100), not the total number of results. `sort_by` is optional, accepts `created_at` or `updated_at`, and defaults to `created_at`.
 
 <CodeGroup>
 ```python Python
-# List evaluators and iterate over the results
+# Read a single page of results
 page = client.online_evaluators.list(
     name_contains="correctness",
     type="code",
-    limit=10, # page size per request (server-capped 1-100), NOT a total cap
+    limit=10,
 )
-# `page.evaluators` is just this one page's list (≤ limit items) — no auto-pagination
-# (iterating `page` directly instead would auto-page through ALL matches)
 for evaluator in page.evaluators:
     print(evaluator.id, evaluator.name, evaluator.type)
 
-# Collect the results into a list
+# Collect every match into a list
 evaluators = list(
-    client.online_evaluators.list(
-        feedback_key="correctness",
-        limit=20, # page size per request (server-capped 1-100), NOT a total cap
-    )
+    client.online_evaluators.list(feedback_key="correctness", limit=20)
 )
 
-# Filter, sort, and paginate the results
+# Filter, sort, and paginate
 evaluators = client.online_evaluators.list(
     feedback_key="correctness",
     name_contains="judge",
     resource_id=["<project-or-dataset-uuid>"],
     tag_value_id=["<tag-value-uuid>"],
     type="llm",
-    sort_by="updated_at",  # must be one of "created_at" or "updated_at"
+    sort_by="updated_at",  # "created_at" (default) or "updated_at"
     sort_by_desc=False,
     limit=20,
     offset=0,
 )
 ```
 ```typescript TypeScript
-// List evaluators and iterate over the results
+// Read a single page of results
 const page = await client.onlineEvaluators.list({
   name_contains: "correctness",
   type: "code",
-  limit: 10, // await => single page: caps results at 10 (page.total has the full count)
+  limit: 10,
 });
 for (const evaluator of page.evaluators) {
   console.log(evaluator.id, evaluator.name, evaluator.type);
 }
 
-// Collect the results into an array
+// Collect every match into an array
 const evaluators = [];
 for await (const evaluator of client.onlineEvaluators.list({
   feedback_key: "correctness",
-  limit: 20, // for await => page size only: still auto-pages through ALL matches
+  limit: 20,
 })) {
   evaluators.push(evaluator);
 }
 
-// Filter, sort, and paginate the results
+// Filter, sort, and paginate
 await client.onlineEvaluators.list({
   feedback_key: "correctness",
   name_contains: "judge",
   resource_id: ["<project-or-dataset-uuid>"],
   tag_value_id: ["<tag-value-uuid>"],
   type: "llm",
-  sort_by: "updated_at", // must be one of "created_at" or "updated_at"
+  sort_by: "updated_at", // "created_at" (default) or "updated_at"
   sort_by_desc: false,
   limit: 20,
   offset: 0,
@@ -341,7 +336,12 @@ await client.onlineEvaluators.list({
 
 ## Track evaluator spend
 
-Retrieve estimated USD spend and trace counts for your evaluators.
+Retrieve estimated USD spend and trace counts for your evaluators:
+
+- **`period_start`**: A date-only ISO string, such as `2026-06-29`. Passing a datetime returns a 400 error.
+- **Window**: `period_start` starts a fixed 7-day window that includes `period_start` and the six days after it. The window is half-open, `[period_start, period_start + 7 days)`, so `period_end` (`period_start` plus 7 days) is excluded. For example, a `period_start` of `2026-06-29` covers `2026-06-29` through `2026-07-05`, and `2026-07-06` is excluded.
+- **`type`**: Scopes results to a single evaluator type, `llm` or `code`. Omit it to include all types.
+- **Empty result**: If no spend is recorded for the window, the returned `groups` list is empty.
 
 <Note>
 Pass exactly one of `group_by`, `evaluator_id`, `session_id` (the LangSmith tracing project UUID), or `dataset_id`.
@@ -350,11 +350,11 @@ Pass exactly one of `group_by`, `evaluator_id`, `session_id` (the LangSmith trac
 <CodeGroup>
 ```python Python
 evaluator_uuid = "<evaluator-uuid>"
-start_date = "<period-start-date>"" # for example, "2026-06-29"
+start_date = "<period-start-date>" # for example, "2026-06-29"
 
 # Spend for a single evaluator
 spend = client.online_evaluators.spend(
-    period_start=start_date, # defines a fixed 7-day window (period_end = start + 7 days)
+    period_start=start_date,
     evaluator_id=evaluator_uuid,
 )
 for group in spend.groups or []:
@@ -396,7 +396,7 @@ const startDate = "<period-start-date>"; // for example, "2026-06-29"
 
 // Spend for a single evaluator
 const spend = await client.onlineEvaluators.spend({
-  period_start: startDate, // defines a fixed 7-day window (period_end = start + 7 days)
+  period_start: startDate,
   evaluator_id: evaluatorUUID,
 });
 for (const group of spend.groups ?? []) {
@@ -448,42 +448,15 @@ evaluator_id = "<evaluator-uuid>"
 
 client.online_evaluators.delete(
     evaluator_id,
-    delete_run_rules=True, # deletes runes that reference the evaluator before deleting the evaluator
+    delete_run_rules=True, # run rules referencing the evaluator are deleted first
 )
 ```
 ```typescript TypeScript
 const evaluatorId = "<evaluator-uuid>";
 
 await client.onlineEvaluators.delete(evaluatorId, {
-  delete_run_rules: true, // deletes run rules that reference the evaluator before deleting the evaluator
+  delete_run_rules: true, // run rules referencing the evaluator are deleted first
 });
-```
-</CodeGroup>
-
-### Bulk delete evaluators
-
-<CodeGroup>
-```python Python
-evaluator_id_1 = "<evaluator-uuid-1>"
-evaluator_id_2 = "<evaluator-uuid-2>"
-
-result = client.online_evaluators.bulk_delete(
-    evaluator_ids=[evaluator_id_1, evaluator_id_2],
-    delete_run_rules=True,
-)
-print("Deleted:", result.succeeded)
-print("Failed:", result.failed)
-```
-```typescript TypeScript
-const evaluatorId1 = "<evaluator-uuid-1>";
-const evaluatorId2 = "<evaluator-uuid-2>";
-
-const result = await client.onlineEvaluators.bulkDelete({
-  evaluator_ids: [evaluatorId1, evaluatorId2],
-  delete_run_rules: true,
-});
-console.log("Deleted:", result.succeeded);
-console.log("Failed:", result.failed);
 ```
 </CodeGroup>
 
