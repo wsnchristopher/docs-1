@@ -203,13 +203,15 @@ OTEL_RESOURCE_ATTRIBUTES: Attach custom metadata fields at the process level (se
 
 ### Add process-level resource attributes
 
-You can attach custom metadata to every trace emitted by a process using the standard OpenTelemetry `OTEL_RESOURCE_ATTRIBUTES` environment variable. Unlike span-level attributes (set per-span in code), resource attributes are set once at the process level and automatically propagated to all spans — making them ideal for deployment context such as environment, version, team, or region.
+You can attach custom metadata to every trace emitted by a process using the standard OpenTelemetry `OTEL_RESOURCE_ATTRIBUTES` environment variable. Unlike span-level attributes (set per-span in code), resource attributes are set once at the process level and automatically propagated to all spans — making them ideal for any custom metadata you want to tag your traces with, such as a username, request ID, environment, or deployment version.
+
+The value is a comma-separated list of `key=value` pairs:
 
 ```bash
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=production,service.version=1.2.0,team=platform
+OTEL_RESOURCE_ATTRIBUTES="username=abc,id=1,environment=production"
 ```
 
-Multiple key-value pairs are comma-separated. Keys follow the [OpenTelemetry resource semantic conventions](https://opentelemetry.io/docs/specs/semconv/resource/) (e.g. `deployment.environment`, `service.version`, `cloud.region`) or any custom string you choose.
+You can use any custom keys you like, or follow the [OpenTelemetry resource semantic conventions](https://opentelemetry.io/docs/specs/semconv/resource/) for standard fields such as `deployment.environment`, `service.version`, and `cloud.region`.
 
 These attributes appear in LangSmith under the trace's metadata and can be used to filter and group traces across your workspace.
 
