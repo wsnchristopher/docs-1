@@ -6,7 +6,7 @@ description: End-to-end walkthrough for provisioning LangSmith self-hosted on GC
 
 Provision the GCP cloud foundation and install LangSmith with the public Terraform modules at [github.com/langchain-ai/terraform/tree/main/modules/gcp](https://github.com/langchain-ai/terraform/tree/main/modules/gcp). Plan for 35 to 45 minutes end to end on a clean project.
 
-The deployment runs in two stages: infrastructure (Terraform provisions VPC, GKE, Cloud SQL, Memorystore, GCS, Workload Identity) and application (Helm installs the LangSmith chart against the cluster). Add-ons are enabled with a flag and a redeploy.
+The deployment runs in two stages: infrastructure (Terraform provisions VPC, GKE, Cloud SQL, Memorystore, GCS, Workload Identity) and application (the LangSmith chart, installed with the deploy script or the Terraform `app` layer). Add-ons are enabled with a flag and a redeploy.
 
 ## Prerequisites
 
@@ -39,6 +39,7 @@ Terraform enables these automatically on first apply, but `cloudresourcemanager.
 ```bash
 gcloud services enable \
   container.googleapis.com \
+  compute.googleapis.com \
   sqladmin.googleapis.com \
   redis.googleapis.com \
   storage.googleapis.com \
@@ -47,6 +48,8 @@ gcloud services enable \
   certificatemanager.googleapis.com \
   servicenetworking.googleapis.com \
   cloudresourcemanager.googleapis.com \
+  logging.googleapis.com \
+  monitoring.googleapis.com \
   --project <your-project-id>
 ```
 
@@ -249,7 +252,7 @@ cert-manager, KEDA, and the LangSmith namespace secrets should all be in place.
 
 ## Deploy LangSmith
 
-Two paths are supported. Pick one.
+Three paths are supported. Pick one.
 
 ### Script-driven Helm deploy (recommended)
 
@@ -268,6 +271,22 @@ make deploy
 
 Expect 8 to 12 minutes for the chart to install and pods to become ready.
 
+### Terraform-managed Helm release
+
+Keep the entire deployment under Terraform. The `app` layer wraps the same chart and layered values files as the deploy script, managed as a `helm_release` resource.
+
+```bash
+cd modules/gcp
+
+make init-values  # generate the layered values files
+make init-app     # pull infra outputs into app/infra.auto.tfvars.json
+make apply-app    # terraform apply the Helm release
+```
+
+Set app-layer inputs in `app/terraform.tfvars` (`admin_email` is required; `hostname`, `chart_version`, `sizing`, and the `enable_*` flags are optional). The `app` layer uses its own variable names: `sizing` (not `sizing_profile`) and `enable_agent_deploys` (not `enable_deployments`). `make init-app` populates the infra-derived inputs (cluster, bucket, Workload Identity annotation) into `app/infra.auto.tfvars.json`.
+
+The release is applied with `wait = false` because operator-spawned agents can take 10+ minutes on a cold cluster; a passing `terraform apply` means the release was accepted, not that every pod is ready.
+
 ### Manual Helm install
 
 Best for teams running `helm` directly without the scripts. Generate the required secrets first:
@@ -281,11 +300,9 @@ export INSIGHTS_ENCRYPTION_KEY=$(python3 -c \
   "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())")
 export ADMIN_EMAIL="admin@example.com"
 export ADMIN_PASSWORD="<strong-password>"
-
-# GCS HMAC credentials (create in GCP Console: Storage > Settings > Interoperability)
-export GCS_ACCESS_KEY="<your-hmac-access-key>"
-export GCS_ACCESS_SECRET="<your-hmac-secret>"
 ```
+
+The shipped `helm/values/values.yaml` sets `config.blobStorage.engine: GCS` (native GCS mode), so blob storage authenticates through Workload Identity with no HMAC keys. The per-component Workload Identity annotations live in `values-overrides.yaml`; generate it with `make init-values`, or add each component's `serviceAccount.annotations."iam.gke.io/gcp-service-account"` by hand.
 
 ```bash
 helm repo add langchain https://langchain-ai.github.io/helm
@@ -294,6 +311,7 @@ helm repo update
 helm upgrade --install langsmith langchain/langsmith \
   --namespace langsmith \
   --create-namespace \
+  --version ~0.15.1 \
   -f ../helm/values/values.yaml \
   -f ../helm/values/values-overrides.yaml \
   --set config.langsmithLicenseKey="<your-license-key>" \
@@ -305,12 +323,14 @@ helm upgrade --install langsmith langchain/langsmith \
   --set config.agentBuilder.encryptionKey="$AGENT_BUILDER_ENCRYPTION_KEY" \
   --set config.insights.encryptionKey="$INSIGHTS_ENCRYPTION_KEY" \
   --set config.blobStorage.bucketName="$(terraform output -raw storage_bucket_name)" \
-  --set config.blobStorage.accessKey="$GCS_ACCESS_KEY" \
-  --set config.blobStorage.accessKeySecret="$GCS_ACCESS_SECRET" \
   --set gateway.enabled=true \
   --set ingress.enabled=false \
   --wait --timeout 15m
 ```
+
+<Note>
+To use S3-compatible blob storage instead of Workload Identity, add `--set config.blobStorage.engine=S3` and pass HMAC keys with `--set config.blobStorage.accessKey=<key>` and `--set config.blobStorage.accessKeySecret=<secret>`. Create the HMAC key under Cloud Storage → Settings → Interoperability.
+</Note>
 
 ### Verify and configure DNS
 

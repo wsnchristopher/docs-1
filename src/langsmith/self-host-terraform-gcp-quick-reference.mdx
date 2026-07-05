@@ -46,6 +46,18 @@ make init-values
 make deploy
 ```
 
+`make deploy-all` chains `apply`, `init-values`, and `deploy` in one command.
+
+To keep the Helm release under Terraform instead of the deploy script, use the `app` layer:
+
+```bash
+make init-values  # generate the layered values files
+make init-app     # pull infra outputs into app/infra.auto.tfvars.json
+make apply-app    # terraform apply the Helm release (make destroy-app to remove)
+```
+
+The `app` layer uses its own variable names: `sizing` (not `sizing_profile`) and `enable_agent_deploys` (not `enable_deployments`).
+
 ## Day-2 operations
 
 ```bash

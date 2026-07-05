@@ -24,16 +24,16 @@ LangSmith on GCP deploys in up to five stages. Each stage adds a capability laye
 
 | Module | Path | Purpose |
 |---|---|---|
-| `networking` | `modules/networking/` | VPC, subnet with secondary ranges, Cloud Router, Cloud NAT, private service connection for Cloud SQL and Memorystore |
-| `k8s-cluster` | `modules/k8s-cluster/` | GKE Standard or Autopilot cluster, node pool with autoscaling, Workload Identity enabled |
-| `postgres` | `modules/postgres/` | Cloud SQL PostgreSQL instance, HA standby replica, private IP, deletion protection |
-| `redis` | `modules/redis/` | Memorystore Redis STANDARD_HA tier, private IP within VPC |
-| `storage` | `modules/storage/` | GCS bucket with lifecycle rules for `ttl_s/` (14 days) and `ttl_l/` (400 days) prefixes |
-| `k8s-bootstrap` | `modules/k8s-bootstrap/` | `langsmith` namespace, Kubernetes Secrets for Postgres and Redis URLs, cert-manager and KEDA Helm releases |
-| `ingress` | `modules/ingress/` | Envoy Gateway Helm release, GatewayClass, HTTPRoute, optional HTTPS Gateway listener |
-| `iam` | `modules/iam/` | GCP service accounts and Workload Identity bindings for GCS access (wired by default) |
-| `dns` | `modules/dns/` | Cloud DNS managed zone and managed cert (optional, enable with `enable_dns_module`) |
-| `secrets` | `modules/secrets/` | Secret Manager secret bundle (optional, enable with `enable_secret_manager_module`) |
+| `networking` | `infra/modules/networking/` | VPC, subnet with secondary ranges, Cloud Router, Cloud NAT, private service connection for Cloud SQL and Memorystore |
+| `k8s-cluster` | `infra/modules/k8s-cluster/` | GKE Standard or Autopilot cluster, private nodes, node pool with autoscaling, Workload Identity enabled |
+| `postgres` | `infra/modules/postgres/` | Cloud SQL PostgreSQL instance, regional HA standby, private IP, deletion protection |
+| `redis` | `infra/modules/redis/` | Memorystore Redis STANDARD_HA tier, private IP within VPC |
+| `storage` | `infra/modules/storage/` | GCS bucket with versioning and lifecycle rules for `ttl_s/` (14 days) and `ttl_l/` (400 days) prefixes |
+| `k8s-bootstrap` | `infra/modules/k8s-bootstrap/` | `langsmith` namespace, Kubernetes Secrets for Postgres and Redis URLs, cert-manager and KEDA Helm releases |
+| `ingress` | `infra/modules/ingress/` | Envoy Gateway Helm release, GatewayClass, HTTPRoute, optional HTTPS Gateway listener |
+| `iam` | `infra/modules/iam/` | GCP service account and Workload Identity bindings for GCS access (wired by default) |
+| `dns` | `infra/modules/dns/` | Cloud DNS managed zone and managed cert (optional, enable with `enable_dns_module`) |
+| `secrets` | `infra/modules/secrets/` | Secret Manager secret bundle (optional, enable with `enable_secret_manager_module`) |
 
 ## Deployment tiers
 
@@ -149,7 +149,7 @@ When `postgres_source = "external"` and `redis_source = "external"` (the recomme
 
 ### Secret Manager (optional module)
 
-- Stores Postgres password and generated secrets (LangSmith secret key, JWT secret) when `enable_secret_manager_module = true`.
+- Stores a single JSON secret bundle (generated LangSmith secret key, Postgres password, Redis password) when `enable_secret_manager_module = true`.
 - Core secrets (`langsmith-postgres-credentials`, `langsmith-redis-credentials`) are always stored in Kubernetes Secrets by `k8s-bootstrap` regardless of this module. Secret Manager provides an additional durable store for secrets that must survive cluster recreation.
 
 ## Cluster infrastructure
@@ -216,7 +216,7 @@ Envoy Gateway  (envoy-gateway-system, external LoadBalancer IP)
 Internal traffic (private IPs, never leaving VPC):
   backend       → Cloud SQL:5432    via private IP
   backend       → Memorystore:6379  via private IP
-  backend       → GCS               via Workload Identity + HMAC keys
+  backend       → GCS               via Workload Identity (native GCS mode)
   host-backend  → K8s API           reads deployment pod status
   listener      → K8s API           reconciles Deployment CRDs
   operator      → K8s API           creates and manages deployment pods
@@ -247,7 +247,7 @@ terraform.tfvars → terraform apply ─┬─→ kubernetes_secret (postgres, r
                                     └─→ Secret Manager (durable copy, survives cluster recreation)
 ```
 
-Terraform writes the Kubernetes Secrets directly in both cases. Enabling Secret Manager adds a durable copy of the Postgres password outside the cluster. Nothing syncs Secret Manager back into the cluster, so no External Secrets Operator is installed on GCP (unlike the AWS modules, which use it to sync from SSM Parameter Store).
+Terraform writes the Kubernetes Secrets directly in both cases. Enabling Secret Manager adds a durable copy of the Postgres password, Redis password, and generated secret key outside the cluster. Nothing syncs Secret Manager back into the cluster, so no External Secrets Operator is installed on GCP (unlike the AWS modules, which use it to sync from SSM Parameter Store).
 
 ## Terraform module graph
 
@@ -255,7 +255,7 @@ Terraform writes the Kubernetes Secrets directly in both cases. Enabling Secret 
 google_project_service (APIs enabled)
   └── module.networking
         ├── module.gke_cluster
-        │     └── null_resource.wait_for_cluster
+        │     └── time_sleep.wait_for_cluster
         │           ├── module.cloudsql      (count = postgres_source == "external")
         │           ├── module.redis         (count = redis_source    == "external")
         │           ├── module.storage
@@ -267,7 +267,10 @@ google_project_service (APIs enabled)
         └── (private_service_connection when external services)
 ```
 
-LangSmith itself is not deployed by Terraform; the chart is installed in the application stage via `helm upgrade --install`.
+The `infra` layer does not install the LangSmith chart. The application stage installs it one of two ways, both consuming the same layered values files under `helm/values/`:
+
+- Deploy script: `make init-values && make deploy` runs `helm upgrade --install`.
+- Terraform `app` layer: `make init-values && make init-app && make apply-app` manages the chart as a `helm_release` resource. `make init-app` pulls the `infra` outputs (cluster, bucket, Workload Identity annotation) into `app/infra.auto.tfvars.json`, so the `app` layer reads them without a remote-state data source.
 
 ## Verification commands
 

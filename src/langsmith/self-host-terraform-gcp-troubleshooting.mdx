@@ -145,20 +145,21 @@ The DNS A record must resolve to the Gateway IP before the certificate can be is
 
 **Symptom:** Backend logs show `AccessDeniedException: 403 Insufficient Permission` or `403 Forbidden` when writing to GCS.
 
-**Cause:** HMAC credentials passed to Helm are incorrect, or the service account that owns the HMAC key lacks `roles/storage.objectAdmin` on the bucket.
+**Cause:** In native GCS mode (the shipped default), the GCP service account bound through Workload Identity lacks `roles/storage.objectAdmin` on the bucket, or the pod's Kubernetes ServiceAccount is missing the `iam.gke.io/gcp-service-account` annotation. In the optional S3-compatible mode, the HMAC credentials passed to Helm are incorrect or their service account lacks `roles/storage.objectAdmin`.
 
 **Fix**
 
 ```bash
+# Confirm the bucket and its IAM bindings
 helm get values langsmith -n langsmith | grep bucketName
-
-gsutil config -a   # configure with your HMAC key
-gsutil ls gs://<bucket-name>
-
 gcloud storage buckets get-iam-policy gs://<bucket-name>
+
+# Native GCS mode: verify the Workload Identity annotation on the pod ServiceAccount
+kubectl get serviceaccount langsmith-backend -n langsmith \
+  -o jsonpath='{.metadata.annotations.iam\.gke\.io/gcp-service-account}'
 ```
 
-Create a new HMAC key in GCP Console under Storage → Settings → Interoperability. The key's service account must have `roles/storage.objectAdmin` on the bucket.
+The GCP service account must have `roles/storage.objectAdmin` on the bucket. If the annotation itself is missing, apply the fix in the Workload Identity section below. For S3-compatible mode, create an HMAC key under Cloud Storage → Settings → Interoperability; its service account also needs `roles/storage.objectAdmin` on the bucket.
 
 ### Envoy Gateway webhook blocking GKE operations
 
