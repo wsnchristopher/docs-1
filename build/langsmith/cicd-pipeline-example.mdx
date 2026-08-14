@@ -3,7 +3,7 @@ title: Implement a CI/CD pipeline using LangSmith Deployment and Evaluation
 sidebarTitle: Implement a CI/CD pipeline
 ---
 
-import SaasRegionUrls from '/snippets/langsmith/saas-region-urls.mdx';
+import SaasRegionUrls from '/snippets/python/langsmith/saas-region-urls.mdx';
 
 This guide demonstrates how to implement a comprehensive CI/CD pipeline for AI agent applications deployed in LangSmith Deployment. In this example, you'll use the [LangGraph](/oss/python/langgraph/overview) open source framework for orchestrating and building the agent, [LangSmith](/langsmith/observability) for observability and evaluations. This pipeline is based on the [cicd-pipeline-example repository](https://github.com/langchain-ai/cicd-pipeline-example).
 
@@ -340,7 +340,7 @@ For LangSmith API operations (traces, evaluations, datasets):
 For self-hosted LangSmith instances, use `http(s)://<langsmith-url>/api` where `<langsmith-url>` is your self-hosted instance URL.
 
 <Note>
-If you're setting the endpoint in the `LANGSMITH_ENDPOINT` environment variable, you need to add `/v1` at the end (e.g., `https://api.smith.langchain.com/v1` or `http(s)://<langsmith-url>/api/v1` if self-hosted).
+If you're setting the endpoint in the `LANGSMITH_ENDPOINT` environment variable, use the full API URL without a trailing slash (e.g., `https://api.smith.langchain.com` or `http(s)://<langsmith-url>/api` if self-hosted). A trailing slash can cause authentication errors with some endpoints.
 </Note>
 
 #### LangSmith Deployment API (Deployments)

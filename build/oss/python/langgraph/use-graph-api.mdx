@@ -3,7 +3,7 @@ title: Use the graph API
 sidebarTitle: Use the graph API
 ---
 
-import ChatModelTabs from '/snippets/chat-model-tabs.mdx';
+import ChatModelTabs from '/snippets/python/chat-model-tabs.mdx';
 
 This guide demonstrates the basics of LangGraph's Graph API. It walks through [state](#define-and-update-state), as well as composing common graph structures such as [sequences](#create-a-sequence-of-steps), [branches](#create-branches), and [loops](#create-and-control-loops). It also covers LangGraph's control features, including the [Send API](#map-reduce-and-the-send-api) for map-reduce workflows and the [Command API](#combine-control-flow-and-state-updates-with-command) for combining state updates with "hops" across nodes.
 
@@ -436,7 +436,7 @@ Output of graph invocation: {'a': 'set by node_3'}
 
 ### Use pydantic models for graph state
 
-A [StateGraph](https://langchain-ai.github.io/langgraph/reference/graphs.md#langgraph.graph.StateGraph) accepts a [`state_schema`](https://reference.langchain.com/python/langchain/middleware/#langchain.agents.middleware.AgentMiddleware.state_schema) argument on initialization that specifies the "shape" of the state that the nodes in the graph can access and update.
+A [StateGraph](https://reference.langchain.com/python/langgraph/graph/state/StateGraph) accepts a [`state_schema`](https://reference.langchain.com/python/langchain/middleware/#langchain.agents.middleware.AgentMiddleware.state_schema) argument on initialization that specifies the "shape" of the state that the nodes in the graph can access and update.
 
 In our examples, we typically use a python-native `TypedDict` or [`dataclass`](https://docs.python.org/3/library/dataclasses.html) for `state_schema`, but [`state_schema`](https://reference.langchain.com/python/langchain/middleware/#langchain.agents.middleware.AgentMiddleware.state_schema) can be any [type](https://docs.python.org/3/library/stdtypes.html#type-objects).
 
@@ -944,6 +944,35 @@ builder.add_node(
 
 See [Fault tolerance](/oss/python/langgraph/fault-tolerance#error-handling) for compensation patterns and `Command` routing.
 
+## Set graph-wide node defaults
+
+<Note>
+Requires `langgraph>=1.2`.
+</Note>
+
+Use [`set_node_defaults`](https://reference.langchain.com/python/langgraph/graph/state/StateGraph/set_node_defaults) to set `retry_policy`, `timeout`, `cache_policy`, or `error_handler` once for every node in a graph, instead of repeating them on each [`add_node`](https://reference.langchain.com/python/langgraph/graph/state/StateGraph/add_node) call. Per-node values always win, and defaults are applied at [`StateGraph.compile`](https://reference.langchain.com/python/langgraph/graph/state/StateGraph/compile) time:
+
+```python
+from langgraph.types import RetryPolicy, TimeoutPolicy
+
+graph = (
+    StateGraph(State)
+    .set_node_defaults(
+        retry_policy=RetryPolicy(max_attempts=3),
+        timeout=TimeoutPolicy(run_timeout=30),
+        error_handler=fallback_handler,
+    )
+    .add_node("a", node_a)
+    .add_node("b", node_b, retry_policy=RetryPolicy(max_attempts=5))  # overrides default
+    .add_edge(START, "a")
+    .compile()
+)
+```
+
+`retry_policy` and `timeout` defaults apply to every node, including error-handler nodes. `cache_policy` and `error_handler` defaults apply only to regular nodes—handlers never catch themselves, and caching a handler result is unsafe. Defaults are not inherited by subgraphs.
+
+See [Fault tolerance](/oss/python/langgraph/fault-tolerance#graph-defaults) for the full precedence rules and applicability table.
+
 
 
 ### Access execution info inside a node
@@ -1300,7 +1329,7 @@ graph.invoke({"value_1": "c"})
 
 ## Create branches
 
-Parallel execution of nodes is essential to speed up overall graph operation. LangGraph offers native support for parallel execution of nodes, which can significantly enhance the performance of graph-based workflows. This parallelization is achieved through fan-out and fan-in mechanisms, utilizing both standard edges and [conditional_edges](https://langchain-ai.github.io/langgraph/reference/graphs.md#langgraph.graph.MessageGraph.add_conditional_edges). Below are some examples showing how to add create branching dataflows that work for you.
+Parallel execution of nodes is essential to speed up overall graph operation. LangGraph offers native support for parallel execution of nodes, which can significantly enhance the performance of graph-based workflows. This parallelization is achieved through fan-out and fan-in mechanisms, utilizing both standard edges and [conditional_edges](https://reference.langchain.com/python/langgraph/graph/state/StateGraph/add_conditional_edges). Below are some examples showing how to add create branching dataflows that work for you.
 
 ### Run graph nodes in parallel
 
@@ -1981,7 +2010,7 @@ See the [streaming guide](/oss/python/langgraph/streaming) for examples of strea
 
 ## Combine control flow and state updates with `Command`
 
-It can be useful to combine control flow (edges) and state updates (nodes). For example, you might want to BOTH perform state updates AND decide which node to go to next in the SAME node. LangGraph provides a way to do so by returning a [Command](https://langchain-ai.github.io/langgraph/reference/types/#langgraph.types.Command) object from node functions:
+It can be useful to combine control flow (edges) and state updates (nodes). For example, you might want to BOTH perform state updates AND decide which node to go to next in the SAME node. LangGraph provides a way to do so by returning a [Command](https://reference.langchain.com/python/langgraph/types/Command) object from node functions:
 
 ```python
 def my_node(state: State) -> Command[Literal["my_other_node"]]:
@@ -2080,7 +2109,7 @@ Called C
 If you are using [subgraphs](/oss/python/langgraph/use-subgraphs), you might want to navigate from a node within a subgraph to a different subgraph (i.e. a different node in the parent graph). To do so, you can specify `graph=Command.PARENT` in `Command`:
 
 ```python
-def my_node(state: State) -> Command[Literal["my_other_node"]]:
+def my_node(state: State) -> Command[Literal["other_subgraph"]]:
     return Command(
         update={"foo": "bar"},
         goto="other_subgraph",  # where `other_subgraph` is a node in the parent graph

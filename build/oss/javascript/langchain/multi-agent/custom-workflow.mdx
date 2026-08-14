@@ -56,7 +56,7 @@ import { z } from "zod";
 import { createAgent } from "langchain";
 import { StateGraph, START, END, StateSchema, MessagesValue } from "@langchain/langgraph";
 
-const agent = createAgent({ model: "openai:gpt-4o", tools: [...] });
+const agent = createAgent({ model: "openai:gpt-5.5", tools: [...] });
 
 const AgentState = new StateSchema({
   messages: MessagesValue,
@@ -82,7 +82,7 @@ const workflow = new StateGraph(State)
 
 ## Example: RAG pipeline
 
-A common use case is combining [retrieval](/oss/javascript/langchain/retrieval) with an agent. This example builds a WNBA stats assistant that retrieves from a knowledge base and can fetch live news.
+A common use case is combining [retrieval](/oss/javascript/deepagents/retrieval) with an agent. This example builds a WNBA stats assistant that retrieves from a knowledge base and can fetch live news.
 
 <Accordion title="Custom RAG workflow">
 
@@ -208,6 +208,10 @@ const result = await workflow.invoke({
 });
 console.log(result.answer);
 ```
+
+<Info>
+In production, use a persistent vector store such as [Weaviate](/oss/javascript/integrations/vectorstores/weaviate), [Pinecone](/oss/javascript/integrations/vectorstores/pinecone), or [MongoDB Atlas](/oss/javascript/integrations/vectorstores/mongodb_atlas) instead of `MemoryVectorStore`. See [all vector stores](/oss/javascript/integrations/vectorstores).
+</Info>
 
 
 </Accordion>

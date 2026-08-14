@@ -3,20 +3,17 @@ title: Tools
 description: Connect Deep Agents to custom functions, APIs, databases, and any MCP server
 ---
 
-import CustomizationToolsPy from '/snippets/code-samples/customization-tools-py.mdx';
-import CustomizationToolsJs from '/snippets/code-samples/customization-tools-js.mdx';
+import CustomizationToolsPy from '/snippets/python/code-samples/customization-tools-py.mdx';
+import CustomizationToolsJs from '/snippets/python/code-samples/customization-tools-js.mdx';
+import ToolsPassToolsPy from '/snippets/python/code-samples/tools-pass-tools-py.mdx';
+import ToolsPassToolsJs from '/snippets/python/code-samples/tools-pass-tools-js.mdx';
+import ToolsMcpPy from '/snippets/python/code-samples/tools-mcp-py.mdx';
+import ToolsMcpJs from '/snippets/python/code-samples/tools-mcp-js.mdx';
 
 Deep Agents can call any tool you define, any [LangChain tool](https://python.langchain.com/docs/concepts/tools/), and tools from any [MCP server](#mcp-tools).
-Pass them to `create_deep_agent` via the `tools=` parameter alongside the [built-in harness tools](/oss/python/deepagents/overview#execution-environment) for planning, file management, and subagent spawning.
+Pass them to `create_deep_agent` via the `tools=` parameter alongside the [built-in harness tools](/oss/python/deepagents/overview#execution-environment) for file management and subagent spawning.
 
-```python
-from deepagents import create_deep_agent
-
-agent = create_deep_agent(
-    model="anthropic:claude-sonnet-4-6",
-    tools=[search, fetch_url, run_query],
-)
-```
+<ToolsPassToolsPy />
 
 
 
@@ -24,7 +21,7 @@ agent = create_deep_agent(
 
 ## Custom tools
 
-Pass any callable — plain functions, LangChain `@tool`-decorated functions, or tool dicts — directly to `tools=`.
+Pass any callable, such as plain functions, LangChain `@tool`-decorated functions, or tool dicts—directly to `tools=`.
 Deep Agents infers the tool schema from the function signature and docstring, so you don't need to define a separate schema in most cases.
 
 <CustomizationToolsPy />
@@ -37,50 +34,30 @@ For full details on defining and using LangChain tools (tool dicts, `StructuredT
 ## MCP tools
 
 <Note>
-  Deep Agents fully support [Model Context Protocol (MCP)](/oss/python/langchain/mcp) — the open standard for connecting agents to external services. Load tools from any MCP server and pass them directly to `create_deep_agent`.
+  Deep Agents fully support [Model Context Protocol (MCP)](/oss/python/langchain/mcp), the open standard for connecting agents to external services. Load tools from any MCP server and pass them directly to `create_deep_agent`.
 </Note>
 
-MCP is an open protocol that lets agents connect to a growing ecosystem of servers — databases, APIs, file systems, browsers, and more — through a standard interface. Instead of writing custom integration code for each service, you point Deep Agents at an MCP server and it gets all the tools that server exposes.
+MCP is an open protocol that lets agents connect to a growing ecosystem of servers—databases, APIs, file systems, browsers, and more—through a standard interface. Instead of writing custom integration code for each service, you point Deep Agents at an MCP server and it gets all the tools that server exposes.
 
 Install `langchain-mcp-adapters` to connect to MCP servers:
 
-```bash
+<CodeGroup>
+```bash pip
 pip install langchain-mcp-adapters
 ```
 
-```python
-import asyncio
-from langchain_mcp_adapters.client import MultiServerMCPClient
-from deepagents import create_deep_agent
-
-async def main():
-    client = MultiServerMCPClient(
-        {
-            "my_server": {
-                "transport": "http",
-                "url": "http://localhost:8000/mcp",
-            }
-        }
-    )
-    tools = await client.get_tools()
-
-    agent = create_deep_agent(
-        model="openai:gpt-5.5",
-        tools=tools,
-    )
-
-    result = await agent.ainvoke(
-        {"messages": [{"role": "user", "content": "Use the MCP server to help me."}]},
-        config={"configurable": {"thread_id": "1"}},
-    )
-
-asyncio.run(main())
+```bash uv
+uv add langchain-mcp-adapters
 ```
+</CodeGroup>
+
+
+<ToolsMcpPy />
 
 
 
 
-For detailed configuration options — including stdio servers, OAuth authentication, tool filtering, and stateful sessions — see the full [MCP guide](/oss/python/langchain/mcp).
+For detailed configuration options—including stdio servers, OAuth authentication, tool filtering, and stateful sessions—see the full [MCP guide](/oss/python/langchain/mcp).
 
 ## Built-in harness tools
 
@@ -88,15 +65,21 @@ In addition to the tools you provide, every Deep Agent comes with a built-in set
 
 | Tool | Description |
 | ---- | ----------- |
-| `ls` | List files in a directory |
-| `read_file` | Read file contents (with pagination and multimodal support) |
-| `write_file` | Create new files |
-| `edit_file` | Perform exact string replacements in files |
-| `glob` | Find files matching a glob pattern |
-| `grep` | Search file contents |
-| `execute` | Run shell commands (sandbox backends only) |
-| `task` | Spawn a subagent to handle a delegated task |
-| `write_todos` | Manage a structured todo list |
+| `ls` | List files in a directory. |
+| `read_file` | Read file contents (with pagination and multimodal support). |
+| `write_file` | Create a new file, or overwrite an existing one. |
+| `edit_file` | Perform exact string replacements in files. |
+| `delete` | Delete a file, or a directory and its contents recursively. The `delete` tool requires `deepagents>=0.7`. |
+| `glob` | Find files matching a glob pattern. |
+| `grep` | Search file contents. |
+| `execute` | Run shell commands (sandbox backends only). |
+| `task` | Spawn a subagent to handle a delegated task. |
+
+
+
+
+
+To add structured task planning with `write_todos`, opt in with [`TodoListMiddleware`](https://reference.langchain.com/python/langchain/agents/middleware/todo/TodoListMiddleware). See [Task planning](/oss/python/deepagents/overview#task-planning).
 
 For a full breakdown of what each built-in tool does, see [Harness overview](/oss/python/deepagents/overview#execution-environment).
 

@@ -3,6 +3,9 @@ title: Overview
 description: Build UIs that display real-time subagent streams, task progress, and sandbox for Deep Agents
 ---
 
+import FrontendOverviewBackendPy from '/snippets/python/code-samples/frontend-overview-backend-py.mdx';
+import FrontendOverviewBackendJs from '/snippets/python/code-samples/frontend-overview-backend-js.mdx';
+
 Build frontends that visualize deep agent workflows in real time. These patterns
 show how to render subagent progress, task planning, streaming content, and
 IDE-like sandbox experiences from agents created with `createDeepAgent`.
@@ -54,21 +57,7 @@ graph LR
   class SUB1,SUB2 purpleHighlight;
 ```
 
-```python
-from deepagents import create_deep_agent
-
-agent = create_deep_agent(
-    model="google_genai:gemini-3.5-flash",
-    tools=[get_weather],
-    system_prompt="You are a helpful assistant",
-    subagents=[
-        {
-            "name": "researcher",
-            "description": "Research assistant",
-        }
-    ],
-)
-```
+<FrontendOverviewBackendPy />
 
 
 
@@ -114,7 +103,7 @@ workflow monitor than a plain chat transcript.
     Display specialist subagents with streaming content, progress tracking, and collapsible cards.
   </Card>
   <Card title="Todo list" icon="list-check" href="/oss/python/deepagents/frontend/todo-list">
-    Track agent progress with a real-time todo list synced from agent state.
+    Track progress with a real-time todo list when the agent opts into task planning.
   </Card>
   <Card title="Sandbox" icon="code" href="/oss/python/deepagents/frontend/sandbox">
     Build an IDE-like UI with a file browser, code viewer, and diff panel backed by a sandbox.

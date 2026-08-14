@@ -3,8 +3,8 @@ title: How to set up an application with pyproject.toml
 sidebarTitle: With pyproject.toml
 ---
 
-import FrameworkAgnostic from '/snippets/langsmith/framework-agnostic.mdx';
-import PrereleaseBehavior from '/snippets/langsmith/pre-release-behavior.mdx';
+import FrameworkAgnostic from '/snippets/python/langsmith/framework-agnostic.mdx';
+import PrereleaseBehavior from '/snippets/python/langsmith/pre-release-behavior.mdx';
 
 An application must be configured with a [configuration file](/langsmith/cli#configuration-file) in order to be deployed to LangSmith (or to be self-hosted). This how-to guide discusses the basic steps to set up an application for deployment using `pyproject.toml` to define your package's dependencies.
 
@@ -61,9 +61,9 @@ structlog>=24.1.0
 cloudpickle>=3.0.0
 truststore>=0.1
 protobuf>=6.32.1,<7.0.0
-grpcio>=1.80.0,<1.81.0
-grpcio-tools>=1.80.0,<1.81.0
-grpcio-health-checking>=1.80.0,<1.81.0
+grpcio>=1.81.0,<1.82.0
+grpcio-tools>=1.81.0,<1.82.0
+grpcio-health-checking>=1.81.0,<1.82.0
 opentelemetry-api>=0.0.1
 opentelemetry-sdk>=0.0.1
 opentelemetry-exporter-otlp-proto-http>=0.0.1

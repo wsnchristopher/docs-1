@@ -3,7 +3,7 @@ title: Thinking in LangGraph
 description: Learn how to think about building agents with LangGraph
 ---
 
-import LanggraphThinkingHitlV2Py from '/snippets/code-samples/langgraph-thinking-hitl-v2-py.mdx';
+import LanggraphThinkingHitlV2Py from '/snippets/python/code-samples/langgraph-thinking-hitl-v2-py.mdx';
 
 When you build an agent with LangGraph, you will first break it apart into discrete steps called **nodes**. Then, you will describe the different decisions and transitions from each of your nodes. Finally, you connect nodes together through a shared **state** that each node can read from and write to.
 
@@ -312,7 +312,9 @@ Different errors need different handling strategies:
     from langgraph.types import Command
 
 
-    def lookup_customer_history(state: State) -> Command[Literal["draft_response"]]:
+    def lookup_customer_history(
+        state: State
+    ) -> Command[Literal["lookup_customer_history", "draft_response"]]:
         if not state.get('customer_id'):
             user_input = interrupt({
                 "message": "Customer ID needed",
@@ -376,6 +378,8 @@ Different errors need different handling strategies:
         error_handler=payment_error_handler,
     )
     ```
+
+    To apply the same `retry_policy`, `timeout`, or `error_handler` to every node in a graph without repeating them on each `add_node`, use `StateGraph.set_node_defaults(...)`. Per-node values still take precedence. See [Fault tolerance](/oss/python/langgraph/fault-tolerance#graph-defaults).
 
 
 

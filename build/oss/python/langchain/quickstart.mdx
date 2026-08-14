@@ -19,19 +19,19 @@ Install the following packages to follow along:
 <CodeGroup>
     ```bash uv
     uv init
-    uv add langchain deepagents
+    uv add langchain
     uv sync
     ```
 
     ```bash pip
-    pip install -U langchain deepagents
+    pip install -U langchain
     ```
 
     ```bash venv
     python3 -m venv .venv
     source .venv/bin/activate
     # Windows: .venv\Scripts\activate
-    pip install -U langchain deepagents
+    pip install -U langchain
     ```
 </CodeGroup>
 
@@ -125,6 +125,12 @@ export HUGGINGFACEHUB_API_TOKEN="hf_..."
     See the full list of supported [chat model integrations](/oss/python/integrations/chat).
   </Tab>
 </Tabs>
+
+<Tip>
+    **Using LangSmith Gateway**
+
+    The [LangSmith Gateway](/langsmith/llm-gateway) routes most major providers through LangSmith. You can [bring your own provider keys](/langsmith/llm-gateway-quickstart#2-make-a-call), or use [Gateway Credits](/langsmith/llm-gateway-credits) to access models without a provider key.
+</Tip>
 
 ## Build a basic agent
 
@@ -260,16 +266,20 @@ Start by creating a simple agent that can answer questions and call tools. The a
     ```python Azure
     import os
     from langchain.agents import create_agent
+    from langchain.chat_models import init_chat_model
 
     def get_weather(city: str) -> str:
         """Get weather for a given city."""
         return f"It's always sunny in {city}!"
 
+    model = init_chat_model(
+        "azure_openai:gpt-5.5",
+        azure_deployment=os.environ["AZURE_OPENAI_DEPLOYMENT_NAME"],
+    )
     agent = create_agent(
-        model="azure_openai:gpt-5.5",
+        model=model,
         tools=[get_weather],
         system_prompt="You are a helpful assistant",
-        azure_deployment=os.environ["AZURE_OPENAI_DEPLOYMENT_NAME"],
     )
 
     result = agent.invoke(
@@ -285,8 +295,7 @@ Start by creating a simple agent that can answer questions and call tools. The a
         return f"It's always sunny in {city}!"
 
     agent = create_agent(
-        model="us.anthropic.claude-sonnet-4-6",
-        model_provider="bedrock_converse",
+        model="bedrock_converse:us.anthropic.claude-sonnet-4-6",
         tools=[get_weather],
         system_prompt="You are a helpful assistant",
     )
@@ -304,12 +313,9 @@ Start by creating a simple agent that can answer questions and call tools. The a
         return f"It's always sunny in {city}!"
 
     agent = create_agent(
-        model="microsoft/Phi-3-mini-4k-instruct",
-        model_provider="huggingface",
+        model="huggingface:microsoft/Phi-3-mini-4k-instruct",
         tools=[get_weather],
         system_prompt="You are a helpful assistant",
-        temperature=0.7,
-        max_tokens=1024,
     )
 
     result = agent.invoke(
@@ -546,6 +552,21 @@ Along the way you will explore the following concepts:
         The main difference between both is that deep agents come with a range of commonly useful capabilities already built in, such as planning, file system tools, and subagents.
 
         Use deep agents when you want maximum capability with minimal setup; choose LangChain agents when you need fine-grained control.
+
+        To compare both in this step, install the `deepagents` package:
+
+        <CodeGroup>
+            ```bash uv
+            uv add deepagents
+            ```
+
+            ```bash pip
+            pip install -U deepagents
+            ```
+        </CodeGroup>
+
+
+
 
         <Warning>
             Since the code invokes the model with the entire text from The Great Gatsby, it uses a large amount of tokens.

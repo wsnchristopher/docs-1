@@ -3,8 +3,8 @@ title: Build a SQL assistant with on-demand skills
 sidebarTitle: "Skills: SQL assistant"
 ---
 
-import ChatModelTabsPy from '/snippets/chat-model-tabs.mdx';
-import ChatModelTabsJs from '/snippets/chat-model-tabs-js.mdx';
+import ChatModelTabsPy from '/snippets/javascript/chat-model-tabs.mdx';
+import ChatModelTabsJs from '/snippets/javascript/chat-model-tabs-js.mdx';
 
 This tutorial shows how to use **progressive disclosure** - a context management technique where the agent loads information on-demand rather than upfront - to implement **skills** (specialized prompt-based instructions). The agent loads skills via tool calls, rather than dynamically changing the system prompt, discovering and loading only the skills it needs for each task.
 
@@ -60,7 +60,7 @@ flowchart TD
 **What are skills:** Skills, as popularized by Claude Code, are primarily prompt-based: self-contained units of specialized instructions for specific business tasks. In Claude Code, skills are exposed as directories with files on the file system, discovered through file operations. Skills guide behavior through prompts and can provide information about tool usage or include sample code for a coding agent to execute.
 
 <Tip>
-Skills with progressive disclosure can be viewed as a form of [RAG (Retrieval-Augmented Generation)](/oss/javascript/langchain/rag), where each skill is a retrieval unit—though not necessarily backed by embeddings or keyword search, but by tools for browsing content (like file operations or, in this tutorial, direct lookup).
+Skills with progressive disclosure can be viewed as a form of [RAG (Retrieval-Augmented Generation)](/oss/javascript/deepagents/rag), where each skill is a retrieval unit—though not necessarily backed by embeddings or keyword search, but by tools for browsing content (like file operations or, in this tutorial, direct lookup).
 </Tip>
 
 **Trade-offs:**
@@ -110,11 +110,11 @@ Set up [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&ut
 
 
 <CodeGroup>
-```bash bash
+```bash Shell
 export LANGSMITH_TRACING="true"
 export LANGSMITH_API_KEY="..."
 ```
-```typescript typescript
+```typescript TypeScript
 process.env.LANGSMITH_TRACING = "true";
 process.env.LANGSMITH_API_KEY = "...";
 ```

@@ -4,10 +4,18 @@ sidebarTitle: Overview
 description: Build agents that can plan, use subagents, and leverage file systems for complex tasks
 ---
 
-Deep Agents is the easiest way to start building agents and applications that are powered by LLMs—with built-in capabilities for task planning, file systems for context management, subagent-spawning, and long-term memory.
+import OverviewQuickstartPy from '/snippets/javascript/code-samples/overview-quickstart-py.mdx';
+import OverviewQuickstartJs from '/snippets/javascript/code-samples/overview-quickstart-js.mdx';
+import OverviewToolsPy from '/snippets/javascript/code-samples/overview-tools-py.mdx';
+import OverviewExcludedToolsPy from '/snippets/javascript/code-samples/overview-excluded-tools-py.mdx';
+import FrontendTodoListSetupPy from '/snippets/javascript/code-samples/frontend-todo-list-setup-py.mdx';
+import FrontendTodoListSetupJs from '/snippets/javascript/code-samples/frontend-todo-list-setup-js.mdx';
+
+Deep Agents is the easiest way to start building agents and applications that are powered by LLMs—with built-in capabilities for file systems for context management, subagent-spawning, and long-term memory.
+Optional capabilities such as [task planning](#task-planning) and [skills](#skills) extend the harness when your use case needs them.
 You can use deep agents for any task, including complex, multi-step tasks.
 
-Deep Agents comes with the following built-in capabilities:
+Deep Agents comes with the following capabilities:
 
 - **Take actions in an environment**: Take actions via tools, read and write files, execute code
 - **Connect to your data**: Load memories, skills, and domain knowledge at the right moment
@@ -22,34 +30,7 @@ See [Core capabilities](#core-capabilities) for a full breakdown of each compone
 
 
 
-```ts
-import * as z from "zod";
-// npm install deepagents langchain @langchain/core
-import { createDeepAgent } from "deepagents";
-import { tool } from "langchain";
-
-const getWeather = tool(
-  ({ city }) => `It's always sunny in ${city}!`,
-  {
-    name: "get_weather",
-    description: "Get the weather for a given city",
-    schema: z.object({
-      city: z.string(),
-    }),
-  },
-);
-
-const agent = createDeepAgent({
-  tools: [getWeather],
-  systemPrompt: "You are a helpful assistant",
-});
-
-console.log(
-  await agent.invoke({
-    messages: [{ role: "user", content: "What's the weather in Tokyo?" }],
-  })
-);
-```
+<OverviewQuickstartJs />
 
 
 See the [Quickstart](/oss/javascript/deepagents/quickstart/) and [Customization guide](/oss/javascript/deepagents/customization/) to get started building your own agents and applications with Deep Agents.
@@ -77,7 +58,7 @@ Deep Agents is an ["agent harness"](/oss/javascript/concepts/products#agent-harn
     Skills, memory, summarization, context offloading, and prompt caching
   </Card>
   <Card title="Delegation" icon="sitemap" href="#delegation">
-    Subagent spawning and task planning
+    Subagent spawning and optional task planning
   </Card>
   <Card title="Steering" icon="user" href="#steering">
     Human-in-the-loop approval and interrupts
@@ -112,14 +93,7 @@ The execution environment is where an agent acts. It has four layers:
 
 Pass custom functions, LangChain tools, or tools from any [MCP server](/oss/javascript/deepagents/tools#mcp-tools) with the `tools=` parameter. Deep Agents fully support the [Model Context Protocol (MCP)](/oss/javascript/langchain/mcp), letting you connect to databases, APIs, file systems, and more through a standard interface.
 
-```python
-from deepagents import create_deep_agent
 
-agent = create_deep_agent(
-    model="anthropic:claude-sonnet-4-6",
-    tools=[search, fetch_page, run_query],
-)
-```
 
 For more information on defining custom tools, using MCP servers, and the full list of built-in harness tools, see [Tools](/oss/javascript/deepagents/tools).
 
@@ -128,6 +102,8 @@ For more information on defining custom tools, using MCP servers, and the full l
 The harness provides a configurable virtual filesystem which can be backed by different [pluggable backends](/oss/javascript/deepagents/backends): in-memory state, local disk, LangGraph store, composite routing, or a custom backend with [permission rules](/oss/javascript/deepagents/permissions) for read and write access.
 
 The backends support the following file system operations:
+
+
 
 | Tool | Description |
 | ---- | ----------- |
@@ -138,6 +114,8 @@ The backends support the following file system operations:
 | `glob` | Find files matching patterns (e.g., `**/*.py`) |
 | `grep` | Search file contents with multiple output modes (files only, content with context, or counts) |
 | `execute` | Run shell commands in the environment (available with [sandbox backends](/oss/javascript/deepagents/sandboxes) only) |
+
+
 
 <Accordion title="Supported multimodal file extensions">
 
@@ -160,19 +138,21 @@ The backends support the following file system operations:
         "anthropic:claude-sonnet-4-6",
         HarnessProfile(
             excluded_tools=frozenset(
-                {"ls", "read_file", "write_file", "edit_file", "glob", "grep"}
+                {"ls", "read_file", "write_file", "edit_file", "delete", "glob", "grep"}
             ),
         ),
     )
     ```
 
-    Removing [`FilesystemMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createFilesystemMiddleware) itself via `excluded_middleware` is intentionally rejected—it is required scaffolding in the [default middleware stack](/oss/javascript/deepagents/customization#default-stack-main-agent). Use `excluded_tools` to hide only the model-visible tool surface and leave the middleware in place. To remove the `task` tool, see [Running without subagents](/oss/javascript/deepagents/subagents#running-without-subagents).
+    Removing [`FilesystemMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createFilesystemMiddleware) itself via `excluded_middleware` is intentionally rejected—it is required scaffolding in the [Deep Agents stack](/oss/javascript/deepagents/customization#deep-agents-stack). Use `excluded_tools` to hide only the model-visible tool surface and leave the middleware in place. To remove the `task` tool, see [Running without subagents](/oss/javascript/deepagents/subagents#running-without-subagents).
 </Accordion>
+
+
 
 The virtual filesystem is used by several other harness capabilities such as skills, memory, code execution, and context management.
 You can also use the file system when building custom tools and middleware for Deep Agents.
 
-For more information, see [backends](/oss/javascript/deepagents/backends).
+For more information, see [backends](/oss/javascript/deepagents/backends). To generate a durable repository wiki that agents can read from the filesystem, see [OpenWiki](/oss/openwiki/overview).
 
 ### Filesystem permissions
 
@@ -235,7 +215,7 @@ Memory uses [`AGENTS.md` files](https://agents.md/) that you pass through the `m
 
 The agent can also update memory based on interactions and feedback, so preferences and patterns can carry forward without needing to restate them in each thread.
 
-For configuration details and examples, see [Memory](/oss/javascript/deepagents/customization#memory).
+For configuration details and examples, see [Memory](/oss/javascript/deepagents/customization#memory). To generate a repository wiki that coding agents discover through `AGENTS.md`, see [OpenWiki](/oss/openwiki/overview).
 
 ### Summarization and context offloading
 
@@ -257,20 +237,37 @@ For Anthropic and Amazon Bedrock models, `create_deep_agent` automatically appli
 
 Prompt caching is enabled by default when using an Anthropic model, or a Bedrock model (Claude or Nova). No configuration is required.
 
-For other providers, see [Middleware integrations](/oss/javascript/integrations/middleware#official-integrations) for available provider-specific caching middleware.
+For other providers, see [Middleware integrations](/oss/javascript/integrations/middleware) for available provider-specific caching middleware.
 
 ## Delegation
 
 The delegation component enables agents to break large problems into smaller, parallelizable units of work. It has two layers:
 
-- **[Task planning](#task-planning)**: a built-in `write_todos` tool for structured task tracking
+- **[Task planning](#task-planning)**: an opt-in `write_todos` tool for structured task tracking
 - **[Subagents](#subagents)**: ephemeral child agents that handle isolated subtasks
 
 ### Task planning
 
-The harness provides a `write_todos` tool that lets agents maintain a structured task list during execution.
+Task planning is an opt-in harness capability that lets agents maintain a structured task list during execution.
+
+Starting in v0.7 task planning is opt-in only. In earlier versions, task planning middleware was included by default.
+
+Planning is often useful for:
+
+- Long or complicated multi-step tasks
+- Less capable models that benefit from an explicit accountability tool
+- UIs that stream progress from agent state (see [Todo list](/oss/javascript/deepagents/frontend/todo-list))
+
+Pass [`TodoListMiddleware`](https://reference.langchain.com/javascript/langchain/index/todoListMiddleware) to the middleware parameter to give the agent a `write_todos` tool for maintaining a structured task list during execution.
+
+
+
+<FrontendTodoListSetupJs />
+
 
 Tasks support status tracking (`'pending'`, `'in_progress'`, `'completed'`) and are persisted in agent state. This gives agents a lightweight planning layer for organizing long-running and multi-step work.
+
+For configuration options and behavior details, see [To-do list](/oss/javascript/langchain/middleware/built-in#to-do-list).
 
 ### Subagents
 
@@ -285,7 +282,7 @@ Subagent execution provides:
 - **Context and token efficiency**: Heavy subtask work stays isolated and is compressed into a compact result.
 
 <Accordion title="Running without subagents (no `task` tool)" icon="ban">
-    To run an agent without the `task` tool, see [Running without subagents](/oss/javascript/deepagents/subagents#running-without-subagents). Do not try removing [`SubAgentMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createSubAgentMiddleware) via `excluded_middleware`—that is intentionally rejected. Instead, disable the auto-added subagent via the [harness profile](/oss/javascript/deepagents/profiles#harness-profiles) and pass no synchronous subagents via `subagents=`. Async subagents are unaffected. See the [default middleware stack](/oss/javascript/deepagents/customization#default-stack-main-agent) for the full ordering.
+    To run an agent without the `task` tool, see [Running without subagents](/oss/javascript/deepagents/subagents#running-without-subagents). Do not try removing [`SubAgentMiddleware`](https://reference.langchain.com/javascript/deepagents/middleware/createSubAgentMiddleware) via `excluded_middleware`—that is intentionally rejected. Instead, disable the auto-added subagent via the [harness profile](/oss/javascript/deepagents/profiles#harness-profiles) and pass no synchronous subagents via `subagents=`. Async subagents are unaffected. See the [full stack](/oss/javascript/deepagents/customization#full-stack) for the complete ordering.
 </Accordion>
 
 For more information, see [Subagents](/oss/javascript/deepagents/subagents).
@@ -315,7 +312,7 @@ For more information, see [Human-in-the-loop](/oss/javascript/deepagents/human-i
     <Card title="Customization" icon="adjustments" href="/oss/javascript/deepagents/customization">
         Learn about customization options
     </Card>
-    <Card title="Code" icon="terminal" href="/oss/javascript/deepagents/code/overview">
+    <Card title="Code" icon="terminal" href="/oss/deepagents/code/overview">
         Use Deep Agents Code
     </Card>
     <Card title="ACP" icon="plug-connected" href="/oss/javascript/deepagents/acp">

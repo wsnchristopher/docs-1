@@ -3,12 +3,12 @@ title: Stores
 description: LangGraph stores provide cross-thread long-term memory, complementing per-thread checkpointer persistence.
 ---
 
-import StoreListNamespaceSearchPy from '/snippets/code-samples/store-list-namespace-search-py.mdx';
-import StoreListNamespaceSearchJs from '/snippets/code-samples/store-list-namespace-search-js.mdx';
-import StoreListNamespacePaginatePy from '/snippets/code-samples/store-list-namespace-paginate-py.mdx';
-import StoreListNamespacePaginateJs from '/snippets/code-samples/store-list-namespace-paginate-js.mdx';
-import StoreListNamespaceListPy from '/snippets/code-samples/store-list-namespace-list-py.mdx';
-import StoreListNamespaceListJs from '/snippets/code-samples/store-list-namespace-list-js.mdx';
+import StoreListNamespaceSearchPy from '/snippets/javascript/code-samples/store-list-namespace-search-py.mdx';
+import StoreListNamespaceSearchJs from '/snippets/javascript/code-samples/store-list-namespace-search-js.mdx';
+import StoreListNamespacePaginatePy from '/snippets/javascript/code-samples/store-list-namespace-paginate-py.mdx';
+import StoreListNamespacePaginateJs from '/snippets/javascript/code-samples/store-list-namespace-paginate-js.mdx';
+import StoreListNamespaceListPy from '/snippets/javascript/code-samples/store-list-namespace-list-py.mdx';
+import StoreListNamespaceListJs from '/snippets/javascript/code-samples/store-list-namespace-list-js.mdx';
 
 Stores let agents persist information across threads, including user preferences, accumulated knowledge, and facts that should survive beyond a single conversation. Unlike [checkpointers](/oss/javascript/langgraph/checkpointers), which save the full graph state scoped to one thread, stores hold arbitrary key-value data accessible from any thread.
 
@@ -20,8 +20,10 @@ When using the [Agent Server](/langsmith/agent-server), you do not need to imple
 </Info>
 
 <Note>
-[InMemoryStore](https://reference.langchain.com/javascript/langchain-core/stores/InMemoryStore) is suitable for development and testing. For production, use a persistent store like `PostgresStore`, `MongoDBStore`, or `RedisStore`. All implementations extend [BaseStore](https://reference.langchain.com/javascript/langchain-core/stores/BaseStore), which is the type annotation to use in node function signatures.
+[InMemoryStore](https://reference.langchain.com/javascript/langchain-core/stores/InMemoryStore) is suitable for development and testing. For production, use a persistent store like `PostgresStore`, `MongoDBStore`, `RedisStore`, or `UpstashStore`. All implementations extend [BaseStore](https://reference.langchain.com/javascript/langchain-core/stores/BaseStore), which is the type annotation to use in node function signatures.
 </Note>
+
+
 
 ## Basic usage
 

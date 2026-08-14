@@ -16,7 +16,10 @@ providers, lifecycle scoping, seeding files, secrets, deployment, and production
 `useStream` configuration, see [Going to production](/oss/python/deepagents/going-to-production).
 
 import { PatternEmbed } from "/snippets/pattern-embed.jsx";
-import FrontendSandboxThreadBackendPy from "/snippets/code-samples/frontend-sandbox-thread-backend-py.mdx";
+import FrontendSandboxThreadBackendPy from "/snippets/python/code-samples/frontend-sandbox-thread-backend-py.mdx";
+import FrontendSandboxUtilsJs from "/snippets/python/code-samples/api/frontend-sandbox-utils-js.mdx";
+import FrontendSandboxAgentJs from "/snippets/python/code-samples/frontend-sandbox-agent-js.mdx";
+import FrontendSandboxDetectChangesJs from "/snippets/python/code-samples/frontend-sandbox-detect-changes-js.mdx";
 
 <PatternEmbed pattern="deep-agent-ide" minHeight={700} />
 
@@ -25,8 +28,12 @@ import FrontendSandboxThreadBackendPy from "/snippets/code-samples/frontend-sand
 This setup has three parts:
 
 1. **Deep agent with a sandbox backend:** The agent gets filesystem tools
-   (`read_file`, `write_file`, `edit_file`, `execute`) automatically from the
-   sandbox
+   (`read_file`, `write_file`, `edit_file`, `delete`, `execute`) automatically
+   from the sandbox
+
+
+
+
 
 2. **Custom API server** — A FastAPI app exposed via `langgraph.json`'s `http.app`
    field, providing file browsing endpoints the frontend can call
@@ -553,18 +560,7 @@ export class IdePreviewComponent {
 Before each agent run, snapshot the current file contents. After files refresh,
 compare against the snapshot to identify which files changed:
 
-```ts
-function detectChanges(current: FileSnapshot, original: FileSnapshot): Set<string> {
-  const changed = new Set<string>();
-  for (const [path, content] of Object.entries(current)) {
-    if (original[path] !== content) changed.add(path);
-  }
-  for (const path of Object.keys(original)) {
-    if (!(path in current)) changed.add(path);
-  }
-  return changed;
-}
-```
+<FrontendSandboxDetectChangesJs />
 
 When a user selects a changed file, default to the diff view so they
 immediately see what the agent modified.
@@ -650,8 +646,12 @@ Frontend-specific:
 
 - **Persist `threadId` in `sessionStorage`** so page reloads reconnect to the
   same thread and sandbox instead of creating new ones.
-- **Sync files on every relevant tool call**, not just when the run finishes. Watch for `write_file`, `edit_file`, and `execute`
+
+- **Sync files on every relevant tool call**, not just when the run finishes. Watch for `write_file`, `edit_file`, `delete`, and `execute`
   tool messages and refresh immediately.
+
+
+
 - **Default to diff view for changed files**. When a user clicks a file that
   was modified by the agent, show the diff first — that's what they care about.
 - **Show compact tool results for read-only operations**. Instead of dumping
@@ -672,8 +672,8 @@ For backends and sandboxes:
   [sandbox auth proxy](/oss/python/deepagents/going-to-production#managing-secrets)
   instead of environment variables or file uploads for API keys.
 - **Add guardrails before launch**. Configure
-  [rate limits](/oss/python/deepagents/going-to-production#rate-limiting),
-  [error handling](/oss/python/deepagents/going-to-production#handling-errors), and
+  [rate limits](/oss/python/deepagents/fault-tolerance#rate-limiting),
+  [error handling](/oss/python/deepagents/fault-tolerance#error-handling), and
   [data privacy](/oss/python/deepagents/going-to-production#data-privacy) middleware
   for autonomous coding agents.
 

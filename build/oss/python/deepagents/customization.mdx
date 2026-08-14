@@ -4,64 +4,60 @@ sidebarTitle: Customization
 description: Learn how to customize Deep Agents with system prompts, tools, subagents, and more
 ---
 
-import ChatModelTabsDaPy from '/snippets/chat-model-tabs-da.mdx';
-import ChatModelTabsDaJs from '/snippets/chat-model-tabs-da-js.mdx';
-import HitlBasicConfigPy from '/snippets/code-samples/hitl-basic-config-py.mdx';
-import HitlBasicConfigJs from '/snippets/code-samples/hitl-basic-config-js.mdx';
-import SkillsUsageTabsPy from '/snippets/skills-usage-tabs-py.mdx';
-import SkillsUsageTabsJs from '/snippets/skills-usage-tabs-js.mdx';
-import BackendStatePy from '/snippets/code-samples/backend-state-py.mdx';
-import BackendStateJs from '/snippets/code-samples/backend-state-js.mdx';
-import BackendFilesystemPy from '/snippets/code-samples/backend-filesystem-py.mdx';
-import BackendFilesystemJs from '/snippets/code-samples/backend-filesystem-js.mdx';
-import BackendLocalShellPy from '/snippets/code-samples/backend-local-shell-py.mdx';
-import BackendLocalShellJs from '/snippets/code-samples/backend-local-shell-js.mdx';
-import BackendStorePy from '/snippets/code-samples/backend-store-py.mdx';
-import BackendStoreJs from '/snippets/code-samples/backend-store-js.mdx';
-import BackendContextHubPy from '/snippets/code-samples/backend-context-hub-py.mdx';
-import BackendCompositePy from '/snippets/code-samples/backend-composite-py.mdx';
-import BackendCompositeJs from '/snippets/code-samples/backend-composite-js.mdx';
-import SubagentBasicPy from '/snippets/code-samples/subagent-basic-py.mdx';
-import SubagentBasicJs from '/snippets/code-samples/subagent-basic-js.mdx';
-import SandboxBasicPy from '/snippets/deepagents-sandbox-basic-py.mdx';
-import SandboxBasicJs from '/snippets/deepagents-sandbox-basic-js.mdx';
-import CreateDeepAgentConfigOptionsPy from '/snippets/create-deep-agent-config-options-py.mdx';
-import CreateDeepAgentConfigOptionsJs from '/snippets/create-deep-agent-config-options-js.mdx';
-import CustomizationToolsPy from '/snippets/code-samples/customization-tools-py.mdx';
-import CustomizationToolsJs from '/snippets/code-samples/customization-tools-js.mdx';
-import CustomizationSystemPromptPy from '/snippets/code-samples/customization-system-prompt-py.mdx';
-import CustomizationSystemPromptJs from '/snippets/code-samples/customization-system-prompt-js.mdx';
-import CustomizationMiddlewarePy from '/snippets/code-samples/customization-middleware-py.mdx';
-import CustomizationMiddlewareJs from '/snippets/code-samples/customization-middleware-js.mdx';
-import CustomizationMiddlewareDoPy from '/snippets/code-samples/customization-middleware-do-py.mdx';
-import CustomizationMiddlewareDoJs from '/snippets/code-samples/customization-middleware-do-js.mdx';
-import CustomizationMiddlewareDontPy from '/snippets/code-samples/customization-middleware-dont-py.mdx';
-import CustomizationMiddlewareDontJs from '/snippets/code-samples/customization-middleware-dont-js.mdx';
-import CustomizationInterpretersPy from '/snippets/code-samples/customization-interpreters-py.mdx';
-import CustomizationInterpretersJs from '/snippets/code-samples/customization-interpreters-js.mdx';
-import CustomizationMemoryStatePy from '/snippets/code-samples/customization-memory-state-py.mdx';
-import CustomizationMemoryStateJs from '/snippets/code-samples/customization-memory-state-js.mdx';
-import CustomizationMemoryStorePy from '/snippets/code-samples/customization-memory-store-py.mdx';
-import CustomizationMemoryStoreJs from '/snippets/code-samples/customization-memory-store-js.mdx';
-import CustomizationMemoryFilesystemPy from '/snippets/code-samples/customization-memory-filesystem-py.mdx';
-import CustomizationMemoryFilesystemJs from '/snippets/code-samples/customization-memory-filesystem-js.mdx';
-import CustomizationProfilesPy from '/snippets/code-samples/customization-profiles-py.mdx';
-import CustomizationStructuredOutputPy from '/snippets/code-samples/customization-structured-output-py.mdx';
-import CustomizationStructuredOutputJs from '/snippets/code-samples/customization-structured-output-js.mdx';
+import ChatModelTabsDaPy from '/snippets/python/chat-model-tabs-da.mdx';
+import ChatModelTabsDaJs from '/snippets/python/chat-model-tabs-da-js.mdx';
+import HitlBasicConfigPy from '/snippets/python/code-samples/hitl-basic-config-py.mdx';
+import HitlBasicConfigJs from '/snippets/python/code-samples/hitl-basic-config-js.mdx';
+import SkillsUsageTabsPy from '/snippets/python/skills-usage-tabs-py.mdx';
+import SkillsUsageTabsJs from '/snippets/python/skills-usage-tabs-js.mdx';
+import BackendStatePy from '/snippets/python/code-samples/backend-state-py.mdx';
+import BackendStateJs from '/snippets/python/code-samples/backend-state-js.mdx';
+import BackendFilesystemPy from '/snippets/python/code-samples/backend-filesystem-py.mdx';
+import BackendFilesystemJs from '/snippets/python/code-samples/backend-filesystem-js.mdx';
+import BackendLocalShellPy from '/snippets/python/code-samples/backend-local-shell-py.mdx';
+import BackendLocalShellJs from '/snippets/python/code-samples/backend-local-shell-js.mdx';
+import BackendStorePy from '/snippets/python/code-samples/backend-store-py.mdx';
+import BackendStoreJs from '/snippets/python/code-samples/backend-store-js.mdx';
+import BackendContextHubPy from '/snippets/python/code-samples/backend-context-hub-py.mdx';
+import BackendCompositePy from '/snippets/python/code-samples/backend-composite-py.mdx';
+import BackendCompositeJs from '/snippets/python/code-samples/backend-composite-js.mdx';
+import SubagentBasicPy from '/snippets/python/code-samples/subagent-basic-py.mdx';
+import SubagentBasicJs from '/snippets/python/code-samples/subagent-basic-js.mdx';
+import SandboxBasicPy from '/snippets/python/deepagents-sandbox-basic-py.mdx';
+import SandboxBasicJs from '/snippets/python/deepagents-sandbox-basic-js.mdx';
+import CreateDeepAgentConfigOptionsPy from '/snippets/python/create-deep-agent-config-options-py.mdx';
+import CreateDeepAgentConfigOptionsJs from '/snippets/python/create-deep-agent-config-options-js.mdx';
+import CustomizationToolsPy from '/snippets/python/code-samples/customization-tools-py.mdx';
+import CustomizationToolsJs from '/snippets/python/code-samples/customization-tools-js.mdx';
+import CustomizationSystemPromptPy from '/snippets/python/code-samples/customization-system-prompt-py.mdx';
+import CustomizationSystemPromptJs from '/snippets/python/code-samples/customization-system-prompt-js.mdx';
+
+import CustomizationMiddlewarePy from '/snippets/python/code-samples/customization-middleware-py.mdx';
+import CustomizationMiddlewareJs from '/snippets/python/code-samples/customization-middleware-js.mdx';
+import CustomizationMiddlewareDoPy from '/snippets/python/code-samples/customization-middleware-do-py.mdx';
+import CustomizationMiddlewareDoJs from '/snippets/python/code-samples/customization-middleware-do-js.mdx';
+import CustomizationMiddlewareDontPy from '/snippets/python/code-samples/customization-middleware-dont-py.mdx';
+import CustomizationMiddlewareDontJs from '/snippets/python/code-samples/customization-middleware-dont-js.mdx';
+import CustomizationInterpretersPy from '/snippets/python/code-samples/customization-interpreters-py.mdx';
+import CustomizationInterpretersJs from '/snippets/python/code-samples/customization-interpreters-js.mdx';
+import CustomizationMemoryStatePy from '/snippets/python/code-samples/customization-memory-state-py.mdx';
+import CustomizationMemoryStateJs from '/snippets/python/code-samples/customization-memory-state-js.mdx';
+import CustomizationMemoryStorePy from '/snippets/python/code-samples/customization-memory-store-py.mdx';
+import CustomizationMemoryStoreJs from '/snippets/python/code-samples/customization-memory-store-js.mdx';
+import CustomizationMemoryFilesystemPy from '/snippets/python/code-samples/customization-memory-filesystem-py.mdx';
+import CustomizationMemoryFilesystemJs from '/snippets/python/code-samples/customization-memory-filesystem-js.mdx';
+import CustomizationProfilesPy from '/snippets/python/code-samples/customization-profiles-py.mdx';
+import CustomizationStructuredOutputPy from '/snippets/python/code-samples/customization-structured-output-py.mdx';
+import CustomizationStructuredOutputJs from '/snippets/python/code-samples/customization-structured-output-js.mdx';
+import CustomizationOverviewPy from '/snippets/python/code-samples/customization-overview-py.mdx';
+import CustomizationOverviewJs from '/snippets/python/code-samples/customization-overview-js.mdx';
+import CustomizationMcpPy from '/snippets/python/code-samples/customization-mcp-py.mdx';
+import CustomizationMcpJs from '/snippets/python/code-samples/customization-mcp-js.mdx';
+import CustomizationGpSubagentProfilePy from '/snippets/python/code-samples/customization-gp-subagent-profile-py.mdx';
 
 Build the harness around your goal. `create_deep_agent` gives you a production-ready foundation: connect it to your data, shape its behavior, and add the capabilities your use case needs.
 
-```python
-from deepagents import create_deep_agent
-
-agent = create_deep_agent(
-    model="anthropic:claude-sonnet-4-6",
-    system_prompt="You are a helpful assistant.",
-    tools=[search, fetch_url],
-    memory=["./AGENTS.md"],
-    skills=["./skills/"],
-)
-```
+<CustomizationOverviewPy />
 
 | Parameter | What it does |
 |---|---|
@@ -73,7 +69,7 @@ agent = create_deep_agent(
 | [`backend=`](#backends) | Filesystem backend (StateBackend by default) |
 | [`permissions=`](/oss/python/deepagents/permissions) | Path-level access control for the filesystem |
 | [`subagents=`](#subagents) | Custom subagents for delegated tasks |
-| [`middleware=`](#middleware) | Extra middleware appended to the [default stack](#default-stack-main-agent) |
+| [`middleware=`](#middleware) | Extra middleware merged into the [Deep Agents stack](#deep-agents-stack); an instance whose `.name` matches a built-in entry replaces it in place, anything else lands after the last core middleware entry and before the profile, prompt-caching, and memory |
 | [`interrupt_on=`](#human-in-the-loop) | Pause before tool calls for human approval |
 | [`response_format=`](#structured-output) | Structured output schema |
 | [`state_schema=`](/oss/python/deepagents/context-engineering#custom-state-schema) | Custom graph state schema |
@@ -114,7 +110,7 @@ Pass a `model` string in `provider:model` format, or an initialized model instan
 
 ## Tools
 
-In addition to [built-in tools](/oss/python/deepagents/overview#execution-environment) for planning, file management, and subagent spawning, you can provide custom tools:
+In addition to [built-in tools](/oss/python/deepagents/overview#execution-environment) for file management and subagent spawning, you can provide custom tools:
 
 <CustomizationToolsPy />
 
@@ -133,34 +129,7 @@ Install `langchain-mcp-adapters` to connect to MCP servers:
 pip install langchain-mcp-adapters
 ```
 
-```python
-import asyncio
-from langchain_mcp_adapters.client import MultiServerMCPClient
-from deepagents import create_deep_agent
-
-async def main():
-    async with MultiServerMCPClient(
-        {
-            "my_server": {
-                "transport": "http",
-                "url": "http://localhost:8000/mcp",
-            }
-        }
-    ) as client:
-        tools = await client.get_tools()
-
-        agent = create_deep_agent(
-            model="openai:gpt-5.5",
-            tools=tools,
-        )
-
-        result = await agent.ainvoke(
-            {"messages": [{"role": "user", "content": "Use the MCP server to help me."}]},
-            config={"configurable": {"thread_id": "1"}},
-        )
-
-asyncio.run(main())
-```
+<CustomizationMcpPy />
 
 
 
@@ -169,106 +138,31 @@ For detailed configuration options including stdio servers, OAuth authentication
 
 ## System prompt
 
-Deep Agents come with a built-in system prompt. A deep agent's value comes from the orchestration layer the SDK provides on top of the model—planning, virtual-filesystem tools, and subagents—and the model needs to know those exist and when to reach for them. The built-in prompt teaches the agent how to use that scaffolding so you don't have to re-derive it for every project; tweak it through a [profile](/oss/python/deepagents/profiles#harness-profiles) or your own `system_prompt=` rather than copying it verbatim.
-
-When middleware add special tools, like the filesystem tools, it appends them to the system prompt.
-
-Each deep agent should also include a custom system prompt specific to its specific use case:
+Pass `system_prompt=` to give the agent your own instructions:
 
 <CustomizationSystemPromptPy />
 
 
 
 
-### Prompt assembly
-
-Deep Agents builds the system prompt from up to four named parts so that caller-supplied instructions, the SDK's built-in agent guidance, and any model-specific [profile](/oss/python/deepagents/profiles) overrides can coexist with predictable precedence. Without this layering, a profile suffix tuned for Claude (for example) could overwrite or be overwritten by your `system_prompt=` argument depending on call order; the named slots make the ordering explicit and stable.
-
-In practice, most callers only encounter two slots: `USER` (your `system_prompt=`) and `BASE` (the SDK default). Selecting a model with a built-in profile—Anthropic or OpenAI today—adds a `SUFFIX`. The full four-part assembly is mainly relevant when you author a custom `HarnessProfile` or debug why a profile's text appears where it does.
-
-The four named parts (each may be absent):
-
-| Name     | Source                                            | Notes                                             |
-| -------- | ------------------------------------------------- | ------------------------------------------------- |
-| `USER`   | `system_prompt=` argument to `create_deep_agent`  | `str` or `SystemMessage`; omitted when unset.     |
-| `BASE`   | The SDK default (`BASE_AGENT_PROMPT`)             | Always present unless replaced by a profile's `CUSTOM`. |
-| `CUSTOM` | [`HarnessProfile.base_system_prompt`](/oss/python/deepagents/profiles#harness-profiles) | Replaces `BASE` outright when a matching profile sets it. |
-| `SUFFIX` | [`HarnessProfile.system_prompt_suffix`](/oss/python/deepagents/profiles#harness-profiles) | Appended last when a matching profile sets it.   |
-
-The order is always **`USER` -> (`BASE` or `CUSTOM`) -> `SUFFIX`**, joined by blank lines (`\n\n`). Two invariants follow:
-
-1. **`USER` is always at the front.** The caller's text precedes any SDK or profile content, so persona/instructions take precedence regardless of which model is selected.
-2. **`SUFFIX` is always at the end.** Profile suffixes sit closest to the conversation history, where model-tuning guidance lands most reliably.
-
-Assembled shapes (✓ = field is set, - = field is unset):
-
-| `system_prompt=` | profile `base_system_prompt` (`CUSTOM`) | profile `system_prompt_suffix` (`SUFFIX`) | Final assembled system prompt |
-| ---------------- | :-------------------------------------: | :---------------------------------------: | ----------------------------- |
-| `None`           |                    -                    |                     -                     | `BASE`                        |
-| `None`           |                    -                    |                     ✓                     | `BASE` + `SUFFIX`             |
-| `None`           |                    ✓                    |                     -                     | `CUSTOM`                      |
-| `None`           |                    ✓                    |                     ✓                     | `CUSTOM` + `SUFFIX`           |
-| `str`            |                    -                    |                     -                     | `USER` + `BASE`               |
-| `str`            |                    -                    |                     ✓                     | `USER` + `BASE` + `SUFFIX`    |
-| `str`            |                    ✓                    |                     -                     | `USER` + `CUSTOM`             |
-| `str`            |                    ✓                    |                     ✓                     | `USER` + `CUSTOM` + `SUFFIX`  |
-
-Worked example—built-in profiles (Anthropic, OpenAI) ship only a `system_prompt_suffix`, so a typical call lands in the `str` + `-` + `✓` row:
-
-```python
-agent = create_deep_agent(
-    model="anthropic:claude-sonnet-4-6",
-    system_prompt="You are a customer-support agent for ACME Corp.",
-)
-# Final = USER + BASE + SUFFIX
-#       = "You are a customer-support agent for ACME Corp."
-#         + "\n\n"
-#         + BASE_AGENT_PROMPT
-#         + "\n\n"
-#         + <Claude-specific guidance>
-```
-
 <Note>
-    Passing a `SystemMessage` (rather than a string) triggers a different concatenation path: the right-hand assembly (`BASE`-or-`CUSTOM` plus any `SUFFIX`) is appended as an additional text content block onto the message's existing `content_blocks`. The same logical ordering applies (caller blocks first), and any `cache_control` markers on the caller's blocks are preserved—useful for placing explicit Anthropic prompt-cache breakpoints.
+Besides a string, the main agent also accepts a [`SystemMessage`](https://reference.langchain.com/python/langchain-core/messages/system/SystemMessage) with structured [content blocks](/oss/python/langchain/messages#standard-content-blocks); Deep Agents preserve those blocks ([subagent](/oss/python/deepagents/subagents) dictionary specs remain strings).
 </Note>
+
 
 <AccordionGroup>
     <Accordion title="Subagent prompts">
-        The [prompt assembly](#prompt-assembly) overlay rules also apply to declarative [subagents](/oss/python/deepagents/subagents): each subagent re-runs profile resolution against **its own model**, then applies the resolved profile's `base_system_prompt` / `system_prompt_suffix` to its authored `system_prompt`. The subagent's `system_prompt` plays the `BASE` role; `CUSTOM` and `SUFFIX` come from the profile that matches the subagent's model (which may differ from the main agent's profile).
-
-        | `spec["system_prompt"]` | profile `base_system_prompt` (`CUSTOM`) | profile `system_prompt_suffix` (`SUFFIX`) | Final subagent system prompt |
-        | ----------------------- | :-------------------------------------: | :---------------------------------------: | ---------------------------- |
-        | authored                |                    -                    |                     -                     | authored                     |
-        | authored                |                    -                    |                     ✓                     | authored + `SUFFIX`          |
-        | authored                |                    ✓                    |                     -                     | `CUSTOM`                     |
-        | authored                |                    ✓                    |                     ✓                     | `CUSTOM` + `SUFFIX`          |
-
-        There is no `USER` segment for subagents. The spec's authored `system_prompt` is the closest analog and stays in the `BASE` slot. A profile that ships only a `system_prompt_suffix` (the common case for built-in Anthropic / OpenAI profiles) just appends to whatever the subagent author wrote. A profile that sets `base_system_prompt` will *replace* the authored prompt outright.
+        Declarative [subagents](/oss/python/deepagents/subagents) resolve profile overlays against their own model, then apply the resolved profile's `base_system_prompt` / `system_prompt_suffix` to the subagent's authored `system_prompt`. A profile that ships only a `system_prompt_suffix` (the common case for built-in Anthropic / OpenAI profiles) appends to the authored prompt. A profile that sets `base_system_prompt` replaces it outright.
     </Accordion>
     <Accordion title="General-purpose subagent prompt">
-        The auto-added [general-purpose subagent](/oss/python/deepagents/subagents#the-general-purpose-subagent) follows the [prompt assembly](#prompt-assembly) overlay rules with one extra layer: the GP base prompt is resolved as **`general_purpose_subagent.system_prompt` (if set) -> `HarnessProfile.base_system_prompt` (if set) -> SDK general-purpose default**. The profile suffix layers on top either way.
+        The auto-added [general-purpose subagent](/oss/python/deepagents/subagents#the-general-purpose-subagent) resolves its base prompt as **`general_purpose_subagent.system_prompt` (if set) -> `HarnessProfile.base_system_prompt` (if set) -> SDK general-purpose default**, with the profile suffix layered on top. When both override fields are set, the general-purpose-specific one wins so a caller tuning both fields never sees their GP override silently dropped:
 
-        The two override fields can both carry a base-prompt replacement, but they are not interchangeable. `general_purpose_subagent.system_prompt` is general-purpose-specific configuration; `base_system_prompt` is a global override that primarily targets the main agent. When both are set, the **general-purpose-specific intent wins for the general-purpose subagent** so a user tuning both fields never sees their GP override silently dropped:
-
-        ```python
-        register_harness_profile(
-            "anthropic",
-            HarnessProfile(
-                base_system_prompt="You are ACME's support orchestrator.",  # main agent
-                general_purpose_subagent=GeneralPurposeSubagentProfile(
-                    system_prompt="You are a research subagent. Cite sources.",  # GP subagent
-                ),
-                system_prompt_suffix="Always think step by step.",
-            ),
-        )
-        ```
+        <CustomizationGpSubagentProfilePy />
 
         | Stack | Final system prompt |
         | ----- | ------------------- |
         | Main agent | `"You are ACME's support orchestrator." + SUFFIX` |
         | GP subagent | `"You are a research subagent. Cite sources." + SUFFIX` |
-
-        If `general_purpose_subagent.system_prompt` is unset, the GP subagent falls back to `base_system_prompt` (when set) and finally to the SDK general-purpose default.
     </Accordion>
 </AccordionGroup>
 
@@ -276,43 +170,61 @@ agent = create_deep_agent(
 
 Deep Agents support any [middleware](/oss/python/langchain/middleware/overview), including the built-in middleware listed below, prebuilt middleware from LangChain, provider-specific middleware, and custom middleware you write yourself.
 
-Pass middleware to the `middleware` argument of `create_deep_agent`. Custom middleware is appended after [`PatchToolCallsMiddleware`](https://reference.langchain.com/python/deepagents/middleware/patch_tool_calls/PatchToolCallsMiddleware) in the [default stack](#default-stack-main-agent).
+Pass middleware to the `middleware` argument of `create_deep_agent`. Each instance is merged into the [Deep Agents stack](#deep-agents-stack) by matching its `.name` against built-in entries already in the stack: a match replaces that instance in place, and anything that does not match is inserted after [`PatchToolCallsMiddleware`](https://reference.langchain.com/python/deepagents/middleware/patch_tool_calls/PatchToolCallsMiddleware). See [Override a default middleware instance](#override-a-default-middleware-instance).
 
 
 
 
-By default, Deep Agents have access to the following middleware:
+### Deep Agents stack
 
-### Default stack (main agent)
+`create_deep_agent` builds middleware in a fixed order. The [bare stack](#bare-stack) is what you get with only a model. The [full stack](#full-stack) is the complete assembly order, including slots that appear only when you pass optional arguments or when the resolved [harness profile](/oss/python/deepagents/profiles) contributes them.
+
+
+
+
+#### Bare stack
+
+With only a `model` (no other optional arguments), the main agent typically includes:
+
+1. [`FilesystemMiddleware`](https://reference.langchain.com/python/deepagents/middleware/filesystem/FilesystemMiddleware)
+2. [`SubAgentMiddleware`](https://reference.langchain.com/python/deepagents/middleware/subagents/SubAgentMiddleware) (because the [general-purpose subagent](/oss/python/deepagents/subagents#default-subagent) is auto-added unless a harness profile disables it)
+3. [`SummarizationMiddleware`](https://reference.langchain.com/python/langchain/agents/middleware/summarization/SummarizationMiddleware)
+4. [`PatchToolCallsMiddleware`](https://reference.langchain.com/python/deepagents/middleware/patch_tool_calls/PatchToolCallsMiddleware)
+5. **Prompt caching** middleware (always registered; each entry no-ops on models it does not support)
+6. **Harness profile extras** and **excluded-tool filtering**, if the resolved model profile defines them
+
+
+
+
+#### Full stack
 
 From first to last:
 
-1. [`TodoListMiddleware`](https://reference.langchain.com/python/langchain/agents/middleware/todo/TodoListMiddleware): Tracks and manages todo lists for organizing agent tasks and work.
-2. [`SkillsMiddleware`](https://reference.langchain.com/python/deepagents/middleware/skills/SkillsMiddleware): Only when you pass `skills`. Injected **immediately after** the todo middleware and **before** filesystem middleware so skill metadata is available before file tools run.
-3. [`FilesystemMiddleware`](https://reference.langchain.com/python/deepagents/middleware/filesystem/FilesystemMiddleware): Handles file system operations such as reading, writing, and navigating directories. When you pass `permissions`, filesystem permissions enforcement is included here so it can evaluate every tool the agent might call.
-4. [`SubAgentMiddleware`](https://reference.langchain.com/python/deepagents/middleware/subagents/SubAgentMiddleware): Spawns and coordinates subagents for delegating tasks to specialized agents.
-5. [`SummarizationMiddleware`](https://reference.langchain.com/python/langchain/agents/middleware/summarization/SummarizationMiddleware): Condenses message history to stay within context limits when conversations grow long (via [create_summarization_middleware](https://reference.langchain.com/python/deepagents/middleware/summarization/create_summarization_middleware)).
-6. [`PatchToolCallsMiddleware`](https://reference.langchain.com/python/deepagents/middleware/patch_tool_calls/PatchToolCallsMiddleware): Repairs dangling tool calls in message history when a run resumes after an interruption or receives malformed tool-call arguments. Runs **before** Anthropic prompt caching and the tail stack below.
-7. [`AsyncSubAgentMiddleware`](https://reference.langchain.com/python/deepagents/middleware/async_subagents/AsyncSubAgentMiddleware): Only when you configure async subagents.
-8. **Your middleware argument**: Optional middleware you pass as the `middleware` argument is appended here (after Patch, before the tail stack).
-9. **Harness profile extras**: Provider-specific middleware from the resolved model profile, if any.
-10. **Excluded-tool filtering**: When the harness profile lists excluded tools, middleware removes those tools from the agent.
-11. **Prompt caching** ([`AnthropicPromptCachingMiddleware`](https://reference.langchain.com/python/langchain-anthropic/middleware/prompt_caching/AnthropicPromptCachingMiddleware) and [`BedrockPromptCachingMiddleware`](https://reference.langchain.com/python/langchain-aws/middleware/prompt_caching/BedrockPromptCachingMiddleware)): Both are always registered and run **after** Patch and after your middleware so the cached prefix matches what is actually sent to the model. Each no-ops on models it does not support (`unsupported_model_behavior="ignore"`), so the Anthropic middleware applies on Anthropic models and the Bedrock middleware on AWS Bedrock models with cache support.
-12. [`MemoryMiddleware`](https://reference.langchain.com/python/deepagents/middleware/memory/MemoryMiddleware): Only when you pass `memory`.
+1. [`SkillsMiddleware`](https://reference.langchain.com/python/deepagents/middleware/skills/SkillsMiddleware): Only when you pass `skills`. Injected **before** filesystem middleware so skill metadata is available before file tools run.
+2. [`FilesystemMiddleware`](https://reference.langchain.com/python/deepagents/middleware/filesystem/FilesystemMiddleware): Handles file system operations such as reading, writing, and navigating directories. When you pass `permissions`, filesystem permissions enforcement is included here so it can evaluate every tool the agent might call.
+3. [`SubAgentMiddleware`](https://reference.langchain.com/python/deepagents/middleware/subagents/SubAgentMiddleware): Only when at least one synchronous subagent is available. Spawns and coordinates subagents for delegating tasks. Included in the [bare stack](#bare-stack) because the general-purpose subagent is auto-added by default; omit it by disabling that subagent and passing no synchronous `subagents`. See [Running without subagents](/oss/python/deepagents/subagents#running-without-subagents).
+4. [`SummarizationMiddleware`](https://reference.langchain.com/python/langchain/agents/middleware/summarization/SummarizationMiddleware): Condenses message history to stay within context limits when conversations grow long (via [create_summarization_middleware](https://reference.langchain.com/python/deepagents/middleware/summarization/create_summarization_middleware)).
+5. [`PatchToolCallsMiddleware`](https://reference.langchain.com/python/deepagents/middleware/patch_tool_calls/PatchToolCallsMiddleware): Repairs dangling tool calls in message history when a run resumes after an interruption or receives malformed tool-call arguments. Runs **before** Anthropic prompt caching and the tail stack below.
+6. [`AsyncSubAgentMiddleware`](https://reference.langchain.com/python/deepagents/middleware/async_subagents/AsyncSubAgentMiddleware): Only when you configure async subagents.
+7. **Your middleware argument**: Optional middleware you pass as the `middleware` argument is merged after Patch but before the rest of the stack. An instance whose `.name` matches one of the built-in entries above replaces that instance in place instead of duplicating it; anything else lands here. See [Override a default middleware instance](#override-a-default-middleware-instance).
+8. **Harness profile extras**: Provider-specific middleware from the resolved model profile, if any.
+9. **Excluded-tool filtering**: When the harness profile lists excluded tools, middleware removes those tools from the agent.
+10. **Prompt caching** ([`AnthropicPromptCachingMiddleware`](https://reference.langchain.com/python/langchain-anthropic/middleware/prompt_caching/AnthropicPromptCachingMiddleware) and [`BedrockPromptCachingMiddleware`](https://reference.langchain.com/python/langchain-aws/middleware/prompt_caching/BedrockPromptCachingMiddleware)): Both are always registered and run **after** Patch and after your middleware so the cached prefix matches what is actually sent to the model. Each no-ops on models it does not support (`unsupported_model_behavior="ignore"`), so the Anthropic middleware applies on Anthropic models and the Bedrock middleware on AWS Bedrock models with cache support.
+11. [`MemoryMiddleware`](https://reference.langchain.com/python/deepagents/middleware/memory/MemoryMiddleware): Only when you pass `memory`.
 
     <Note>
     `MemoryMiddleware` is placed **after** profile extras and the prompt caching middleware so updates to injected memory are less likely to invalidate the cache prefix. The same ordering concern is called out in the `create_deep_agent` implementation comments.
     </Note>
 
-13. `HumanInTheLoopMiddleware`: Only when you pass `interrupt_on`. Pauses for human approval or input at configured tool calls.
+12. `HumanInTheLoopMiddleware`: Only when you pass `interrupt_on`. Pauses for human approval or input at configured tool calls.
 
 
 
 
 
-### Default stack (synchronous subagents)
+### Synchronous subagent stack
 
-The built-in **general-purpose** subagent and each declarative synchronous `SubAgent` graph use a stack that `create_deep_agent` builds in code. It matches the main agent in broad shape (todo list, filesystem, summarization, Patch, profile extras, Anthropic and Bedrock caching, optional permissions) but differs in two ways:
+The built-in **general-purpose** subagent and each declarative synchronous `SubAgent` graph use a stack that `create_deep_agent` builds in code. It matches the main agent in broad shape (filesystem, summarization, Patch, profile extras, Anthropic and Bedrock caching, optional permissions) but differs in two ways:
 
 - **Skills run after** [`PatchToolCallsMiddleware`](https://reference.langchain.com/python/deepagents/middleware/patch_tool_calls/PatchToolCallsMiddleware) on these inner agents (on the main agent, skills run **before** filesystem middleware when `skills` is set).
 - There is **no** [`SubAgentMiddleware`](https://reference.langchain.com/python/deepagents/middleware/subagents/SubAgentMiddleware) inside a subagent graph (only the parent agent exposes the `task` tool).
@@ -335,7 +247,7 @@ The `deepagents` library also exposes [`create_summarization_tool_middleware`](h
 
 ### Provider-specific middleware
 
-For provider-specific middleware that is optimized for specific LLM providers, see [Official integrations](/oss/python/integrations/middleware#official-integrations) and [Community integrations](/oss/python/integrations/middleware#community-integrations).
+For provider-specific middleware that is optimized for specific LLM providers, see [Middleware integrations](/oss/python/integrations/middleware).
 
 ### Custom middleware
 
@@ -374,6 +286,115 @@ For full details on extending state with custom properties, see [Custom middlewa
 
 If you must use mutation in custom middleware, consider what happens when subagents, parallel tools, or concurrent agent invocations run at the same time.
 </Warning>
+
+### Override a default middleware instance
+
+<Note>
+Overriding a default middleware by matching `.name` requires `deepagents>=0.7`.
+</Note>
+
+Pass a middleware instance whose `.name` matches an entry in the [Deep Agents stack](#deep-agents-stack), such as [`SummarizationMiddleware`](https://reference.langchain.com/python/langchain/agents/middleware/summarization/SummarizationMiddleware), to replace that built-in instance in place instead of appending a duplicate. Any middleware you pass whose `.name` does **not** match a built-in entry is not replaced, it lands after the last core middleware entry and before the profile, prompt-caching, and memory. See [Full stack](#full-stack) for the complete ordering.
+
+```python
+from deepagents import create_deep_agent
+from deepagents.backends import StateBackend
+from deepagents.middleware import SummarizationMiddleware
+
+backend = StateBackend()
+model = "openai:gpt-5.5"
+
+custom_summarization = SummarizationMiddleware(
+    model=model,
+    backend=backend,
+    summary_prompt="Your custom summary prompt here.",
+)
+
+agent = create_deep_agent(
+    model=model,
+    middleware=[custom_summarization],  # replaces the default SummarizationMiddleware
+)
+```
+
+<Note>
+An override **replaces** the default middleware instance, it is not merged with it. That means your replacement must be fully configured with any settings it needs. This is especially important for `FilesystemMiddleware`: if you override it, you must pass the `backend` (and `permissions`, if applicable) directly to your custom instance, since it won't inherit the `backend=` and `permissions=` passed to `create_deep_agent()`. To restrict the available filesystem tools, pass a `tools` allowlist to your custom [`FilesystemMiddleware`](https://reference.langchain.com/python/deepagents/middleware/filesystem/FilesystemMiddleware) instance; see [Virtual filesystem access](/oss/python/deepagents/overview#virtual-filesystem-access) for the "Restricting filesystem tools" example.
+
+</Note>
+
+The general-purpose subagent, which Deep Agents adds automatically, inherits overrides for its default middleware from the main agent, without carrying over middleware that's specific to the main agent.
+
+Declarative subagents defined via `subagents=` do not inherit the main agent's middleware customization. Pass the override directly in that subagent's own [`middleware`](/oss/python/deepagents/subagents#subagent-dictionary-based) field to apply it there; that field is matched against the [synchronous subagent stack](#synchronous-subagent-stack), the same way `middleware=` is matched against the main agent's.
+
+#### Examples
+
+<AccordionGroup>
+    <Accordion title="Adjust when summarization triggers" icon="adjustments">
+        Override [`SummarizationMiddleware`](https://reference.langchain.com/python/langchain/agents/middleware/summarization/SummarizationMiddleware) with custom `trigger` and `keep` thresholds to compact conversation history earlier or later than the default, and control how many recent messages survive each compaction.
+
+        ```python
+        from deepagents import create_deep_agent
+        from deepagents.backends import StateBackend
+        from deepagents.middleware import SummarizationMiddleware
+
+        backend = StateBackend()
+        model = "anthropic:claude-sonnet-4-6"
+
+        agent = create_deep_agent(
+            model=model,
+            middleware=[
+                SummarizationMiddleware(
+                    model=model,
+                    backend=backend,
+                    trigger=("tokens", 100000),  # summarize once the conversation exceeds 100k tokens
+                    keep=("messages", 20),  # keep the most recent 20 messages verbatim
+                ),
+            ],
+        )
+        ```
+
+        `trigger` also accepts `("fraction", ...)` for a percentage of the model's context window, and a list of thresholds combines them with OR semantics. See the [`SummarizationMiddleware`](https://reference.langchain.com/python/langchain/agents/middleware/summarization/SummarizationMiddleware) reference for the full set of options.
+    </Accordion>
+    <Accordion title="Update the prompt cache TTL" icon="clock">
+        Override [`AnthropicPromptCachingMiddleware`](https://reference.langchain.com/python/langchain-anthropic/middleware/prompt_caching/AnthropicPromptCachingMiddleware) to extend the cache lifetime beyond the default `5m` TTL, useful for agents with long gaps between turns. See [Prompt caching](/oss/python/deepagents/overview#prompt-caching) for how caching is applied by default.
+
+        ```python
+        from deepagents import create_deep_agent
+        from langchain_anthropic.middleware import AnthropicPromptCachingMiddleware
+
+        agent = create_deep_agent(
+            model="anthropic:claude-sonnet-4-6",
+            middleware=[
+                AnthropicPromptCachingMiddleware(ttl="1h"),  # replaces the default 5m TTL
+            ],
+        )
+        ```
+    </Accordion>
+    <Accordion title="Restrict the enabled filesystem tools" icon="filter">
+        <Note>
+        The `tools` allowlist on `FilesystemMiddleware` requires `deepagents>=0.7`.
+        </Note>
+
+        Override [`FilesystemMiddleware`](https://reference.langchain.com/python/deepagents/middleware/filesystem/FilesystemMiddleware) with a `tools` allowlist to expose only a subset of the filesystem tools to the model, instead of the full default set.
+        ```python
+        from deepagents import create_deep_agent
+        from deepagents.backends import StateBackend
+        from deepagents.middleware import FilesystemMiddleware
+
+        backend = StateBackend()
+
+        # Read-only agent: write_file, edit_file, delete, and execute are never shown
+        agent = create_deep_agent(
+            model="anthropic:claude-sonnet-4-6",
+            backend=backend,
+            middleware=[
+                FilesystemMiddleware(backend=backend, tools=["read_file", "ls", "glob", "grep"]),
+            ],
+        )
+        ```
+
+        See [Restricting filesystem tools](/oss/python/deepagents/overview#virtual-filesystem-access) for more details.
+    </Accordion>
+</AccordionGroup>
+
 
 ### Interpreters
 
@@ -516,7 +537,7 @@ For more information, see [Human-in-the-loop](/oss/python/deepagents/human-in-th
 ## Skills
 
 You can use [skills](/oss/python/deepagents/overview) to provide your deep agent with new capabilities and expertise.
-While [tools](/oss/python/deepagents/customization#tools) tend to cover lower level functionality like native file system actions or planning, skills can contain detailed instructions on how to complete tasks, reference info, and other assets, such as templates.
+While [tools](/oss/python/deepagents/customization#tools) tend to cover lower level functionality like native file system actions, skills can contain detailed instructions on how to complete tasks, reference info, and other assets, such as templates.
 These files are only loaded by the agent when the agent has determined that the skill is useful for the current prompt.
 This progressive disclosure reduces the amount of tokens and context the agent has to consider upon startup.
 
@@ -532,6 +553,10 @@ To add skills to your deep agent, pass them as an argument to `create_deep_agent
 ## Memory
 
 Use [`AGENTS.md` files](https://agents.md/) to provide extra context to your deep agent.
+
+<Tip>
+To generate a repository wiki that coding agents discover through `AGENTS.md`, see [OpenWiki](/oss/openwiki/overview).
+</Tip>
 
 You can pass one or more file paths to the `memory` parameter when creating your deep agent:
 

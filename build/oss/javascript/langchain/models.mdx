@@ -2,8 +2,8 @@
 title: Models
 ---
 
-import ChatModelTabsPy from '/snippets/chat-model-tabs.mdx';
-import ChatModelTabsJS from '/snippets/chat-model-tabs-js.mdx';
+import ChatModelTabsPy from '/snippets/javascript/chat-model-tabs.mdx';
+import ChatModelTabsJS from '/snippets/javascript/chat-model-tabs-js.mdx';
 
 [LLMs](https://en.wikipedia.org/wiki/Large_language_model) are powerful AI tools that can interpret and generate text like humans. They're versatile enough to write content, translate languages, summarize, and answer questions without needing specialized training for each task.
 
@@ -128,7 +128,7 @@ You can adjust `maxRetries` and `timeout` when creating a model, then pass that 
 import { ChatAnthropic } from "@langchain/anthropic";
 
 const model = new ChatAnthropic({
-  model: "google_genai:gemini-3.5-flash",
+  model: "google_genai:gemini-3.6-flash",
   maxRetries: 10, // Increase for unreliable networks (default: 6)
   timeout: 120_000, // Milliseconds; increase for slow connections
 });
@@ -198,7 +198,7 @@ console.log(response);  // AIMessage("J'adore créer des applications.")
 
 
 <Info>
-    If the return type of your invocation is a string, ensure that you are using a chat model as opposed to a LLM. Legacy, text-completion LLMs return strings directly. LangChain chat models are prefixed with "Chat", e.g., [`ChatOpenAI`](https://reference.langchain.com/javascript/langchain-openai/ChatOpenAI)(/oss/integrations/chat/openai).
+    If the return type of your invocation is a string, ensure that you are using a chat model as opposed to an LLM. Legacy, text-completion LLMs return strings directly. LangChain chat models are prefixed with "Chat", e.g., [`ChatOpenAI`](https://reference.langchain.com/javascript/langchain-openai/ChatOpenAI)(/oss/integrations/chat/openai).
 </Info>
 
 ### Stream
@@ -787,7 +787,7 @@ Model profile data allow applications to work around model capabilities dynamica
 1. [Summarization middleware](/oss/javascript/langchain/middleware/built-in#summarization) can trigger summarization based on a model's context window size.
 2. [Structured output](/oss/javascript/langchain/structured-output) strategies in `createAgent` can be inferred automatically (e.g., by checking support for native structured output features).
 3. Model inputs can be gated based on supported [modalities](#multimodal) and maximum input tokens.
-4. [Deep Agents Code](/oss/javascript/deepagents/code) filters the [interactive model switcher](/oss/javascript/deepagents/code/providers#which-models-appear-in-the-switcher) to models whose profiles report `tool_calling` support and text I/O, and displays context window sizes and capability flags in the selector detail view.
+4. [Deep Agents Code](/oss/deepagents/code) filters the [interactive model switcher](/oss/deepagents/code/providers#which-models-appear-in-the-switcher) to models whose profiles report `tool_calling` support and text I/O, and displays context window sizes and capability flags in the selector detail view.
 
 <Accordion title="Modify profile data">
     Model profile data can be changed if it is missing, stale, or incorrect.
@@ -878,6 +878,8 @@ Many models are capable of performing multi-step reasoning to arrive at a conclu
 
 
 Depending on the model, you can sometimes specify the level of effort it should put into reasoning. Similarly, you can request that the model turn off reasoning entirely. This may take the form of categorical "tiers" of reasoning (e.g., `'low'` or `'high'`) or integer token budgets.
+
+
 
 For details, see the [integrations page](/oss/javascript/integrations/providers/overview) or [reference](https://reference.langchain.com/python/integrations/) for your respective chat model.
 

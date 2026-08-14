@@ -1,9 +1,23 @@
 ---
-title: "Pinecone integration"
-description: "Integrate with the Pinecone vector store using LangChain Python."
+title: Pinecone integration
+description: Integrate with the Pinecone vector store using LangChain Python.
+integration:
+  name: PineconeVectorStore
+  pypi: langchain-pinecone
+  featured: true
+  delete_by_id: true
+  filtering: true
+  search_by_vector: true
+  search_with_score: false
+  async_api: true
+  passes_standard_tests: false
+  multi_tenancy: false
+  ids_in_add_documents: true
 ---
 
-import LangchainCommunityUnmaintained from '/snippets/oss/langchain-community-unmaintained.mdx';
+
+
+import LangchainCommunityUnmaintained from '/snippets/python/oss/langchain-community-unmaintained.mdx';
 
 >[Pinecone](https://docs.pinecone.io/docs/overview) is a vector database with broad functionality.
 
@@ -211,8 +225,8 @@ retriever.invoke("Stealing from the bank is a crime", filter={"source": "news"})
 
 For guides on how to use this vector store for retrieval-augmented generation (RAG), see the following sections:
 
-- [Retrieval docs](/oss/python/langchain/retrieval)
-- [Build a RAG app with LangChain](/oss/python/langchain/rag)
+- [Retrieval docs](/oss/python/deepagents/retrieval)
+- [Build a RAG app with LangChain](/oss/python/deepagents/rag)
 - [Agentic RAG](/oss/python/langgraph/agentic-rag)
 
 ---

@@ -2,8 +2,8 @@
 title: Short-term memory
 ---
 
-import ShortTermMemoryUsagePy from '/snippets/code-samples/short-term-memory-usage-py.mdx';
-import ShortTermMemoryUsageJs from '/snippets/code-samples/short-term-memory-usage-js.mdx';
+import ShortTermMemoryUsagePy from '/snippets/python/code-samples/short-term-memory-usage-py.mdx';
+import ShortTermMemoryUsageJs from '/snippets/python/code-samples/short-term-memory-usage-js.mdx';
 
 ## Overview
 
@@ -15,7 +15,7 @@ Short term memory lets your application remember previous interactions within a 
     A thread organizes multiple interactions in a session, similar to the way email groups messages in a single conversation.
 </Note>
 
-Conversation history is the most common form of short-term memory. Long conversations pose a challenge to today's LLMs; a full history may not fit inside an LLM's context window, resulting in an context loss or errors.
+Conversation history is the most common form of short-term memory. Long conversations pose a challenge to today's LLMs; a full history may not fit inside an LLM's context window, resulting in a context loss or errors.
 
 Even if your model supports the full context length, most LLMs still perform poorly over long contexts. They get "distracted" by stale or off-topic content, all while suffering from slower response times and higher costs.
 
@@ -49,9 +49,19 @@ To add short-term memory (thread-level persistence) to an agent, you need to spe
 In production, use a checkpointer backed by a database:
 
 
-```shell
-pip install langgraph-checkpoint-postgres
+<CodeGroup>
+```bash pip
+pip install -U langgraph-checkpoint-postgres "psycopg[binary]"
 ```
+
+```bash uv
+uv add langgraph-checkpoint-postgres "psycopg[binary]"
+```
+</CodeGroup>
+
+<Note>
+By default, `langgraph-checkpoint-postgres` installs `psycopg` (Psycopg 3) without extras. The install above adds `psycopg[binary]`, which is recommended for most users. For other options, see the [Psycopg installation docs](https://www.psycopg.org/psycopg3/docs/basic/install.html).
+</Note>
 
 ```python
 from langchain.agents import create_agent
