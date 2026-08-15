@@ -32216,7 +32216,7 @@ For each issue, Engine surfaces the contributing traces, proposes a fix, generat
 
 ## How Engine runs
 
-Engine scans each connected tracing project every 6 hours, clustering and prioritizing issues by severity. It uses LangChain-managed inference and charges in LangChain Compute Units (LCUs). Each detected issue is tagged with an [issue category](/langsmith/engine-issue-categories) such as **Silent tool error** or **Hallucination**. For setup, costs, and the full issue workflow, see [Find and fix your agent's issues](/langsmith/engine). For how Engine handles your data, its GitHub and model subprocessor controls, and its compliance posture, see [Engine security](/langsmith/engine-security). For how Engine runs in a self-hosted deployment, see [Engine on self-hosted](/langsmith/engine-self-hosted).
+Engine scans each connected tracing project on a dynamic schedule tuned to balance cost and performance, clustering and prioritizing issues by severity. It uses LangChain-managed inference and charges in LangChain Compute Units (LCUs). Each detected issue is tagged with an [issue category](/langsmith/engine-issue-categories) such as **Silent tool error** or **Hallucination**. For setup, costs, and the full issue workflow, see [Find and fix your agent's issues](/langsmith/engine). For how Engine handles your data, its GitHub and model subprocessor controls, and its compliance posture, see [Engine security](/langsmith/engine-security). For how Engine runs in a self-hosted deployment, see [Engine on self-hosted](/langsmith/engine-self-hosted).
 
 ## Get started
 
@@ -32947,9 +32947,9 @@ Engine runs in two phases:
 | Phase | Trigger | Typical LCU usage |
 |---|---|---|
 | **Initialization** | First time you enable Engine on a project | 30-40 LCUs |
-| **Recurring scans** | Every 6 hours automatically | 10-15 LCUs |
+| **Recurring scans** | Automatically, on a dynamic schedule | 10-15 LCUs |
 
-On initialization, Engine audits past traces, clusters and prioritizes issues by severity, and proposes fixes to your prompts or code (if a repository is connected). Recurring scans run on the 6-hour schedule whether or not new issues are found, and surface new issues not previously detected.
+On initialization, Engine audits past traces, clusters and prioritizes issues by severity, and proposes fixes to your prompts or code (if a repository is connected). Recurring scans run on a dynamic schedule tuned to balance cost and performance, whether or not new issues are found, and surface new issues not previously detected.
 
 ### Set spend limits and monitor usage
 
@@ -33020,7 +33020,7 @@ To add a condition, choose its kind from the field selector, fill in the values,
 **Scope limitation:** The scope filter only accepts run name and metadata conditions. You cannot scope Engine's scan by feedback key, evaluator name, or score threshold. To focus Engine on traces with a specific evaluator's low scores, use the [**Preferences** and **Agent overview** settings](#configure-engine) to tell Engine what to prioritize. Engine already factors in all feedback signals automatically. See [How Engine samples and prioritizes traces](#how-engine-samples-and-prioritizes-traces).
 </Note>
 
-Scope determines which traces Engine analyzes to detect issues and build the agent overview document. Scope set during initial setup applies to Engine's first scan. Scope changed later in the [**Engine Settings**](#configure-engine) panel does not re-run Engine immediately; it applies on the next scan, which runs every 6 hours.
+Scope determines which traces Engine analyzes to detect issues and build the agent overview document. Scope set during initial setup applies to Engine's first scan. Scope changed later in the [**Engine Settings**](#configure-engine) panel does not re-run Engine immediately; it applies on the next scan.
 
 ## Browse and filter issues
 
@@ -33157,7 +33157,7 @@ Within a tracing project, click the **Engine Settings** <Icon icon="settings"/> 
 - **Notifications**: Click **Add destination** to add a Slack channel or webhook destination that receives a notification when Engine detects a new issue. Set a minimum priority level per destination to control which issues trigger a notification. See [Get notified about new issues](#get-notified-about-new-issues).
 - **Code repository**: Connect or update a GitHub repository so the agent can reference source code when diagnosing issues. Optionally set a **Subfolder** and a **Branch** (defaults to the repository default). For setup, see [Connect Engine to GitHub](/langsmith/engine-github).
 - **Context repository**: Connect a Context Hub repository so Engine can propose fixes to instructions, docs, and linked skills.
-- **Pause**: Engine scans your traces every 6 hours by default. Click **Pause** to stop scanning without deleting the existing issues, or **Resume** to resume scanning.
+- **Pause**: Engine scans your traces on a dynamic schedule tuned to balance cost and performance. Click **Pause** to stop scanning without deleting the existing issues, or **Resume** to resume scanning.
 - **Delete all issues**: This action cannot be undone. All issues and settings will be permanently removed.
 
 ## See also
@@ -57964,6 +57964,133 @@ results = evaluate(
     evaluators=[valid_reasoning]  # List of evaluator functions
 )
 ```
+
+## Use reference outputs
+
+When your dataset examples include reference outputs (expected answers), you can pass `reference_outputs` as a parameter to your evaluator function. LangSmith automatically provides the example's reference outputs to any evaluator that declares this parameter.
+
+<CodeGroup>
+
+```python Python
+from langsmith import evaluate, traceable, wrappers, Client
+from openai import OpenAI
+from pydantic import BaseModel
+
+# Wrap the OpenAI client to automatically trace all LLM calls
+oai_client = wrappers.wrap_openai(OpenAI())
+
+# Define an evaluator that checks the answer against a reference answer
+def matches_expected(inputs: dict, outputs: dict, reference_outputs: dict) -> bool:
+    """Use an LLM to judge if the actual answer matches the expected answer."""
+    instructions = """
+Given a question, an expected answer, and an actual answer, determine if the
+actual answer is semantically equivalent to the expected answer."""
+
+    class Response(BaseModel):
+        answers_match: bool
+
+    msg = (
+        f"Question: {inputs['question']}\n"
+        f"Expected answer: {reference_outputs['answer']}\n"
+        f"Actual answer: {outputs['answer']}"
+    )
+
+    response = oai_client.beta.chat.completions.parse(
+        model="gpt-4o",
+        messages=[{"role": "system", "content": instructions}, {"role": "user", "content": msg}],
+        response_format=Response,
+    )
+
+    return response.choices[0].message.parsed.answers_match
+
+@traceable
+def my_app(inputs: dict) -> dict:
+    # Your application logic here
+    return {"answer": "Paris"}
+
+# Create a dataset with reference outputs (expected answers)
+ls_client = Client()
+dataset = ls_client.create_dataset("geography-qa")
+examples = [
+    {
+        "inputs": {"question": "What is the capital of France?"},
+        "outputs": {"answer": "Paris"},
+    },
+    {
+        "inputs": {"question": "What is the capital of Germany?"},
+        "outputs": {"answer": "Berlin"},
+    },
+]
+ls_client.create_examples(dataset_id=dataset.id, examples=examples)
+
+results = evaluate(
+    my_app,
+    data=dataset,
+    evaluators=[matches_expected]
+)
+```
+
+```typescript TypeScript
+import { evaluate } from "langsmith/evaluation";
+import { Client } from "langsmith";
+import OpenAI from "openai";
+import { zodResponseFormat } from "openai/helpers/zod";
+import { z } from "zod";
+
+const oaiClient = new OpenAI();
+
+const matchesExpected = async ({
+  inputs,
+  outputs,
+  referenceOutputs,
+}: {
+  inputs: Record<string, any>;
+  outputs: Record<string, any>;
+  referenceOutputs?: Record<string, any>;
+}): Promise<boolean> => {
+  const instructions = `Given a question, an expected answer, and an actual answer, determine if the
+actual answer is semantically equivalent to the expected answer.`;
+
+  const ResponseSchema = z.object({ answers_match: z.boolean() });
+
+  const msg = `Question: ${inputs.question}\nExpected answer: ${referenceOutputs?.answer}\nActual answer: ${outputs.answer}`;
+
+  const response = await oaiClient.beta.chat.completions.parse({
+    model: "gpt-4o",
+    messages: [
+      { role: "system", content: instructions },
+      { role: "user", content: msg },
+    ],
+    response_format: zodResponseFormat(ResponseSchema, "response"),
+  });
+
+  return response.choices[0].message.parsed?.answers_match ?? false;
+};
+
+const myApp = async (inputs: Record<string, any>): Promise<Record<string, any>> => {
+  // Your application logic here
+  return { answer: "Paris" };
+};
+
+// Create a dataset with reference outputs (expected answers)
+const lsClient = new Client();
+const dataset = await lsClient.createDataset("geography-qa-ts");
+await lsClient.createExamples({
+  inputs: [
+    { question: "What is the capital of France?" },
+    { question: "What is the capital of Germany?" },
+  ],
+  outputs: [{ answer: "Paris" }, { answer: "Berlin" }],
+  datasetId: dataset.id,
+});
+
+await evaluate(myApp, {
+  data: dataset.name,
+  evaluators: [matchesExpected],
+});
+```
+
+</CodeGroup>
 
 For more information on how to write a custom evaluator, refer to [How to define a code evaluator (SDK)](/langsmith/code-evaluator-sdk).
 
@@ -100315,6 +100442,15 @@ Source: https://docs.langchain.com/langsmith/self-hosted-changelog
 
 [Self-hosted LangSmith](/langsmith/self-hosted) is an add-on to the Enterprise plan designed for our largest, most security-conscious customers. For more details, refer to [Pricing](https://www.langchain.com/pricing). [Contact our sales team](https://www.langchain.com/contact-sales) if you want to get a license key to trial LangSmith in your environment.
 
+<Update label="2026-08-14" tags={["self-hosted"]} rss={{ title: "2026-08-14 - self-hosted" }}>
+## langsmith-0.16.6
+
+- This release packages the same LangSmith application version as langsmith-0.16.5. Refer to the [langsmith-0.16.5](#langsmith-0-16-5) release notes below.
+
+**Download the Helm chart:** [`langsmith-0.16.6.tgz`](https://github.com/langchain-ai/helm/releases/download/langsmith-0.16.6/langsmith-0.16.6.tgz)
+{/* langsmith-release-image: 0.16.6 0.16.37 */}
+</Update>
+
 <Update label="2026-08-13" tags={["self-hosted"]} rss={{ title: "2026-08-13 - self-hosted" }}>
 ## langsmith-0.16.5
 
@@ -126259,7 +126395,22 @@ By default, the LangSmith OpenTelemetry exporter will send data to the LangSmith
 OTEL_EXPORTER_OTLP_ENDPOINT: Override the endpoint URL
 OTEL_EXPORTER_OTLP_HEADERS: Add custom headers (LangSmith API keys and Project are added automatically)
 OTEL_SERVICE_NAME: Set a custom service name (defaults to "langsmith")
+OTEL_RESOURCE_ATTRIBUTES: Attach custom metadata fields at the process level (see below)
 ```
+
+### Add process-level resource attributes
+
+You can attach custom metadata to every trace emitted by a process using the standard OpenTelemetry `OTEL_RESOURCE_ATTRIBUTES` environment variable. Unlike span-level attributes (set per-span in code), resource attributes are set once at the process level and automatically propagated to all spans. This makes them ideal for any custom metadata you want to tag your traces with, such as a username, request ID, environment, or deployment version.
+
+The value is a comma-separated list of `key=value` pairs:
+
+```bash
+OTEL_RESOURCE_ATTRIBUTES="username=abc,id=1,environment=production"
+```
+
+You can use any custom keys you like, or follow the [OpenTelemetry resource semantic conventions](https://opentelemetry.io/docs/specs/semconv/resource/) for standard fields such as `deployment.environment`, `service.version`, and `cloud.region`.
+
+These attributes appear in LangSmith under the trace's metadata, which you can use to filter and group traces across your workspace.
 
 LangSmith uses the HTTP trace exporter by default. If you'd like to use your own tracing provider, you can either:
 
