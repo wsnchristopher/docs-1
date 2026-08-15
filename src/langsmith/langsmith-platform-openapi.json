@@ -27348,11 +27348,11 @@
             "in": "query",
             "schema": {
               "type": "string",
+              "default": "forward",
               "enum": [
                 "forward",
                 "backward"
               ],
-              "default": "forward",
               "title": "Direction"
             }
           }
@@ -28483,10 +28483,10 @@
             "style": "form",
             "explode": false,
             "schema": {
-              "type": "array",
               "items": {
                 "type": "string"
               },
+              "type": "array",
               "title": "Tag Value Id"
             }
           },
@@ -28506,10 +28506,10 @@
             "style": "form",
             "explode": false,
             "schema": {
-              "type": "array",
               "items": {
                 "type": "string"
               },
+              "type": "array",
               "title": "Resource Id"
             }
           },
@@ -28714,10 +28714,10 @@
             "style": "form",
             "explode": false,
             "schema": {
-              "type": "array",
               "items": {
                 "type": "string"
               },
+              "type": "array",
               "title": "Evaluator Ids"
             }
           },
@@ -28848,10 +28848,10 @@
             "style": "form",
             "explode": false,
             "schema": {
-              "type": "array",
               "items": {
                 "type": "string"
               },
+              "type": "array",
               "title": "Resource Id"
             }
           },
@@ -28880,10 +28880,10 @@
             "style": "form",
             "explode": false,
             "schema": {
-              "type": "array",
               "items": {
                 "type": "string"
               },
+              "type": "array",
               "title": "Tag Value Id"
             }
           },
@@ -30400,6 +30400,19 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "description": "Repository type to delete; a different type is treated as not found",
+            "name": "repo_type",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "agent",
+                "skill"
+              ],
+              "title": "Repo Type"
+            }
           }
         ],
         "responses": {
@@ -30962,144 +30975,6 @@
           }
         },
         "x-public": true
-      }
-    },
-    "/api/v1/platform/issues/{id}/fix-verdict": {
-      "post": {
-        "security": [
-          {
-            "API Key": []
-          },
-          {
-            "Tenant ID": []
-          },
-          {
-            "Bearer Auth": []
-          }
-        ],
-        "description": "Records whether a fix resolved the issue when replayed against its preview deployment.",
-        "tags": [
-          "issues"
-        ],
-        "summary": "Record a fix-verification verdict",
-        "parameters": [
-          {
-            "description": "Issue ID",
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/tracer_session_issues.FixVerification"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/tracer_session_issues.ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "x-public": true,
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/tracer_session_issues.RecordFixVerdictRequest"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/platform/issues/{id}/start-preview": {
-      "post": {
-        "security": [
-          {
-            "API Key": []
-          },
-          {
-            "Tenant ID": []
-          },
-          {
-            "Bearer Auth": []
-          }
-        ],
-        "description": "Opens/reuses the fix PR, applies the preview label, and schedules the poll that resumes the fix run when the preview is up.",
-        "tags": [
-          "issues"
-        ],
-        "summary": "Start preview-deploy verification for a fix",
-        "parameters": [
-          {
-            "description": "Issue ID",
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/tracer_session_issues.StartPreviewResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/tracer_session_issues.ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/tracer_session_issues.ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "x-public": true,
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/tracer_session_issues.StartPreviewRequest"
-              }
-            }
-          }
-        }
       }
     },
     "/api/v1/platform/issues/{id}/views": {
@@ -33175,10 +33050,10 @@
             "style": "form",
             "explode": true,
             "schema": {
-              "type": "array",
               "items": {
                 "type": "string"
               },
+              "type": "array",
               "title": "Name Like"
             }
           },
@@ -33189,10 +33064,10 @@
             "style": "form",
             "explode": true,
             "schema": {
-              "type": "array",
               "items": {
                 "type": "string"
               },
+              "type": "array",
               "title": "Email Like"
             }
           },
@@ -33203,10 +33078,10 @@
             "style": "form",
             "explode": true,
             "schema": {
-              "type": "array",
               "items": {
                 "type": "string"
               },
+              "type": "array",
               "title": "Workspace Name Like"
             }
           },
@@ -33217,10 +33092,10 @@
             "style": "form",
             "explode": true,
             "schema": {
-              "type": "array",
               "items": {
                 "type": "string"
               },
+              "type": "array",
               "title": "Organization Role Like"
             }
           },
@@ -33231,10 +33106,10 @@
             "style": "form",
             "explode": true,
             "schema": {
-              "type": "array",
               "items": {
                 "type": "string"
               },
+              "type": "array",
               "title": "Workspace Role Like"
             }
           }
@@ -33457,10 +33332,10 @@
             "style": "form",
             "explode": true,
             "schema": {
-              "type": "array",
               "items": {
                 "type": "string"
               },
+              "type": "array",
               "title": "Access Policy Ids"
             }
           }
@@ -35752,10 +35627,10 @@
             "style": "form",
             "explode": true,
             "schema": {
-              "type": "array",
               "items": {
                 "type": "string"
               },
+              "type": "array",
               "title": "Selects"
             }
           }
@@ -36149,7 +36024,6 @@
             "style": "form",
             "explode": true,
             "schema": {
-              "type": "array",
               "items": {
                 "enum": [
                   "ID",
@@ -36200,6 +36074,7 @@
                 ],
                 "type": "string"
               },
+              "type": "array",
               "title": "Selects"
             }
           },
@@ -36721,10 +36596,10 @@
             "style": "form",
             "explode": true,
             "schema": {
-              "type": "array",
               "items": {
                 "type": "string"
               },
+              "type": "array",
               "title": "Label"
             }
           },
@@ -38117,10 +37992,10 @@
             "style": "form",
             "explode": true,
             "schema": {
-              "type": "array",
               "items": {
                 "type": "string"
               },
+              "type": "array",
               "title": "Label"
             }
           },
@@ -39586,7 +39461,6 @@
             "style": "form",
             "explode": true,
             "schema": {
-              "type": "array",
               "items": {
                 "enum": [
                   "TURNS",
@@ -39609,6 +39483,7 @@
                 ],
                 "type": "string"
               },
+              "type": "array",
               "title": "Selects"
             }
           },
@@ -39799,7 +39674,6 @@
             "style": "form",
             "explode": true,
             "schema": {
-              "type": "array",
               "items": {
                 "enum": [
                   "THREAD_ID",
@@ -39829,6 +39703,7 @@
                 ],
                 "type": "string"
               },
+              "type": "array",
               "title": "Selects"
             }
           }
@@ -40143,7 +40018,6 @@
             "style": "form",
             "explode": true,
             "schema": {
-              "type": "array",
               "items": {
                 "enum": [
                   "ID",
@@ -40194,6 +40068,7 @@
                 ],
                 "type": "string"
               },
+              "type": "array",
               "title": "Selects"
             }
           }
@@ -43532,6 +43407,17 @@
               }
             ]
           },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By"
+          },
           "key": {
             "type": "string",
             "title": "Key"
@@ -43662,6 +43548,17 @@
                 "type": "null"
               }
             ]
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By"
           }
         },
         "type": "object",
@@ -45324,6 +45221,8 @@
           "create_fleet_usage_limit",
           "update_fleet_usage_limit",
           "delete_fleet_usage_limit",
+          "update_credential",
+          "delete_credential",
           "create_experiment_view_override",
           "update_experiment_view_override",
           "delete_experiment_view_override",
@@ -55028,6 +54927,17 @@
             ],
             "title": "Tree Filter String"
           },
+          "thread_filter_string": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thread Filter String"
+          },
           "display_name": {
             "type": "string",
             "title": "Display Name"
@@ -55046,6 +54956,11 @@
           "type": {
             "$ref": "#/components/schemas/FilterViewType",
             "default": "runs"
+          },
+          "syntax_version": {
+            "type": "integer",
+            "title": "Syntax Version",
+            "default": 1
           },
           "start_time": {
             "anyOf": [
@@ -55154,6 +55069,17 @@
             ],
             "title": "Tree Filter String"
           },
+          "thread_filter_string": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thread Filter String"
+          },
           "display_name": {
             "type": "string",
             "title": "Display Name"
@@ -55172,6 +55098,15 @@
           "type": {
             "$ref": "#/components/schemas/FilterViewType",
             "default": "runs"
+          },
+          "syntax_version": {
+            "type": "integer",
+            "enum": [
+              1,
+              2
+            ],
+            "title": "Syntax Version",
+            "default": 1
           },
           "start_time": {
             "anyOf": [
@@ -55305,6 +55240,17 @@
             ],
             "title": "Tree Filter String"
           },
+          "thread_filter_string": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thread Filter String"
+          },
           "type": {
             "anyOf": [
               {
@@ -55314,6 +55260,21 @@
                 "type": "null"
               }
             ]
+          },
+          "syntax_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "enum": [
+                  1,
+                  2
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Syntax Version"
           },
           "start_time": {
             "anyOf": [
@@ -59746,6 +59707,11 @@
           "llm_gateway_enabled": {
             "type": "boolean",
             "title": "Llm Gateway Enabled",
+            "default": false
+          },
+          "tuned_evals_enabled": {
+            "type": "boolean",
+            "title": "Tuned Evals Enabled",
             "default": false
           },
           "gateway_data_protection_enabled": {
@@ -76274,6 +76240,10 @@
             "description": "TenantSkipTopkFacets indicates whether the tenant should skip topk facets in run stats.",
             "type": "boolean"
           },
+          "tuned_evals_enabled": {
+            "description": "TunedEvalsEnabled indicates whether this org's plan entitles it to\nuse LangChain-managed evaluators. Set by Metronome entitlement.",
+            "type": "boolean"
+          },
           "use_exact_search_for_prompts": {
             "description": "UseExactSearchForPrompts indicates whether to use exact search for prompts.",
             "type": "boolean"
@@ -82564,62 +82534,6 @@
           }
         }
       },
-      "tracer_session_issues.FixVerification": {
-        "type": "object",
-        "properties": {
-          "attempt": {
-            "type": "integer"
-          },
-          "commit_sha": {
-            "type": "string"
-          },
-          "created_at": {
-            "type": "string"
-          },
-          "deadline_at": {
-            "type": "string"
-          },
-          "detail": {
-            "type": "object"
-          },
-          "fix_branch": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "issue_id": {
-            "type": "string"
-          },
-          "pr_number": {
-            "type": "integer"
-          },
-          "preview_url": {
-            "type": "string"
-          },
-          "ready_check": {
-            "type": "string"
-          },
-          "run_id": {
-            "type": "string"
-          },
-          "session_id": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "tenant_id": {
-            "type": "string"
-          },
-          "thread_id": {
-            "type": "string"
-          },
-          "updated_at": {
-            "type": "string"
-          }
-        }
-      },
       "tracer_session_issues.Issue": {
         "type": "object",
         "properties": {
@@ -82731,17 +82645,6 @@
           }
         }
       },
-      "tracer_session_issues.RecordFixVerdictRequest": {
-        "type": "object",
-        "properties": {
-          "detail": {
-            "type": "object"
-          },
-          "status": {
-            "type": "string"
-          }
-        }
-      },
       "tracer_session_issues.Severity": {
         "type": "integer",
         "enum": [
@@ -82756,31 +82659,6 @@
           "SeverityMed",
           "SeverityLow"
         ]
-      },
-      "tracer_session_issues.StartPreviewRequest": {
-        "type": "object",
-        "properties": {
-          "commit_sha": {
-            "type": "string"
-          },
-          "run_id": {
-            "type": "string"
-          },
-          "thread_id": {
-            "type": "string"
-          }
-        }
-      },
-      "tracer_session_issues.StartPreviewResponse": {
-        "type": "object",
-        "properties": {
-          "pr_number": {
-            "type": "integer"
-          },
-          "preview_url": {
-            "type": "string"
-          }
-        }
       },
       "tracer_session_issues.Status": {
         "type": "string",
