@@ -853,16 +853,20 @@ For simple bugfixes, you can get started immediately:
         git clone https://github.com/parrot123/langchain.git
         ```
 
+        <Warning>
+            The LangChain Python repo is a **monorepo** — there is no `pyproject.toml` at the repo root. Each package has its own under `libs/` (e.g. `libs/core/`, `libs/langchain/`, `libs/partners/openai/`). You must `cd` into the relevant package directory before running `uv` commands.
+        </Warning>
+
         ```bash
-        # Inside your repo, initialize environment and install dependencies
-        uv venv && source .venv/bin/activate
+        # Navigate into the package you want to work on, then install dependencies
+        cd libs/core          # or libs/langchain, libs/partners/openai, etc.
         uv sync --all-groups
 
         # or, to install a specific group only:
         uv sync --group test
         ```
 
-        You will need to install [`uv`](https://docs.astral.sh/uv/) if you haven't previously
+        You will need to install [`uv`](https://docs.astral.sh/uv/) if you haven't previously. See the [repository structure](#repository-structure) section for a full list of packages and their locations.
 
 
     </Step>
@@ -73968,7 +73972,7 @@ from langchain_box.blob_loaders import BoxBlobLoader
 # Browserbase integrations
 Source: https://docs.langchain.com/oss/python/integrations/providers/browserbase
 
-[Browserbase](https://browserbase.com) is a developer platform to reliably run, manage, and monitor headless browsers.
+[Browserbase](https://browserbase.com) is the complete platform to run agents that use the web like humans.
 
 Power your AI data retrievals with:
 - [Serverless Infrastructure](https://docs.browserbase.com/under-the-hood) providing reliable browsers to extract data from complex UIs
@@ -73978,7 +73982,7 @@ Power your AI data retrievals with:
 
 ## Installation and setup
 
-- Get an API key and Project ID from [browserbase.com](https://browserbase.com) and set it in environment variables (`BROWSERBASE_API_KEY`, `BROWSERBASE_PROJECT_ID`).
+- Get an API key from [browserbase.com](https://browserbase.com) and set it in the `BROWSERBASE_API_KEY` environment variable.
 - Install the [Browserbase SDK](https://github.com/browserbase/python-sdk):
 
 ```bash
@@ -95068,6 +95072,7 @@ The following table shows tools that can be used to automate tasks in web browse
 | [BrightData Unlocker](https://docs.brightdata.com/scraping-automation/web-unlocker/introduction) | Pay-as-you-go | ❌ |
 | [BrightData Web Scraper API](https://docs.brightdata.com/datasets/scrapers/overview) | Pay-as-you-go | ❌ |
 | [Browserless](https://browserless.io) | Free tier, with usage-based plans after | ✅ |
+| [Stagehand](/oss/python/integrations/tools/stagehand) | Open-source / Browserbase pay-as-you-go | ✅ |
 | [Ceki](https://ceki.me) | Self mode free; marketplace $0.01/min USDC | ✅ |
 | [Firecrawl](https://docs.firecrawl.dev) | Free tier available | ❌ |
 | [Hyperbrowser Browser Agent Tools](https://docs.hyperbrowser.ai/) | Free trial, with flat rate plans and pre-paid credits after | ✅ |
@@ -97258,6 +97263,148 @@ agent.invoke({
 </Callout>
 <Callout icon="edit">
     [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/tools/privy.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>
+
+
+# Stagehand + Browserbase integration
+Source: https://docs.langchain.com/oss/python/integrations/tools/stagehand
+
+Stagehand is an open-source SDK for browser agents, backed by [Browserbase](https://browserbase.com)—the complete platform to run agents that use the web like humans. The integration ships a ready-made MCP server that exposes three tools—`run`, `snapshot`, and `screenshot`—directly to your Deep Agent, with no custom tool definitions required.
+
+<Note>
+  Stagehand ships this integration from its own repository. Clone the repo and run the examples from `packages/integrations/deepagents`.
+</Note>
+
+## Tools
+
+| Tool | Description |
+|------|-------------|
+| `run` | Execute JavaScript or snapshot actions against the active browser page |
+| `snapshot` | Inspect the active page and hydrate bracketed element IDs for use in `run` |
+| `screenshot` | Capture a screenshot of the rendered page |
+
+## Setup
+
+### Prerequisites
+
+- Python 3.11–3.13
+- [uv](https://docs.astral.sh/uv/)
+- A model-provider API key (e.g. `OPENAI_API_KEY`)
+- Local Chrome, or a [Browserbase](https://browserbase.com) API key for a managed remote browser
+
+### Clone and install
+
+```bash
+git clone https://github.com/browserbase/stagehand.git
+cd stagehand/packages/integrations/deepagents
+uv sync --locked
+uv sync --project examples/local --locked
+```
+
+### Environment variables
+
+```bash
+# Model provider
+export OPENAI_API_KEY="..."
+
+# Browser: local Chrome (default) or Browserbase
+export STAGEHAND_BROWSER="browserbase"    # omit to use local Chrome
+export BROWSERBASE_API_KEY="bb_live_..."  # required for Browserbase
+```
+
+## Use with a Deep Agent
+
+The integration's MCP server (`stagehand-deepagents-mcp`) is launched over stdio by `MultiServerMCPClient`. Use `load_mcp_tools` to get the tools and pass them directly to `create_deep_agent` — no manual tool definitions needed:
+
+```python
+import asyncio
+import dotenv
+from langchain_mcp_adapters.client import MultiServerMCPClient
+from langchain_mcp_adapters.tools import load_mcp_tools
+from deepagents import create_deep_agent
+
+dotenv.load_dotenv()
+
+BROWSER_INSTRUCTIONS = """You control one persistent browser through exactly three tools:
+- snapshot: inspect the active page and hydrate bracketed element IDs.
+- run: provide either snapshot actions or JavaScript using the Playwright-shaped page API.
+- screenshot: inspect the rendered page visually.
+
+Use snapshot actions for simple interactions and run code for multi-step workflows.
+Snapshot IDs are valid only for the latest snapshot of the active page.
+Snapshot again after navigation or stale IDs. Do not launch another browser.
+"""
+
+client = MultiServerMCPClient(
+    {
+        "stagehand_browser": {
+            "transport": "stdio",
+            "command": "uv",
+            "args": ["run", "--project", ".", "--locked", "stagehand-deepagents-mcp"],
+            "env": {
+                k: v for k, v in __import__("os").environ.items()
+                if k.startswith(("STAGEHAND_", "BROWSERBASE_")) and v
+            },
+        }
+    }
+)
+
+async def main():
+    async with client.session("stagehand_browser") as session:
+        tools = await load_mcp_tools(session)
+        agent = create_deep_agent(
+            model="openai:gpt-4o",
+            tools=tools,
+            system_prompt=BROWSER_INSTRUCTIONS,
+        )
+        result = await agent.ainvoke({
+            "messages": [{"role": "user", "content": "Go find me a summary of all main sports events today"}]
+        })
+    print(result["messages"][-1].content)
+
+asyncio.run(main())
+```
+
+<Warning>
+  Keep one persistent `ClientSession` for the duration of your agent run. Stateless tool loading (e.g. `MultiServerMCPClient.get_tools()`) starts a new stdio process per call and loses the browser and snapshot IDs.
+</Warning>
+
+## Server configuration
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `STAGEHAND_BROWSER` | `local` | Select `local` or `browserbase` |
+| `STAGEHAND_HEADLESS` | `false` | Run local Chrome headlessly |
+| `STAGEHAND_START_URL` | Unset | URL to open when the server starts |
+| `STAGEHAND_MODEL` | Unset | Optional — model for Stagehand AI methods called inside `run`; inference is provided by default if unset |
+| `STAGEHAND_MODEL_API_KEY` | Unset | Optional — API key for `STAGEHAND_MODEL`; not required when using default inference |
+| `STAGEHAND_RUN_TIMEOUT_MS` | `60000` | Timeout for JavaScript and snapshot-action batches |
+| `BROWSERBASE_API_KEY` | Unset | Required for Browserbase |
+
+<Note>
+  The MCP server and the agent run in separate Python environments. Stagehand requires `websockets>=16.1.1` while the current LangGraph SDK requires `websockets<16` — the stdio transport isolates these dependency sets.
+</Note>
+
+## Related resources
+
+<CardGroup cols={2}>
+  <Card title="Integration source + examples" icon="brand-github" href="https://github.com/browserbase/stagehand/tree/main/packages/integrations/deepagents">
+    MCP server, managed tools, and runnable agent examples.
+  </Card>
+  <Card title="Browserbase provider page" icon="browser" href="/oss/python/integrations/providers/browserbase">
+    Full Browserbase provider overview and setup.
+  </Card>
+</CardGroup>
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/tools/stagehand.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
 </Callout>
 </div>
 
@@ -158921,6 +159068,8 @@ Higher values of `snapshot_frequency` reduce storage overhead but increase read 
 #### Version compatibility and rollbacks
 
 <Warning>
+Changing a persisted channel from `DeltaChannel` to a non-delta channel is not recommended. Checkpoints encode these channel types differently, so changing the type for an existing thread can cause incomplete or incorrect state reconstruction. Keep channel definitions stable for the lifetime of a thread. Before changing a channel type, migrate affected threads to the new representation, or discard them and start new threads.
+
 **Rolling back to a version without `DeltaChannel` support is not supported.** `langgraph>=1.2` writes delta channel checkpoints in a new format that earlier versions cannot read. Once a thread has used `DeltaChannel`, downgrading LangGraph leaves those checkpoints unreadable as older runtimes do not understand the delta format and cannot reconstruct channel state. If you need to roll back, use the [delta-channel-dump recovery script](https://github.com/langchain-ai/langgraph/tree/main/examples/delta-channel-dump) to migrate affected threads, or discard them, before downgrading.
 </Warning>
 
@@ -171717,6 +171866,11 @@ Source: https://docs.langchain.com/oss/python/releases/changelog
     - **[`CodeInterpreterMiddleware`](/oss/python/deepagents/interpreters)**: (experimental) `deepagents` now supports code execution and programmatic tool calling through a scoped QuickJS runtime.
     - Supports `version="v3"` in `stream_events` / `astream_events`. Refer to the [event streaming](/oss/python/deepagents/event-streaming) guide for details.
     - **[`DeltaChannel`](/oss/python/langgraph/pregel#deltachannel) (beta)** ([blog](https://www.langchain.com/blog/delta-channels-evolving-agent-runtime)): Deep Agents now uses `DeltaChannel` for message history and agent files. Rather than re-serializing the full accumulated value into every checkpoint, only the incremental delta written at each step is stored — keeping checkpoint sizes small as threads grow long.
+
+    <Warning>
+    **Rolling back from v0.6.0 is not supported once threads have persisted.** Deep Agents v0.6.0 changes persisted message history and agent files to `DeltaChannel`, which writes checkpoints in a new format that earlier versions cannot read. Downgrading to an earlier Deep Agents version switches these channels back to non-delta channels, leaving existing delta checkpoints unreadable and causing incomplete or incorrect state reconstruction. If you need to roll back, use the [delta-channel-dump recovery script](https://github.com/langchain-ai/langgraph/tree/main/examples/delta-channel-dump) to migrate affected threads, or discard them, before downgrading. More generally, avoid switching a persisted channel between delta and non-delta representations. See [Version compatibility and channel changes](/oss/python/langgraph/pregel#version-compatibility-and-rollbacks).
+    </Warning>
+
     - **[Harness profiles](/oss/python/deepagents/profiles)**: Register per-provider or per-model configuration bundles (`HarnessProfile`) that `create_deep_agent` applies automatically when a model is selected — system-prompt tweaks, tool overrides, middleware changes, and subagent defaults — without modifying the call site.
     - **[`ContextHubBackend`](/oss/python/deepagents/backends#contexthubbackend)** ([blog](https://www.langchain.com/blog/introducing-context-hub)): A new filesystem backend backed by LangSmith Hub. Agent files — skills, memories, and other persisted context — are stored as Hub commits, giving you version history on every write and LangSmith-native durability without provisioning a separate LangGraph store.
 </Update>
