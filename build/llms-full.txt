@@ -14,7 +14,7 @@ Source: https://docs.langchain.com/build-overview
     <div class="mdx-content prose prose-gray dark:prose-invert mx-4 pt-10">
         <h1 class="flex whitespace-pre-wrap group font-semibold text-2xl sm:text-3xl mt-8">Build</h1>
 
-        The LangChain open source stack provides the building blocks you need to design, test, and ship agents.
+        The LangChain open source stack provides the building blocks you need to design, test, and ship agents. Each layer is yours to configure: the model, the tools, the context and memory an agent works from, and the harness around the model loop.
 
         <h2 class="flex whitespace-pre-wrap group font-semibold">Choose your starting point</h2>
 
@@ -216,10 +216,12 @@ Source: https://docs.langchain.com/index
 
 <div class="home-page mx-auto max-w-8xl px-0 lg:px-5" style={{ paddingBottom: "8rem" }}>
     <div class="mdx-content prose prose-gray dark:prose-invert mx-4 pt-10">
-        <h1 class="flex whitespace-pre-wrap group font-semibold text-2xl sm:text-3xl mt-8">The platform for agent engineering</h1>
+        <h1 class="flex whitespace-pre-wrap group font-semibold text-2xl sm:text-3xl mt-8">The open agent engineering ecosystem</h1>
 
-        One platform to improve every step of the agent development lifecycle, so you can ship reliable agents faster.
+        LangChain provides open source, model-agnostic harnesses for building agents. LangSmith is the framework-agnostic platform for testing, deploying, monitoring, and improving them across the agent development lifecycle. You control every layer of your agent system, and keep improving it with what you learn in production.
+
         <h2 class="flex whitespace-pre-wrap group font-semibold">Agent development lifecycle</h2>
+
 
         <CardGroup cols={2}>
             <Card title="Build" icon="hammer" href="/build-overview" cta="Get started">
@@ -236,12 +238,9 @@ Source: https://docs.langchain.com/index
             </Card>
         </CardGroup>
 
-        <h2 class="flex whitespace-pre-wrap group font-semibold">Platform</h2>
+        <h2 class="flex whitespace-pre-wrap group font-semibold">Products</h2>
 
-        <CardGroup cols={3}>
-            <Card title="Platform setup" icon="server" href="/langsmith/platform-setup" cta="Get started">
-                Set up Cloud, BYOC, or Self-hosted LangSmith, and govern users and compliance.
-            </Card>
+        <CardGroup cols={2}>
             <Card title="LLM Gateway" icon="route" href="/langsmith/llm-gateway" cta="Get started">
                 Route, control, and observe LLM traffic across providers.
             </Card>
@@ -253,6 +252,17 @@ Source: https://docs.langchain.com/index
             </Card>
             <Card title="Deep Agents Code" icon="code" href="/oss/deepagents/code/overview" cta="Get started">
                 Code with an AI agent in your terminal using the open source `dcode` CLI.
+            </Card>
+        </CardGroup>
+
+        <h2 class="flex whitespace-pre-wrap group font-semibold">Setup and governance</h2>
+
+        <CardGroup cols={2}>
+            <Card title="LangSmith setup" icon="server" href="/langsmith/platform-setup" cta="Get started">
+                Set up LangSmith on Cloud, BYOC, or Self-hosted.
+            </Card>
+            <Card title="Govern" icon="shield-check" href="/langsmith/govern-overview" cta="Get started">
+                Manage users, access control, policies, and compliance across your organization.
             </Card>
         </CardGroup>
 
@@ -31985,7 +31995,7 @@ To interrupt a revision:
 # LangSmith Deployment
 Source: https://docs.langchain.com/langsmith/deployment
 
-**LangSmith Deployment** is a workflow orchestration runtime purpose-built for agent workloads. It provides the managed infrastructure agents need to run reliably in production at scale, supporting the full lifecycle from local development to deployment.
+**LangSmith Deployment** is a workflow orchestration runtime purpose-built for agent workloads. It provides the managed infrastructure agents need to run reliably in production at scale, supporting the full lifecycle from local development to deployment. Deploy to Cloud, BYOC, or your own infrastructure.
 
 <Note>
 This page covers how your **agents** run in production with **LangSmith Deployment**.
@@ -42831,6 +42841,8 @@ Source: https://docs.langchain.com/langsmith/evaluation
 
 LangSmith's testing tools help you measure agent quality, iterate on prompts, and debug live in an interactive environment. Evaluation is the core of testing: it scores your agent's outputs against datasets and criteria so you can benchmark versions, catch regressions, and track quality over time.
 
+Add real traces to a dataset so a failure you saw once becomes a test you run every time.
+
 LangSmith supports two types of evaluation based on when and where they run:
 
 <CardGroup cols={2}>
@@ -51198,6 +51210,8 @@ Source: https://docs.langchain.com/langsmith/get-started-integrations
 Source: https://docs.langchain.com/langsmith/govern-overview
 
 Administer your LangSmith organization: manage users and access control, organize workspaces and applications, and configure policies and compliance.
+
+Governance also extends to what agents do at runtime: [spend and data-protection policies](/langsmith/llm-gateway-spend-policies) on model calls, [sandboxed execution](/langsmith/sandboxes) for agent code, and [human approval](/langsmith/add-human-in-the-loop) before sensitive actions.
 
 ## Explore
 
@@ -74431,7 +74445,7 @@ Source: https://docs.langchain.com/langsmith/observability
 <div class="mdx-content prose prose-gray dark:prose-invert mx-4 pt-10">
 <h1 class="flex whitespace-pre-wrap group font-semibold text-2xl sm:text-3xl mt-8">LangSmith Observability</h1>
 
-LangSmith Observability provides full visibility into your LLM application: from individual traces to production-wide performance metrics.
+LangSmith Observability provides full visibility into your LLM application: from individual traces to production-wide performance metrics. Traces are the record of what your agents did in production. Use them to debug failures, monitor quality, and build the datasets you evaluate against.
 
 <Callout icon="plug" color="#4F46E5" iconType="regular">
 LangSmith works with many frameworks and providers. Browse [available integrations](/langsmith/integrations) to connect your stack including OpenAI, Anthropic, CrewAI, Vercel AI SDK, Pydantic AI, and more.
@@ -75580,7 +75594,7 @@ For an overview of LangSmith's RBAC system, role definitions, and permission con
 |-------------------------------|---------------------------|
 | **Core management:**<br/>• [Organization settings](#organization-settings): Org info and configuration<br/>• [Workspaces](#workspaces): Workspace management<br/>• [Organization members](#organization-members): Member management<br/>• [Roles and permissions](#roles-and-permissions): Custom roles | **Core resources:**<br/>• [Projects](#projects): Organize traces and runs<br/>• [Runs](#runs): Individual execution traces<br/>• [Datasets](#datasets): Test datasets for evaluation<br/>• [Examples](#examples): Individual dataset examples<br/>• [Experiments](#experiments): Comparative experiments |
 | **Security and authentication:**<br/>• [SSO and authentication](#sso-and-authentication): Single sign-on setup<br/>• [SCIM](#scim): Identity provisioning<br/>• [Access policies](#access-policies): Attribute-based access control | **Monitoring and analysis:**<br/>• [Rules](#rules): Automated run rules<br/>• [Alerts](#alerts): Alert rules for monitoring<br/>• [Feedback](#feedback): Scores and labels on outputs<br/>• [Annotation Queues](#annotation-queues): Human review queues<br/>• [Charts](#charts): Custom visualizations |
-| **Billing and accounts:**<br/>• [Billing and payments](#billing-and-payments): Subscription management<br/>• [API keys](#api-keys): Org-level keys | **Development and configuration:**<br/>• [Prompts](#prompts): Prompt templates (LangChain Hub)<br/>• [Deployments](#deployments): Deployment configurations<br/>• [MCP Servers](#mcp-servers): Model Context Protocol servers<br/>• [Fleet](#fleet): Fleet admin operations |
+| **Billing and accounts:**<br/>• [Billing and payments](#billing-and-payments): Subscription management<br/>• [API keys](#api-keys): Org-level keys | **Development and configuration:**<br/>• [Prompts](#prompts): Prompt templates (LangChain Hub)<br/>• [Custom apps](#custom-apps): User-authored mini web apps<br/>• [Deployments](#deployments): Deployment configurations<br/>• [MCP Servers](#mcp-servers): Model Context Protocol servers<br/>• [Fleet](#fleet): Fleet admin operations |
 | **Analytics:**<br/>• [Charts and dashboards](#organization-charts-and-dashboards): Org-level visualizations<br/>• [Usage and analytics](#usage-and-analytics): Usage tracking and TTL settings | **Workspace management:**<br/>• [Workspace settings](#workspace-settings-and-management): Members, settings<br/>• [Tags](#tags): Metadata tagging system<br/>• [Bulk Exports](#bulk-exports): Data export operations |
 
 **Additional information:**
@@ -75971,6 +75985,23 @@ Human review queues for LLM outputs.
 | Create identity annotation queue run status | ✓ | ✓ | ✗ | `annotation-queues:update` |
 | Export archived runs | ✓ | ✓ | ✓ | `annotation-queues:read` |
 
+### Custom apps
+
+User-authored mini web apps rendered within LangSmith.
+
+| Operation | Workspace Admin | Workspace Editor | Workspace Viewer | Required Permission |
+|-----------|:---------------:|:--------------:|:----------------:|---------------------|
+| List custom apps | ✓ | ✓ | ✓ | `custom-apps:read` |
+| Get custom app | ✓ | ✓ | ✓ | `custom-apps:read` |
+| Create custom app | ✓ | ✓ | ✗ | `custom-apps:create` |
+| Update custom app | ✓ | ✓ | ✗ | `custom-apps:update` |
+| Delete custom app | ✓ | ✓ | ✗ | `custom-apps:delete` |
+| Delete custom apps (bulk) | ✓ | ✓ | ✗ | `custom-apps:delete` |
+| Download custom app source | ✓ | ✓ | ✗ | `custom-apps:download` |
+| Record custom app view | ✓ | ✓ | ✓ | `custom-apps:read` |
+| Share custom app org-wide | ✓ | ✓ | ✗ | `custom-apps:update` |
+| Claim (unshare) custom app | ✓ | ✓ | ✗ | `custom-apps:update` |
+
 ### Prompts
 
 Prompt templates and chains in the LangChain Hub.
@@ -76346,7 +76377,7 @@ Source: https://docs.langchain.com/langsmith/platform-setup
     <div class="mdx-content prose prose-gray dark:prose-invert mx-4 pt-10">
         <h1 class="flex whitespace-pre-wrap group font-semibold text-2xl sm:text-3xl mt-8">Overview</h1>
 
-        Set up **LangSmith** for [observability](/langsmith/observability), [evaluation](/langsmith/evaluation), and [prompt engineering](/langsmith/prompt-context-hub#prompts). LangSmith offers Cloud, Bring Your Own Cloud (BYOC), and Self-hosted options.
+        Set up **LangSmith** for [observability](/langsmith/observability), [evaluation](/langsmith/evaluation), and [prompt engineering](/langsmith/prompt-context-hub#prompts). LangSmith offers Cloud, Bring Your Own Cloud (BYOC), and Self-hosted options. Choose the option that matches where your data has to live and who runs the infrastructure.
 
         <Note>
         If you also want to deploy agents in production, you can use [**LangSmith Deployment**](/langsmith/deployment) with Cloud, BYOC, or Self-hosted.
@@ -89238,15 +89269,83 @@ Use **service URLs** for HTTP services you want to access from a browser or shar
 # Sandbox snapshots
 Source: https://docs.langchain.com/langsmith/sandbox-snapshots
 
-A **snapshot** is a reusable filesystem bundle backed by a Docker image. Build or capture a snapshot when you want to boot sandboxes from a custom filesystem image.
+A **snapshot** is a reusable sandbox filesystem. Build a custom snapshot from a container image when you want to boot sandboxes from a custom filesystem image.
 
 You can also capture a snapshot from a running sandbox—install packages, write data files, or configure state, then snapshot the result and reuse it as a new starting point.
 
 ![Sandboxes snapshots page](/images/langsmith/sandboxes/sb-snapshots.png)
 
-## Build a snapshot from a Docker image
+## Understand the default snapshot
 
-Build a snapshot by pointing at any Docker image. The call blocks until the snapshot is ready (default timeout is 60 seconds; bump it for large images).
+When you create a sandbox without selecting a snapshot, LangSmith uses a built-in default snapshot. The default provides an Ubuntu 24.04 filesystem with common development tools. LangSmith may update the packages and tools included in the default snapshot over time.
+
+### Inspect the default snapshot filesystem in self-hosted deployments
+
+In a self-hosted deployment, LangSmith creates the default snapshot from a filesystem embedded in the sandbox runtime container image, `sandbox-host`:
+
+1. During the `sandbox-host` image build, LangSmith starts with Ubuntu 24.04 and installs the default development tools.
+2. LangSmith packages that filesystem as a compressed 16 GiB ext4 file at `/opt/sandbox-host/bin/builder-base.ext4.gz`.
+3. When `sandbox-host` starts, LangSmith uses the embedded filesystem to create the default snapshot.
+
+The compressed ext4 file, rather than a separately pulled container image, is the source of the default snapshot filesystem.
+
+Scanning the `sandbox-host` container image alone does not inspect the files inside this compressed artifact. To verify the default snapshot, extract and scan the embedded filesystem separately.
+
+<Note>
+This procedure verifies the default snapshot filesystem. LangSmith supplies other required runtime components separately when the sandbox starts; they are not part of the snapshot.
+</Note>
+
+To independently inspect the default snapshot, use the exact `sandbox-host` container image configured by your Helm release. If you mirror images, use the reference in `images.sandboxHostImage` from your private registry.
+
+You need:
+
+- Access to the deployed `sandbox-host` image.
+- Docker, `gzip`, GNU `dd`, and `debugfs` from the `e2fsprogs` package on a Linux system.
+- A local filesystem that supports sparse files, plus enough space for the compressed artifact and the extracted files. The ext4 image has a 16 GiB logical size, but sparse decompression avoids allocating its zero-filled free space.
+
+Extract the files into a temporary directory and scan the resulting directory with your preferred filesystem or software bill of materials (SBOM) scanner.
+
+Set the exact image reference used by your deployment and create a temporary working directory:
+
+```bash
+export SANDBOX_HOST_IMAGE="<sandbox-host-image-reference>"
+export SNAPSHOT_WORKDIR="$(mktemp -d)"
+
+docker pull "$SANDBOX_HOST_IMAGE"
+```
+
+Extract the compressed ext4 file without starting the `sandbox-host` process:
+
+```bash
+SANDBOX_HOST_CONTAINER="$(docker create "$SANDBOX_HOST_IMAGE")"
+docker cp \
+  "${SANDBOX_HOST_CONTAINER}:/opt/sandbox-host/bin/builder-base.ext4.gz" \
+  "$SNAPSHOT_WORKDIR/"
+docker rm "$SANDBOX_HOST_CONTAINER"
+```
+
+Decompress the filesystem as a sparse file:
+
+```bash
+gzip -dc "$SNAPSHOT_WORKDIR/builder-base.ext4.gz" | \
+  dd of="$SNAPSHOT_WORKDIR/builder-base.ext4" \
+    bs=1M conv=sparse status=progress
+```
+
+Extract the ext4 contents with `debugfs`. `debugfs` opens the filesystem read-only unless you pass `-w`:
+
+```bash
+mkdir -p "$SNAPSHOT_WORKDIR/rootfs"
+debugfs \
+  -R "rdump / $SNAPSHOT_WORKDIR/rootfs" \
+  "$SNAPSHOT_WORKDIR/builder-base.ext4"
+```
+
+Point your filesystem or SBOM scanner at `$SNAPSHOT_WORKDIR/rootfs`. The scanner reads the package databases and files from the same root filesystem that LangSmith uses for the default snapshot.
+
+## Build a snapshot from a container image
+
+Build a snapshot by pointing at any container image. The call blocks until the snapshot is ready (default timeout is 60 seconds; bump it for large images).
 
 <CodeGroup>
 
@@ -89279,6 +89378,16 @@ console.log(snapshot.id);
 ```
 
 </CodeGroup>
+
+### Verify a snapshot built from a container image
+
+LangSmith builds a custom snapshot from the filesystem in the container image you provide. To independently verify those contents:
+
+1. Resolve the source container image to an immutable reference, such as `registry.example.com/example/image@sha256:<digest>`.
+2. Inspect and scan that exact image.
+3. Use the same digest-qualified reference as `docker_image` when you create the snapshot.
+
+LangSmith supplies its required runtime tools separately when the sandbox starts. They are not added to the container image you provide or included in the custom snapshot.
 
 ### Private registries
 
@@ -93952,6 +94061,8 @@ images:
     pullPolicy: IfNotPresent
     tag: "0.16.0"
 ```
+
+The `sandbox-host` image contains the compressed ext4 filesystem used to generate the default sandbox snapshot. See [Inspect the default snapshot filesystem](/langsmith/sandbox-snapshots#inspect-the-default-snapshot-filesystem-in-self-hosted-deployments) to extract and scan it independently.
 
 If your mirrored registry requires authentication, configure `images.imagePullSecrets`. The sandbox runtime uses the same image pull secrets as the other LangSmith images.
 
@@ -107720,7 +107831,7 @@ LangSmith operates as a multi-tenant SaaS solution. Our security model is design
 
 | Domain | LangChain responsibility (provider) | Customer responsibility (user) |
 | :---- | :---- | :---- |
-| **Infrastructure** | We manage the underlying cloud infrastructure (via GCP), including servers, networking, OS patching, and capacity planning. GCP owns the physical data centers. | N/A. You do not provision or maintain compute resources in the SaaS environment. |
+| **Infrastructure** | We manage the underlying cloud infrastructure (via AWS and GCP), including servers, networking, OS patching, and capacity planning. AWS and GCP own the physical data centers. | N/A. You do not provision or maintain compute resources in the SaaS environment. |
 | **Application** | We secure the LangSmith application code, API endpoints, and database clusters, including code scanning and penetration testing. | You are responsible for the security and safety of the AI chains and agents you build using our SDKs. |
 | **Data** | We enforce tenant isolation and encrypt data at rest using AES-256 and in transit using TLS 1.2 or higher. | You control what data is sent to us and must filter sensitive PII via the SDK before it leaves your environment. |
 | **Identity** | We provide the guardrails, including SSO/SCIM, MFA enforcement options, and RBAC frameworks. | You manage your user roster, assign roles (e.g., Admin vs. Viewer), and revoke access for terminated employees. |
@@ -107729,7 +107840,7 @@ LangSmith operates as a multi-tenant SaaS solution. Our security model is design
 ## LangChain responsibilities (the platform)
 
 - We maintain SOC 2 Type II, GDPR, and HIPAA compliance and undergo annual third-party audits and penetration testing.
-- We manage all underlying infrastructure on Google Cloud Platform (GCP), including network firewalls, DDoS protection via Cloud Armor, and container security.
+- We manage all underlying infrastructure on Amazon Web Services (AWS) and Google Cloud Platform (GCP), including network firewalls, DDoS protection, and container security.
 - We maintain high availability in accordance with our SLA, maintain daily backups, and handle disaster recovery for the LangSmith service.
 - We patch confirmed platform vulnerabilities within strict service level agreements, with critical severity issues remediated in less than 2 weeks and high severity issues within 30 days.
 - We encrypt all customer data at rest using AES-256 and in transit using TLS 1.2 or higher.
