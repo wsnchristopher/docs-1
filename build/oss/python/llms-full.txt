@@ -19453,8 +19453,8 @@ A [`ProviderProfile`](/oss/python/deepagents/profiles#provider-profiles) package
 
 You can register at two levels, and both can coexist:
 
-- **Provider level** — a bare provider key like `"openai"` applies to every model from the `openai` provider.
-- **Model level** — a `provider:model` key like `"openai:gpt-5.4"` applies only to that specific model, and merges on top of any matching provider-level profile.
+- **Provider level**: a bare provider key like `"openai"` applies to every model from the `openai` provider.
+- **Model level**: a `provider:model` key like `"openai:gpt-5.4"` applies only to that specific model, and merges on top of any matching provider-level profile.
 
 ```python
 from deepagents import ProviderProfile, register_provider_profile
@@ -43950,6 +43950,7 @@ Certain model providers offer endpoints that are compatible with OpenAI's [Chat 
 | [`DaoXE`](https://daoxe.com) | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="-1">N/A</span> |
 | [`FuturMix`](https://futurmix.ai/) | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="-1">N/A</span> |
 | [`Snowflake Cortex REST API`](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-rest-api) | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | <span data-sort-value="-1">N/A</span> |
+| [`Synthorai`](https://synthorai.io/docs/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="-1">N/A</span> |
 | [`TokenMix`](https://tokenmix.ai/docs) | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | <span data-sort-value="-1">N/A</span> |
 
 </div>
@@ -55104,6 +55105,10 @@ The below document loaders allow you to load data from common data formats.
 | [`OxidizePdfLoader`](https://github.com/bzsanti/oxidize-pdf-integrations/tree/main/langchain) | <span data-sort-value="124"><a href="https://pypi.org/project/langchain-oxidize-pdf/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-oxidize-pdf/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Google el carro for Oracle workloads`](https://github.com/googleapis/langchain-google-el-carro-python/) | <span data-sort-value="122"><a href="https://pypi.org/project/langchain-google-el-carro/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-el-carro/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`PowerScaleDocumentLoader`](/oss/python/integrations/document_loaders/powerscale) | <span data-sort-value="45"><a href="https://pypi.org/project/powerscale-rag-connector/" target="_blank"><img src="https://static.pepy.tech/badge/powerscale-rag-connector/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`XNSLoader`](https://docs.xns.tech) | <span data-sort-value="132"><a href="https://pypi.org/project/langchain-xns/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-xns/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`XNSBlobLoader`](https://docs.xns.tech) | <span data-sort-value="132"><a href="https://pypi.org/project/langchain-xns/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-xns/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`OpenDMALoader`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Loader.md) | <span data-sort-value="430"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`AlfrescoLoader`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Loader.md#alfrescoloader) | <span data-sort-value="430"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`LangSmithLoader`](/oss/python/integrations/document_loaders/langsmith) | <span data-sort-value="-1">N/A</span> |
 
 </div>
@@ -59490,16 +59495,16 @@ In practice, this means that texts with similar ideas are placed close together 
 
 ### How it works
 
-1. **Vectorization** — The model encodes each input string as a high-dimensional vector.
-2. **Similarity scoring** — Vectors are compared using mathematical metrics to measure how closely related the underlying texts are.
+1. **Vectorization**: The model encodes each input string as a high-dimensional vector.
+2. **Similarity scoring**: Vectors are compared using mathematical metrics to measure how closely related the underlying texts are.
 
 ### Similarity metrics
 
 Several metrics are commonly used to compare embeddings:
 
-* **Cosine similarity** — measures the angle between two vectors.
-* **Euclidean distance** — measures the straight-line distance between points.
-* **Dot product** — measures how much one vector projects onto another.
+* **Cosine similarity**: measures the angle between two vectors.
+* **Euclidean distance**: measures the straight-line distance between points.
+* **Dot product**: measures how much one vector projects onto another.
 
 Here's an example of computing cosine similarity between two vectors:
 
@@ -62481,9 +62486,8 @@ Next, create `MemgraphQAChain`, which will be utilized in the question-answering
 
 ```python
 chain = MemgraphQAChain.from_llm(
-    ChatOpenAI(temperature=0),
+    ChatOpenAI(temperature=0, model="gpt-4o"),
     graph=graph,
-    model_name="gpt-4-turbo",
     allow_dangerous_requests=True,
 )
 ```
@@ -62523,11 +62527,10 @@ The `return_direct` modifier specifies whether to return the direct results of t
 ```python
 # Return the result of querying the graph directly
 chain = MemgraphQAChain.from_llm(
-    ChatOpenAI(temperature=0),
+    ChatOpenAI(temperature=0, model="gpt-4o"),
     graph=graph,
     return_direct=True,
     allow_dangerous_requests=True,
-    model_name="gpt-4-turbo",
 )
 
 response = chain.invoke("Which studio published Baldur's Gate 3?")
@@ -62547,11 +62550,10 @@ The `return_intermediate_steps` chain modifier enhances the returned response by
 ```python
 # Return all the intermediate steps of query execution
 chain = MemgraphQAChain.from_llm(
-    ChatOpenAI(temperature=0),
+    ChatOpenAI(temperature=0, model="gpt-4o"),
     graph=graph,
     allow_dangerous_requests=True,
     return_intermediate_steps=True,
-    model_name="gpt-4-turbo",
 )
 
 response = chain.invoke("Is Baldur's Gate 3 an Adventure game?")
@@ -62573,11 +62575,10 @@ The `top_k` modifier can be used when you want to restrict the maximum number of
 ```python
 # Limit the maximum number of results returned by query
 chain = MemgraphQAChain.from_llm(
-    ChatOpenAI(temperature=0),
+    ChatOpenAI(temperature=0, model="gpt-4o"),
     graph=graph,
     top_k=2,
     allow_dangerous_requests=True,
-    model_name="gpt-4-turbo",
 )
 
 response = chain.invoke("What genres are associated with Baldur's Gate 3?")
@@ -62598,9 +62599,8 @@ Let's instantiate our chain once again and attempt to ask some questions that us
 
 ```python
 chain = MemgraphQAChain.from_llm(
-    ChatOpenAI(temperature=0),
+    ChatOpenAI(temperature=0, model="gpt-4o"),
     graph=graph,
-    model_name="gpt-4-turbo",
     allow_dangerous_requests=True,
 )
 
@@ -62653,10 +62653,9 @@ MEMGRAPH_GENERATION_PROMPT = PromptTemplate(
 )
 
 chain = MemgraphQAChain.from_llm(
-    ChatOpenAI(temperature=0),
+    ChatOpenAI(temperature=0, model="gpt-4o"),
     cypher_prompt=MEMGRAPH_GENERATION_PROMPT,
     graph=graph,
-    model_name="gpt-4-turbo",
     allow_dangerous_requests=True,
 )
 
@@ -62716,7 +62715,7 @@ text = """
 The next step is to initialize `LLMGraphTransformer` from the desired LLM and convert the document to the graph structure.
 
 ```python
-llm = ChatOpenAI(temperature=0, model_name="gpt-4-turbo")
+llm = ChatOpenAI(temperature=0, model="gpt-4o")
 llm_transformer = LLMGraphTransformer(llm=llm)
 documents = [Document(page_content=text)]
 graph_documents = llm_transformer.convert_to_graph_documents(documents)
@@ -62804,9 +62803,8 @@ In the end, you can query the knowledge graph, as explained in the section befor
 
 ```python
 chain = MemgraphQAChain.from_llm(
-    ChatOpenAI(temperature=0),
+    ChatOpenAI(temperature=0, model="gpt-4o"),
     graph=graph,
-    model_name="gpt-4-turbo",
     allow_dangerous_requests=True,
 )
 print(chain.invoke("Who Charles Robert Darwin collaborated with?")["result"])
@@ -63147,8 +63145,8 @@ You can use the `cypher_llm` and `qa_llm` parameters to define different llms
 ```python
 chain = GraphCypherQAChain.from_llm(
     graph=graph,
-    cypher_llm=ChatOpenAI(temperature=0, model="gpt-3.5-turbo"),
-    qa_llm=ChatOpenAI(temperature=0, model="gpt-3.5-turbo-16k"),
+    cypher_llm=ChatOpenAI(temperature=0, model="gpt-4o-mini"),
+    qa_llm=ChatOpenAI(temperature=0, model="gpt-4o-mini"),
     verbose=True,
     allow_dangerous_requests=True,
 )
@@ -63182,8 +63180,8 @@ You can use `include_types` or `exclude_types` to ignore parts of the graph sche
 ```python
 chain = GraphCypherQAChain.from_llm(
     graph=graph,
-    cypher_llm=ChatOpenAI(temperature=0, model="gpt-3.5-turbo"),
-    qa_llm=ChatOpenAI(temperature=0, model="gpt-3.5-turbo-16k"),
+    cypher_llm=ChatOpenAI(temperature=0, model="gpt-4o-mini"),
+    qa_llm=ChatOpenAI(temperature=0, model="gpt-4o-mini"),
     verbose=True,
     exclude_types=["Movie"],
     allow_dangerous_requests=True,
@@ -63209,7 +63207,7 @@ You can use the `validate_cypher` parameter to validate and correct relationship
 
 ```python
 chain = GraphCypherQAChain.from_llm(
-    llm=ChatOpenAI(temperature=0, model="gpt-3.5-turbo"),
+    llm=ChatOpenAI(temperature=0, model="gpt-4o-mini"),
     graph=graph,
     verbose=True,
     validate_cypher=True,
@@ -63245,7 +63243,7 @@ _You will need to use an LLM with native function calling support to use this fe
 
 ```python
 chain = GraphCypherQAChain.from_llm(
-    llm=ChatOpenAI(temperature=0, model="gpt-3.5-turbo"),
+    llm=ChatOpenAI(temperature=0, model="gpt-4o-mini"),
     graph=graph,
     verbose=True,
     use_function_response=True,
@@ -63277,7 +63275,7 @@ _Note that `qa_prompt` will have no effect when using `use_function_response`_
 
 ```python
 chain = GraphCypherQAChain.from_llm(
-    llm=ChatOpenAI(temperature=0, model="gpt-3.5-turbo"),
+    llm=ChatOpenAI(temperature=0, model="gpt-4o-mini"),
     graph=graph,
     verbose=True,
     use_function_response=True,
@@ -69906,11 +69904,11 @@ Browse the complete collection of integrations available for Python. LangChain P
     </Card>
 
     <Card
-        title="Actian VectorAI"
+        title="Actian VectorAI DB"
         href="https://docs.vectoraidb.actian.com"
         icon="link"
     >
-        Portable, high-performance vector search for embedded, edge, and cloud AI applications.
+        Portable, high-performance vector database for embedded, edge, and cloud AI applications.
     </Card>
 
 
@@ -71729,6 +71727,14 @@ Browse the complete collection of integrations available for Python. LangChain P
     </Card>
 
     <Card
+        title="OpenDMA"
+        href="https://github.com/OpenDMA/langchain-opendma/tree/main/docs"
+        icon="link"
+    >
+        ECM toolkits, loaders, and retrievers for Alfresco, Documentum, FileNet, and OnBase.
+    </Card>
+
+    <Card
         title="OpenGradient"
         href="https://docs.opengradient.ai/"
         icon="link"
@@ -72065,6 +72071,14 @@ Browse the complete collection of integrations available for Python. LangChain P
     </Card>
 
     <Card
+        title="RE-call"
+        href="https://giulioder.github.io/RE-call/integrations.html"
+        icon="link"
+    >
+        Trust-evaluated retrieval from PostgreSQL with pgvector, verdict metadata, and explicit abstention.
+    </Card>
+
+    <Card
         title="Replicate"
         href="/oss/python/integrations/providers/replicate"
         icon="link"
@@ -72078,6 +72092,14 @@ Browse the complete collection of integrations available for Python. LangChain P
         icon="link"
     >
         Governed email platform for AI agents.
+    </Card>
+
+    <Card
+        title="Reserp"
+        href="https://reserp.ai/docs"
+        icon="link"
+    >
+        Google Search results as a LangChain tool via a single API request.
     </Card>
 
     <Card
@@ -72473,6 +72495,14 @@ Browse the complete collection of integrations available for Python. LangChain P
         icon="link"
     >
         Trust infrastructure for autonomous agent transactions.
+    </Card>
+
+    <Card
+        title="Synthorai"
+        href="https://synthorai.io/docs/"
+        icon="link"
+    >
+        OpenAI-compatible LLM gateway routing to multiple model providers.
     </Card>
 
     <Card
@@ -72877,6 +72907,14 @@ Browse the complete collection of integrations available for Python. LangChain P
     </Card>
 
     <Card
+        title="XNS"
+        href="https://docs.xns.tech"
+        icon="link"
+    >
+        S3-compatible object storage loaders and byte store with zero egress.
+    </Card>
+
+    <Card
         title="YDB"
         href="https://ydb.tech/"
         icon="link"
@@ -72898,6 +72936,14 @@ Browse the complete collection of integrations available for Python. LangChain P
         icon="link"
     >
         Real-time web search and content extraction APIs designed for LLM applications.
+    </Card>
+
+    <Card
+        title="YouTube"
+        href="https://github.com/urraf/langchain-youtube#readme"
+        icon="link"
+    >
+        Search, playlist, transcript, and video metadata retrievers for LangChain.
     </Card>
 
     <Card
@@ -74272,7 +74318,7 @@ Source: https://docs.langchain.com/oss/python/integrations/providers/cala
 # Cala
 
 >[Cala](https://cala.ai) is a verified knowledge graph for AI agents.
->It returns structured, source-cited, traceable facts — not raw web scrapes.
+>It returns structured, source-cited, traceable facts—not raw web scrapes.
 >Every answer includes citations, confidence scores, and entity-level provenance,
 >making it suitable for production agents that require auditable, hallucination-resistant retrieval.
 
@@ -78470,11 +78516,11 @@ This page covers all LangChain integrations with [Microsoft Azure](https://porta
 
 Microsoft offers three main options for accessing chat models through Azure:
 
-1. **[Azure OpenAI](https://learn.microsoft.com/en-us/azure/ai-services/openai/)** (recommended) — Access any model deployed in Microsoft Foundry (including OpenAI, Llama, DeepSeek, Mistral, and Phi) through a single interface, with enterprise features such as keyless authentication through [Microsoft Entra ID](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/managed-identity), regional data residency, and private networking. Use [`ChatOpenAI`](https://reference.langchain.com/python/langchain-openai/chat_models/base/ChatOpenAI) on the v1 API, or [`AzureChatOpenAI`](https://reference.langchain.com/python/langchain-openai/chat_models/azure/AzureChatOpenAI) for traditional deployments.
+1. **[Azure OpenAI](https://learn.microsoft.com/en-us/azure/ai-services/openai/)** (recommended): Access any model deployed in Microsoft Foundry (including OpenAI, Llama, DeepSeek, Mistral, and Phi) through a single interface, with enterprise features such as keyless authentication through [Microsoft Entra ID](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/managed-identity), regional data residency, and private networking. Use [`ChatOpenAI`](https://reference.langchain.com/python/langchain-openai/chat_models/base/ChatOpenAI) on the v1 API, or [`AzureChatOpenAI`](https://reference.langchain.com/python/langchain-openai/chat_models/azure/AzureChatOpenAI) for traditional deployments.
 
     Azure OpenAI also supports the [Responses API](#responses-api), which gives you access to server-side tools like code interpreter, image generation, and file search directly from your chat model.
-2. **[Azure AI](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/deploy-models)** — Recommended for accessing tools, storage, and custom middleware from the broader Azure ecosystem alongside your chat model.
-3. **[Azure ML](https://learn.microsoft.com/en-us/azure/machine-learning/)** — Allows deployment and management of custom or fine-tuned open-source models with Azure Machine Learning.
+2. **[Azure AI](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/deploy-models)**: Recommended for accessing tools, storage, and custom middleware from the broader Azure ecosystem alongside your chat model.
+3. **[Azure ML](https://learn.microsoft.com/en-us/azure/machine-learning/)**: Allows deployment and management of custom or fine-tuned open-source models with Azure Machine Learning.
 
 ### Azure OpenAI
 
@@ -78600,8 +78646,8 @@ See a [usage example](/oss/python/integrations/chat/azure_ai).
 
 Microsoft offers two main options for accessing LLMs through Azure:
 
-1. **[Azure OpenAI](https://learn.microsoft.com/en-us/azure/ai-services/openai/)** (recommended) — Access any model deployed in Microsoft Foundry (including OpenAI, Llama, DeepSeek, Mistral, and Phi) as a completion LLM with [`AzureOpenAI`](https://reference.langchain.com/python/langchain-openai/llms/azure/AzureOpenAI).
-2. **[Azure ML](https://learn.microsoft.com/en-us/azure/machine-learning/)** — Use custom or open-source models hosted on Azure Machine Learning online endpoints.
+1. **[Azure OpenAI](https://learn.microsoft.com/en-us/azure/ai-services/openai/)** (recommended): Access any model deployed in Microsoft Foundry (including OpenAI, Llama, DeepSeek, Mistral, and Phi) as a completion LLM with [`AzureOpenAI`](https://reference.langchain.com/python/langchain-openai/llms/azure/AzureOpenAI).
+2. **[Azure ML](https://learn.microsoft.com/en-us/azure/machine-learning/)**: Use custom or open-source models hosted on Azure Machine Learning online endpoints.
 
 ### Azure OpenAI
 
@@ -78657,8 +78703,8 @@ See a [usage example](/oss/python/integrations/llms/azure_openai).
 
 Microsoft offers two main options for accessing embedding models through Azure:
 
-1. **[Azure OpenAI](https://learn.microsoft.com/en-us/azure/ai-services/openai/)** (recommended) — Use embedding models deployed in Microsoft Foundry (including OpenAI `text-embedding-3-small`, `text-embedding-3-large`, and Cohere) with [`AzureOpenAIEmbeddings`](https://reference.langchain.com/python/langchain-openai/embeddings/azure/AzureOpenAIEmbeddings).
-2. **[Azure AI](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/deploy-models)** — Recommended for accessing tools, storage, and custom middleware from the broader Azure ecosystem alongside your embedding model.
+1. **[Azure OpenAI](https://learn.microsoft.com/en-us/azure/ai-services/openai/)** (recommended): Use embedding models deployed in Microsoft Foundry (including OpenAI `text-embedding-3-small`, `text-embedding-3-large`, and Cohere) with [`AzureOpenAIEmbeddings`](https://reference.langchain.com/python/langchain-openai/embeddings/azure/AzureOpenAIEmbeddings).
+2. **[Azure AI](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/deploy-models)**: Recommended for accessing tools, storage, and custom middleware from the broader Azure ecosystem alongside your embedding model.
 
 ### Azure OpenAI
 
@@ -83793,8 +83839,8 @@ Files without a text representation will be skipped.
 
 In order to use the Box package, you will need a few things:
 
-* A Box account — If you are not a current Box customer or want to test outside of your production Box instance, you can use a [free developer account](https://account.box.com/signup/n/developer#ty9l3).
-* [A Box app](https://developer.box.com/guides/getting-started/first-application/) — This is configured in the [developer console](https://account.box.com/developers/console), and for Box AI, must have the `Manage AI` scope enabled. Here you will also select your authentication method
+* A Box account: If you are not a current Box customer or want to test outside of your production Box instance, you can use a [free developer account](https://account.box.com/signup/n/developer#ty9l3).
+* [A Box app](https://developer.box.com/guides/getting-started/first-application/): This is configured in the [developer console](https://account.box.com/developers/console), and for Box AI, must have the `Manage AI` scope enabled. Here you will also select your authentication method
 * The app must be [enabled by the administrator](https://developer.box.com/guides/authorization/custom-app-approval/#manual-approval). For free developer accounts, this is whomever signed up for the account.
 
 ### Credentials
@@ -84535,8 +84581,8 @@ Bring-your-own data (i.e., index and search a custom corpus of documents):
 
 In order to use the Egnyte package, you will need:
 
-* An Egnyte account — If you are not a current Egnyte customer or want to test outside of your production Egnyte instance, you can use a [free developer account](https://developers.egnyte.com/member/register).
-* An Egnyte app — This is configured in the [developer console](https://developers.egnyte.com/), and must have the appropriate scopes enabled.
+* An Egnyte account: If you are not a current Egnyte customer or want to test outside of your production Egnyte instance, you can use a [free developer account](https://developers.egnyte.com/member/register).
+* An Egnyte app: This is configured in the [developer console](https://developers.egnyte.com/), and must have the appropriate scopes enabled.
 * The app must be enabled by the administrator. For free developer accounts, this is whoever signed up for the account.
 
 ### Credentials
@@ -86182,10 +86228,16 @@ The below retrievers will search over an external index (e.g., constructed from 
 | [`Nimble Extract`](https://docs.nimbleway.com/integrations/connectors/langchain) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-nimble`](https://pypi.org/project/langchain-nimble/) | <span data-sort-value="3000"><a href="https://pypi.org/project/langchain-nimble/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-nimble/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Nimble Search`](https://docs.nimbleway.com/integrations/connectors/langchain) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-nimble`](https://pypi.org/project/langchain-nimble/) | <span data-sort-value="3000"><a href="https://pypi.org/project/langchain-nimble/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-nimble/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`YouRetriever`](https://you.com/docs/integrations/langchain) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`langchain-youdotcom`](https://pypi.org/project/langchain-youdotcom/) | <span data-sort-value="2000"><a href="https://pypi.org/project/langchain-youdotcom/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-youdotcom/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`RecallRetriever`](https://giulioder.github.io/RE-call/integrations.html) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`recall-rag`](https://pypi.org/project/recall-rag/) | <span data-sort-value="1873"><a href="https://pypi.org/project/recall-rag/" target="_blank"><img src="https://static.pepy.tech/badge/recall-rag/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`SingleStoreSQLDatabaseRetriever`](https://github.com/singlestore-labs/langchain-singlestore/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-singlestore`](https://pypi.org/project/langchain-singlestore/) | <span data-sort-value="938"><a href="https://pypi.org/project/langchain-singlestore/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-singlestore/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`PerseusVaultRetriever`](https://github.com/Perseus-Computing-LLC/langchain-perseus-vault) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-perseus-vault`](https://pypi.org/project/langchain-perseus-vault/) | <span data-sort-value="541"><a href="https://pypi.org/project/langchain-perseus-vault/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-perseus-vault/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`ReplyLayerRetriever`](https://replylayer.ai/docs/guides/langchain) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`langchain-replylayer`](https://pypi.org/project/langchain-replylayer/) | <span data-sort-value="431"><a href="https://pypi.org/project/langchain-replylayer/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-replylayer/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`CoalentRetriever`](https://coalent.ai/docs) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-coalent`](https://pypi.org/project/langchain-coalent/) | <span data-sort-value="397"><a href="https://pypi.org/project/langchain-coalent/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-coalent/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`OpenDMARetriever`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Retriever.md) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-opendma`](https://pypi.org/project/langchain-opendma/) | <span data-sort-value="430"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`AlfrescoRetriever`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Retriever.md#alfrescoretriever) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-opendma`](https://pypi.org/project/langchain-opendma/) | <span data-sort-value="430"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`DocumentumRetriever`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Retriever.md#documentumretriever) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-opendma`](https://pypi.org/project/langchain-opendma/) | <span data-sort-value="430"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`FileNetP8Retriever`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Retriever.md#filenetp8retriever) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-opendma`](https://pypi.org/project/langchain-opendma/) | <span data-sort-value="430"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`OnBaseRetriever`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Retriever.md#onbaseretriever) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-opendma`](https://pypi.org/project/langchain-opendma/) | <span data-sort-value="430"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Contextual AI reranker`](https://docs.contextual.ai/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-contextual`](https://pypi.org/project/langchain-contextual/) | <span data-sort-value="395"><a href="https://pypi.org/project/langchain-contextual/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-contextual/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`BoxRetriever`](/oss/python/integrations/retrievers/box) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-box`](https://pypi.org/project/langchain-box/) | <span data-sort-value="361"><a href="https://pypi.org/project/langchain-box/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-box/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`AlphaAINewsRetriever`](https://alphai.io/developers) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-alphai`](https://pypi.org/project/langchain-alphai/) | <span data-sort-value="338"><a href="https://pypi.org/project/langchain-alphai/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-alphai/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
@@ -86219,6 +86271,10 @@ The below retrievers will search over an external index (e.g., constructed from 
 | [`Zotero`](https://github.com/TimBMK/langchain-zotero-retriever) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-zotero-retriever`](https://pypi.org/project/langchain-zotero-retriever/) | <span data-sort-value="104"><a href="https://pypi.org/project/langchain-zotero-retriever/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-zotero-retriever/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`IMAP`](https://github.com/jfouret/langchain-imap) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-imap`](https://pypi.org/project/langchain-imap/) | <span data-sort-value="103"><a href="https://pypi.org/project/langchain-imap/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-imap/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`OpenMemoryRetriever`](https://github.com/nullure/langchain-openmemory) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-openmemory`](https://pypi.org/project/langchain-openmemory/) | <span data-sort-value="94"><a href="https://pypi.org/project/langchain-openmemory/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-openmemory/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`YouTubeSearchRetriever`](https://github.com/urraf/langchain-youtube#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-youtube`](https://pypi.org/project/langchain-youtube/) | <span data-sort-value="-1">N/A</span> |
+| [`YouTubePlaylistRetriever`](https://github.com/urraf/langchain-youtube#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-youtube`](https://pypi.org/project/langchain-youtube/) | <span data-sort-value="-1">N/A</span> |
+| [`YouTubeTranscriptRetriever`](https://github.com/urraf/langchain-youtube#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-youtube`](https://pypi.org/project/langchain-youtube/) | <span data-sort-value="-1">N/A</span> |
+| [`YouTubeVideoRetriever`](https://github.com/urraf/langchain-youtube#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-youtube`](https://pypi.org/project/langchain-youtube/) | <span data-sort-value="-1">N/A</span> |
 
 </div>
 
@@ -87536,8 +87592,8 @@ Character-based splitting is the simplest approach to text splitting. It divides
 2. **How chunk size is measured**: by character count.
 
 You can choose between:
-- `.split_text` — returns plain string chunks.
-- `.create_documents` — returns LangChain [Document](https://reference.langchain.com/python/langchain-core/documents/base/Document) objects, useful when metadata needs to be preserved for downstream tasks.
+- `.split_text`: returns plain string chunks.
+- `.create_documents`: returns LangChain [Document](https://reference.langchain.com/python/langchain-core/documents/base/Document) objects, useful when metadata needs to be preserved for downstream tasks.
 
 
 
@@ -90598,6 +90654,7 @@ You can also implement your own custom store by extending the [`BaseStore`](http
 | [`UpstashStore`](https://github.com/Tghez/langgraph-store-upstash) | <span data-sort-value="430"><a href="https://pypi.org/project/langgraph-store-upstash/" target="_blank"><img src="https://static.pepy.tech/badge/langgraph-store-upstash/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`BigtableByteStore`](/oss/python/integrations/stores/bigtable) | <span data-sort-value="379"><a href="https://pypi.org/project/langchain-google-bigtable/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-bigtable/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`InspeximusStore`](https://dancenitra.github.io/inspeximus/) | <span data-sort-value="132"><a href="https://pypi.org/project/langgraph-store-inspeximus/" target="_blank"><img src="https://static.pepy.tech/badge/langgraph-store-inspeximus/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`XNSByteStore`](https://docs.xns.tech) | <span data-sort-value="132"><a href="https://pypi.org/project/langchain-xns/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-xns/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`TypeDBStore`](https://typedb.com/docs) | <span data-sort-value="46"><a href="https://pypi.org/project/langgraph-store-typedb/" target="_blank"><img src="https://static.pepy.tech/badge/langgraph-store-typedb/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`InMemoryByteStore`](/oss/python/integrations/stores/in_memory) | <span data-sort-value="-1">N/A</span> |
 | [`LocalFileStore`](/oss/python/integrations/stores/file_system) | <span data-sort-value="-1">N/A</span> |
@@ -92776,12 +92833,12 @@ Available actions depend on the action providers configured on `AgentKit`. Commo
 ## Use within an agent
 
 ```python
+from langchain.agents import create_agent
 from langchain_openai import ChatOpenAI
-from langgraph.prebuilt import create_react_agent
 
 llm = ChatOpenAI(model="gpt-4o-mini")
 
-agent = create_react_agent(llm=llm, tools=tools)
+agent = create_agent(model=llm, tools=tools)
 ```
 
 For a full runnable example with a CDP smart wallet, see the [AgentKit LangChain chatbot example](https://github.com/coinbase/agentkit/blob/main/python/examples/langchain-cdp-smart-wallet-chatbot/chatbot.py).
@@ -95419,6 +95476,12 @@ The following table shows tools that can be used for security-related tasks:
 | [`Blindfold`](https://docs.blindfold.dev) | <span data-sort-value="118"><a href="https://pypi.org/project/langchain-blindfold/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-blindfold/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`VeriflyEmailVerifier`](https://verifly.email/docs) | <span data-sort-value="117"><a href="https://pypi.org/project/langchain-verifly/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-verifly/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Drasi`](https://github.com/drasi-project/langchain-drasi) | <span data-sort-value="116"><a href="https://pypi.org/project/langchain-drasi/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-drasi/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`ReserpSearchTool`](https://reserp.ai/docs) | <span data-sort-value="115"><a href="https://pypi.org/project/langchain-reserp/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-reserp/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`OpenDMAToolkit`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Toolkit.md) | <span data-sort-value="430"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`AlfrescoToolkit`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Toolkit.md#alfrescotoolkit) | <span data-sort-value="430"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`DocumentumToolkit`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Toolkit.md#documentumtoolkit) | <span data-sort-value="430"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`FileNetP8Toolkit`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Toolkit.md#filenetp8toolkit) | <span data-sort-value="430"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`OnBaseToolkit`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Toolkit.md#onbasetoolkit) | <span data-sort-value="430"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`CekiToolkit`](https://ceki.me) | <span data-sort-value="113"><a href="https://pypi.org/project/langchain-ceki/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-ceki/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`KeiroSearchTool`](https://github.com/Keirolabs-API/langchain-keiro) | <span data-sort-value="113"><a href="https://pypi.org/project/langchain-keiro/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-keiro/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`ProxyClaw`](https://proxyclaw.ai/docs) | <span data-sort-value="113"><a href="https://pypi.org/project/langchain-proxyclaw/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-proxyclaw/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
@@ -98498,7 +98561,7 @@ package loads those tools as native LangChain tools.
 - Loads the hosted Transform MCP server's tools as native LangChain tools.
 - Drives the full parsing lifecycle: request an upload URL, transform files, poll status, and fetch results.
 - Works with any LangChain or LangGraph agent.
-- Remote and hosted — no local server or bridge to run.
+- Remote and hosted: no local server or bridge to run.
 
 ---
 
@@ -119087,9 +119150,9 @@ import { ExampleEmbed } from "/snippets/example-embed.jsx"
 
 ## How it works
 
-1. **Stream with [`useStream`](https://reference.langchain.com/javascript/langchain-react/index/useStream)** — connect to your agent and get reactive messages, loading state, and submit/cancel callbacks
-2. **Adapt with `useExternalStoreRuntime`** — bridge `stream.messages` into assistant-ui's runtime format by converting `BaseMessage[]` to `ThreadMessageLike[]`
-3. **Provide the runtime** — wrap your UI in `AssistantRuntimeProvider` and render any assistant-ui thread component
+1. **Stream with [`useStream`](https://reference.langchain.com/javascript/langchain-react/index/useStream)**: connect to your agent and get reactive messages, loading state, and submit/cancel callbacks
+2. **Adapt with `useExternalStoreRuntime`**: bridge `stream.messages` into assistant-ui's runtime format by converting `BaseMessage[]` to `ThreadMessageLike[]`
+3. **Provide the runtime**: wrap your UI in `AssistantRuntimeProvider` and render any assistant-ui thread component
 
 ## Installation
 
@@ -120439,7 +120502,7 @@ Each library fits a slightly different integration model. The choice depends on 
 | **Best for** | Full chat runtime plus structured generative UI | Chat with rich message types | Full-featured chat with minimal setup | Generated dashboards and reports |
 | **UI style** | CopilotKit chat shell + custom message renderers | Composable shadcn/ui components | Headless slots + default theme | Prebuilt component library with declarative DSL |
 | **Customization** | Custom backend endpoint, agent context, and renderers | Edit source files directly | Override component slots | Theme via CSS custom properties |
-| **Streaming UX** | Runtime-managed chat stream with structured assistant payloads | Component-level progressive render | Built-in thread management | Hoisting — shell appears immediately, data fills in |
+| **Streaming UX** | Runtime-managed chat stream with structured assistant payloads | Component-level progressive render | Built-in thread management | Hoisting: shell appears immediately, data fills in |
 | **Tool calls** | Via CopilotKit runtime and custom renderers | `Tool` / `ToolHeader` / `ToolOutput` | Custom via message slots | Inline in the generated UI |
 | **Agent format** | Structured assistant responses plus optional Markdown | Any `stream.messages` | Any `stream.messages` | Agent outputs openui-lang text |
 
@@ -153637,9 +153700,9 @@ Source: https://docs.langchain.com/oss/python/langgraph/fault-tolerance
 
 When a node fails—from a slow external API, a transient network error, or an unhandled exception—LangGraph gives you three composable mechanisms to respond:
 
-- [**Retries**](#retries) — automatically re-run failed attempts based on exception type and backoff settings
-- [**Timeouts**](#timeouts) — cap how long a single attempt may run
-- [**Error handling**](#error-handling) — run a recovery function after all retries are exhausted
+- [**Retries**](#retries): automatically re-run failed attempts based on exception type and backoff settings
+- [**Timeouts**](#timeouts): cap how long a single attempt may run
+- [**Error handling**](#error-handling): run a recovery function after all retries are exhausted
 
 Use [**`set_node_defaults`**](#graph-defaults) to configure these mechanisms once for all nodes instead of repeating them on every `add_node` call.
 
