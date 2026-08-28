@@ -137757,25 +137757,15 @@ Read-only tools such as `ls`, `read_file`, `glob`, and `grep` always run without
 | **Auto** | Approves routine actions automatically; asks the model to review anything uncertain; falls back to you after repeated denials or failures |
 | **YOLO** | Runs gated actions with no review at all |
 
-Toggle between Manual and Auto at any time during a session with `Shift+Tab` or `Ctrl+T`. YOLO cannot be entered through the keyboard toggle.
-
 <Warning>
     Auto is an authorization heuristic for a local coding agent. It is **not** sandbox containment, an operating-system boundary, or a guarantee that model-generated actions are safe.
 </Warning>
 
 ## Enable Auto
 
-Auto is an experimental beta. To use it, set the opt-in flag and then choose Auto for your session.
+Auto is eligible only in interactive, unsandboxed sessions.
 
 <Steps>
-
-    <Step title="Set the experimental opt-in" icon="key">
-        Add the environment variable to your shell or `~/.deepagents/.env`:
-
-        ```bash
-        export DEEPAGENTS_CODE_EXPERIMENTAL=1
-        ```
-    </Step>
 
     <Step title="Launch with Auto" icon="terminal">
         ```bash
@@ -137789,11 +137779,9 @@ Auto is an experimental beta. To use it, set the opt-in flag and then choose Aut
         mode = "auto"
         ```
 
-        You can also toggle Auto on and off mid-session with `Shift+Tab` or `Ctrl+T`.
+        You can also cycle to Auto mid-session with `Shift+Tab`.
     </Step>
 </Steps>
-
-If Auto is requested without the experimental opt-in, or in a sandboxed session, it falls back to Manual with a warning.
 
 ## Enable YOLO
 
@@ -137817,14 +137805,14 @@ YOLO runs gated actions without any review. Use it only when you accept that the
     </Step>
 </Steps>
 
-A session launched in YOLO moves to Manual when you press `Shift+Tab` or `Ctrl+T`. You cannot switch back to YOLO with the keyboard toggle.
+Press `Shift+Tab` to cycle YOLO → Manual → Auto → YOLO. Set [`startup.yolo_switcher = false`](/oss/deepagents/code/config-file#startup-approval-mode) to omit YOLO from the cycle.
 
 ## How Auto works
 
 Auto keeps the same gated-action rules as Manual but changes how those actions are reviewed. It uses two stages:
 
 1. **Routine actions run automatically.** A write to a source file like `src/parser.py` or a read-only Git command like `git status` proceeds without a prompt. Sensitive targets like `.github/workflows/ci.yml` or mutating commands like `git commit` go to the next stage.
-2. **The model reviews the rest.** For anything not clearly routine, the active model checks whether the action matches what you asked for. Only your literal prompt can authorize an action. If the model denies a call, the agent gets an error result and can revise its plan.
+2. **The model reviews the rest.** For anything not clearly routine, the active model checks whether the action matches your requested outcome. Ordinary steps reasonably necessary for that outcome can proceed even when you did not name each implementation detail. High-risk effects, such as sending local content to an unconfigured destination, still require explicit authorization. If the model denies a call, the agent gets an error result and can revise its plan.
 
 After repeated denials or classifier failures, Auto stops and shows you the normal approval prompt for the next batch, then continues in Auto mode.
 
@@ -137937,27 +137925,15 @@ The decision plan is bound to the thread, mode, batch, and exact gated calls. Mi
 
 ## Where Auto and YOLO are available
 
-Auto and YOLO are interactive-mode features. They are not available in non-interactive mode (`-n` or piped stdin) or in ACP server mode. Headless runs use fail-closed MCP routing and `--shell-allow-list` for shell access.
+Auto and YOLO are interactive-mode features. Auto is eligible only in an interactive, unsandboxed session; a remote `--sandbox` forces it to Manual. YOLO is interactive-only as well and requires the risk acknowledgement regardless of sandbox. Headless runs use fail-closed MCP routing and `--shell-allow-list` for shell access.
 
-Auto also falls back to Manual when:
+In non-interactive mode (`-n` or piped stdin), `-y`/`--auto-approve` and `--yolo` are ignored. Headless runs use fail-closed MCP routing and `--shell-allow-list` for shell access.
 
-- `DEEPAGENTS_CODE_EXPERIMENTAL=1` is not set.
-- A remote `--sandbox` is active (Auto is for unsandboxed local sessions only).
+### Remember the last mode across sessions
 
-## Reference
+When no flag or configured mode applies, Deep Agents Code restores the last selected Manual or Auto mode. YOLO must be explicitly selected. See [Startup approval mode](/oss/deepagents/code/config-file#startup-approval-mode).
 
-### Flag and config precedence
-
-`--yolo` takes priority over `-y`/`--auto-approve`, which takes priority over `[startup].mode`.
-
-| Source | Value | Selects |
-|---|---|---|
-| `--yolo` | flag | YOLO (interactive only, after acknowledgement) |
-| `-y`, `--auto-approve` | flag | Auto (requires `DEEPAGENTS_CODE_EXPERIMENTAL=1`) |
-| `[startup].mode` | `"manual"` | Manual |
-| `[startup].mode` | `"auto"` | Auto |
-| `[startup].mode` | `"yolo"` | YOLO |
-| `Shift+Tab`, `Ctrl+T` | toggle | Manual and Auto (never enters YOLO) |
+For flag and configuration precedence, see [Startup approval mode](/oss/deepagents/code/config-file#startup-approval-mode).
 
 ## See also
 
@@ -138224,13 +138200,110 @@ Valid names are `ls`, `read_file`, `write_file`, `edit_file`, `delete`, `glob`, 
     ```
 </Note>
 
-Run `/tools` in a session to inspect the active tool set. From the shell, place tool-shaping flags before the subcommand:
+Run [`/tools`](#diagnose-and-audit-a-session) in a session to inspect the active tool set. From the shell, place tool-shaping flags before the subcommand:
 
 ```bash
 dcode tools list
 dcode --allow-fs-tools ls,read_file tools list
 dcode --allow-fs-tools ls,read_file tools list --json
 ```
+
+## Diagnose and audit a session
+
+Deep Agents Code exposes read-only slash commands for inspecting what a session loads and spends: `/tools` lists the active tool set, `/context-doctor` audits the context injected before the conversation starts, and `/cost` reports the thread's estimated spend. Use them to confirm that a tool-shaping flag took effect or to find the source of unexpected context growth.
+
+### List available tools
+
+Run `/tools` in a session to list the tools the current agent can call, grouped into built-in tools and tools from each MCP server:
+
+```text
+/tools
+```
+
+```text
+**7 tools available**
+
+### Built-in
+
+| Tool | Description |
+|---|---|
+| read_file | Read a file from the filesystem |
+| write_file | Write content to a file |
+| execute | Run a shell command |
+| web_search | Search the web |
+| task | Launch a subagent |
+
+### github
+
+- create_issue
+- search_repositories
+
+MCP tool descriptions are available in /mcp.
+
+### Unavailable MCP servers
+
+| Server | Status |
+|---|---|
+| slack | needs login |
+```
+
+Unavailable MCP servers appear in a separate table. Run `/reload` after changing MCP configuration, then use `/tools` to verify the active tool set. For the non-interactive equivalent, see [`dcode tools list`](#cli-commands).
+
+### Audit injected context
+
+Run `/context-doctor` in a session to audit what the session injects into every model request and its estimated token cost. The report breaks the injected context into the base system prompt, `AGENTS.md` memory files, the skills index, built-in tool schemas, and each MCP server's tool schemas, then totals what the agent carries before the conversation starts:
+
+```text
+/context-doctor
+```
+
+```text
+Fresh-session context audit (estimated tokens)
+
+System prompt (base)                      ~6
+AGENTS.md memory (1 files)            ~1,286
+Skills index (1 loaded)                 ~477  largest: code-review ~15
+Built-in tool schemas (1 tools)          ~13  sent with every request
+MCP: docs (1 tool)                       ~31
+MCP: broken                               ~0  connection failed
+TOTAL injected before conversation  ~     1,813
+Conversation history             ~     4,200
+Provider-reported context              9,000
+Unattributed / estimation delta       +2,987
+
+Approximate: section counts use about four characters per token.
+Trim skills or disable an MCP server, then run /context-doctor again.
+```
+
+A large unattributed delta or injected total points to context you may want to trim. After changing skills or MCP configuration, run `/context-doctor` again to confirm.
+
+`/context-doctor` complements two related commands:
+
+- [`/context`](/oss/deepagents/code/quickstart#inspect-context-window-usage) shows how full the context window is right now; `/context-doctor` shows why, by attributing tokens to each injected component.
+- [`dcode doctor`](#run-diagnostics-dcode-doctor) checks the health of the installation and configuration without launching a session; `/context-doctor` audits the context of a live session from inside it.
+
+### Track thread cost
+
+Run `/cost` in a session to show the thread's estimated cost in USD:
+
+```text
+/cost
+```
+
+```text
+Estimated thread cost: $1.03
+
+By type since this thread was loaded:
+- Assistant: $0.87
+- Subagents: $0.16
+
+By model since this thread was loaded:
+- anthropic:claude-sonnet-4-5: $1.03
+```
+
+The total includes model calls from the assistant, subagents, offloading, Auto classification, and rubric grading. It persists when you resume or switch threads. Estimates use the [genai-prices](https://github.com/pydantic/genai-prices) catalog; requests without pricing are excluded.
+
+Use `/tokens` for the token counts behind the estimate. For uncovered models, [add a custom pricing override](/oss/deepagents/code/configuration#custom-pricing-overrides).
 
 ## Startup commands and initial prompts
 
@@ -138282,7 +138355,7 @@ dcode --trust-project-mcp
 dcode -n "run tests" --trust-project-mcp
 ```
 
-Run OAuth login for MCP servers marked `auth: "oauth"` with `dcode mcp login <server>`. See [MCP tools](/oss/deepagents/code/mcp-tools).
+Run OAuth login for an MCP server marked `auth: "oauth"` with `dcode mcp login <server>`. Run `dcode mcp login` without a server name to list configured OAuth servers that need login. See [MCP tools](/oss/deepagents/code/mcp-tools).
 
 ## Command-line options
 
@@ -138291,7 +138364,7 @@ Run OAuth login for MCP servers marked `auth: "oauth"` with `dcode mcp login <se
 | `-a`, `--agent NAME`   | Use named agent with separate memory. Overrides `[agents].recent` and `[agents].default` in `config.toml`. Default: `agent` (or the most recently used agent if `[agents].recent` is set) |
 | `-M`, `--model MODEL`  | Use a specific model (`provider:model`)                    |
 | `--model-params JSON`  | Extra kwargs to pass to the model as a JSON string (e.g., `'{"temperature": 0.7}'`) |
-| `--max-retries N`      | Override the max retries for transient model errors |
+| `--max-retries N`      | Override retries after a transient model error. Default: `5`; set to `0` to disable retries |
 | `--default-model [MODEL]` | Set the [default model](/oss/deepagents/code/providers#set-a-default-model) (omit `MODEL` to view the current default) |
 | `--clear-default-model` | Clear the [default model](/oss/deepagents/code/providers#set-a-default-model) |
 | `-r`, `--resume [ID]`  | Resume a session: `-r` for most recent, `-r <ID>` for a specific thread |
@@ -138302,7 +138375,7 @@ Run OAuth login for MCP servers marked `auth: "oauth"` with `dcode mcp login <se
 | `--rubric-model MODEL` | Model the rubric grader uses. Defaults to the main agent model. Requires `-n` or piped stdin |
 | `--rubric-max-iterations N` | Grader iterations per rubric attempt before stopping. Requires `-n` or piped stdin |
 | `-n`, `--non-interactive TEXT` | Run a single task non-interactively and exit. Shell is disabled unless `--shell-allow-list` is set |
-| `--recursion-limit N`  | LangGraph graph step budget (max node invocations per turn). Valid range: `25`–`100000`. Out-of-range or non-integer values log a warning and fall back to the default (`2000`). Overrides `DEEPAGENTS_CODE_RECURSION_LIMIT` and `[runtime].recursion_limit` in `config.toml` |
+| `--recursion-limit N`  | Set the LangGraph graph step budget (maximum node invocations per turn). When unset, the LangGraph server default applies |
 | `--max-turns N`        | Cap agentic turns in non-interactive mode. Exits with code 124 when exceeded. Requires `-n` or piped stdin. See [Non-interactive mode and piping](#non-interactive-mode-and-piping) |
 | `--timeout SECONDS`    | Hard wall-clock timeout for non-interactive mode. Exits with code 124 when exceeded. Requires `-n` or piped stdin. See [Non-interactive mode and piping](#non-interactive-mode-and-piping) |
 | `-q`, `--quiet`        | Clean output for piping—only the agent's response goes to stdout. Requires `-n` or piped stdin |
@@ -138322,7 +138395,7 @@ Run OAuth login for MCP servers marked `auth: "oauth"` with `dcode mcp login <se
 | `--no-mcp`             | Disable all MCP tool loading                                |
 | `--trust-project-mcp`  | Trust project-level MCP servers without prompting for the current run. Explicit denies still apply. |
 | `--interpreter`        | Enable the JS interpreter (`js_eval`) middleware on the main agent when it has been disabled in config. `js_eval` is enabled by default. |
-| `--interpreter-tools VALUE` | PTC allowlist for `js_eval`: `safe`, `all`, or a comma-separated list of tool names. Default: no PTC (pure REPL) |
+| `--interpreter-tools VALUE` | PTC allowlist for `js_eval`: `safe`, `all`, or a comma-separated list of tool names. Default: `safe` (read-only `read_file`/`glob`/`grep` preset). See [JS interpreter](/oss/deepagents/code/config-file#js-interpreter) |
 | `--profile-override JSON` | Override model profile fields as a JSON string (e.g., `'{"max_input_tokens": 4096}'`). Merged on top of config file profile overrides |
 | `--acp`                | Run as an ACP server over stdio instead of launching the interactive UI |
 | `--update`             | Check for and install updates, then exit                    |
@@ -138380,14 +138453,14 @@ Pair `dcode doctor` with `dcode config show` when you need both a high-level hea
 | `dcode agents reset --agent NAME` | Clear agent memory and reset to default. Supports `--dry-run` |
 | `dcode agents reset --agent NAME --target SOURCE` | Copy memory from another agent |
 | `dcode update`                  | Check for and install Deep Agents Code updates |
-| `dcode doctor`                  | Run diagnostics without launching a session |
+| `dcode doctor`                  | Run diagnostics without launching a session. See [Run diagnostics](#run-diagnostics-dcode-doctor) |
 | `dcode skills list [--project]`           | List all skills (alias: `ls`) |
 | `dcode skills create NAME [--project]`    | Create a new skill with template `SKILL.md`. Idempotent—re-creating an existing skill prints an informational message instead of an error |
 | `dcode skills info NAME [--project]`      | Show detailed information about a skill |
 | `dcode skills delete NAME [--project] [-f]` | Delete a skill and its contents. Supports `--dry-run` |
 | `dcode threads list [--agent NAME] [--limit N]` | List sessions (alias: `ls`). Default limit: 20. `-n` is a short flag for `--limit`. Additional flags: `--sort {created,updated}`, `--branch TEXT` (filter by git branch), `--cwd [PATH]` (filter by working directory; bare flag uses current directory), `-v`/`--verbose` (show all columns including branch, created time, and initial prompt), `-r`/`--relative` (relative timestamps) |
 | `dcode threads delete ID`       | Delete a session. Supports `--dry-run` |
-| `dcode mcp login NAME [--mcp-config PATH]` | Run the OAuth login flow for an MCP server marked `auth: "oauth"`. See [MCP tools](/oss/deepagents/code/mcp-tools#oauth-login) |
+| `dcode mcp login [NAME] [--mcp-config PATH]` | With `NAME`, run the OAuth login flow for a server marked `auth: "oauth"`. Omit `NAME` to list configured OAuth servers that need login. See [MCP tools](/oss/deepagents/code/mcp-tools#oauth-login) |
 | `dcode mcp config`              | Show MCP config discovery paths        |
 | `dcode config show`             | Show every config option's effective value and the source it resolves from. See [Inspect configuration](#inspect-configuration-dcode-config) |
 | `dcode config list`             | List all available config options with their type, default, and where each can be set (alias: `ls`) |
@@ -138409,6 +138482,7 @@ Destructive commands (`agents reset`, `skills delete`, `threads delete`) support
 - [Configuration](/oss/deepagents/code/configuration)
 - [Config file](/oss/deepagents/code/config-file)
 - [Provider credentials](/oss/deepagents/code/credentials)
+- [MCP tools](/oss/deepagents/code/mcp-tools)
 
 ---
 
@@ -138427,8 +138501,10 @@ Source: https://docs.langchain.com/oss/deepagents/code/config-file
 
 `~/.deepagents/config.toml` lets you customize model providers, set defaults, and pass extra parameters to model constructors. For environment variables and inspection commands, see [Configuration](/oss/deepagents/code/configuration). This page covers:
 
-- **Defaults**: pin a [default model](#default-and-recent-model) or [agent](#default-and-recent-agent).
+- **Defaults**: pin a [default model](#default-and-recent-model) or [agent](#default-and-recent-agent), or [restrict usable models](#allowed-models) with an allowlist.
 - **Warnings**: [session cost](#session-cost-warning) and [cold prompt-cache](#cold-prompt-cache-warning) thresholds, and [trusted gateway endpoints](#trust-a-gateway-endpoint-for-cache-policies).
+- **Interpreter**: the [`[interpreter]` settings](#js-interpreter) for the built-in QuickJS REPL.
+- **Tracing**: [client-side secret redaction](#redact-langsmith-trace-secrets) for LangSmith traces.
 - **Provider setup**: the [`[models.providers.<name>]` table](#provider-configuration), [constructor params](#model-constructor-params), [retries](#retries), [profile overrides](#profile-overrides-advanced), and [adding models to the `/model` switcher](#adding-models-to-the-interactive-switcher).
 - **Auto mode**: the [auto classifier timeout](#auto-classifier-timeout).
 - **Custom endpoints and providers**: [custom base URLs](#custom-base-url), [OpenAI- or Anthropic-compatible APIs](#compatible-apis), and [arbitrary providers](#arbitrary-providers).
@@ -138506,26 +138582,51 @@ show_diff_line_numbers = false
 
 Run `/line-numbers` in a session to toggle the preference and save it to `config.toml`. The change applies to new diffs; already rendered diffs do not change.
 
+## Allowed models
+
+Restrict `dcode` to an approved set of models with the `[models].allowed` list:
+
+```toml title="~/.deepagents/config.toml"
+[models]
+allowed = ["anthropic:claude-fable-5", "openai:*"]
+```
+
+Entries are exact `provider:model` specs or `provider:*` wildcards that admit a provider's whole lineup. When the list is set, blocked models are hidden from the `/model` switcher and rejected if selected elsewhere.
+
+When the key is unset, all models are allowed. An explicit empty list allows none:
+
+```toml
+[models]
+allowed = []   # no model may be used
+```
+
+Wildcards include models discovered from the bundled provider profile or your configured `models` list. If no models are available for that provider, the wildcard allows none.
+
+<Accordion title="Allow Amazon Bedrock models">
+    Write Bedrock model IDs as `bedrock:<id>`, including the version colon in the ID:
+
+    ```toml title="~/.deepagents/config.toml"
+    [models]
+    allowed = ["bedrock:anthropic.claude-3-5-sonnet-20241022-v2:0"]
+    ```
+</Accordion>
+
 ## Redact LangSmith trace secrets
 
-With LangSmith tracing enabled, Deep Agents Code sends agent-trace inputs and outputs without client-side secret redaction by default.
+With LangSmith tracing enabled, Deep Agents Code redacts detected secrets from agent-trace inputs and outputs before upload. This is enabled by default.
 
-<Warning>
-    Without redaction, secrets may be uploaded to LangSmith as part of agent traces.
-</Warning>
-
-To redact detected secrets before upload:
+To disable redaction:
 
 <Tabs>
     <Tab title="Config file">
         ```toml title="~/.deepagents/config.toml"
         [tracing]
-        langsmith_redact = true
+        langsmith_redact = false
         ```
     </Tab>
     <Tab title="Environment variable">
         ```bash
-        export DEEPAGENTS_CODE_LANGSMITH_REDACT=true
+        export DEEPAGENTS_CODE_LANGSMITH_REDACT=false
         ```
     </Tab>
 </Tabs>
@@ -138644,7 +138745,7 @@ The merge is shallow: any key present in the model sub-table replaces the same k
 
 ## Retries
 
-Configure retry counts for transient model provider errors with the top-level `[retries]` section. Deep Agents Code passes these values through to provider integrations that accept retry-count constructor kwargs. If you omit this section, the provider SDK default applies.
+Deep Agents Code retries transient model errors at the model node. The default is five retries after the first request. Set the top-level `[retries]` value to change the budget, or set it to `0` to disable retries:
 
 ```toml
 [retries]
@@ -138659,7 +138760,7 @@ max_retries = 0
 
 The global `[retries].max_retries` value applies to all supported providers. A provider-specific table, such as `[retries.fireworks]`, overrides the global value for that provider. Values must be integers greater than or equal to `0`.
 
-Most supported providers receive the retry count as `max_retries`. Some integrations use a different constructor kwarg. For an arbitrary provider, or to override the registered kwarg for a known provider, set `param` in the provider-specific retries table:
+For an arbitrary provider, set `param` to the name of its retry-count constructor argument. Deep Agents Code uses `param` only to disable the provider SDK's retry loop, which leaves the model-node middleware as the sole owner of the configured retry budget:
 
 ```toml
 [retries]
@@ -138670,16 +138771,14 @@ param = "retries"
 max_retries = 4
 ```
 
-`param` must be a valid Python identifier string, such as `"max_retries"` or `"retries"`. Deep Agents Code ignores unknown providers that do not set `param`, because passing the wrong retry kwarg can break model creation.
+`param` must be a valid Python identifier string, such as `"max_retries"` or `"retries"`. It does not set the retry budget. Set the budget with `max_retries` in this section or with `--max-retries`.
 
-`[retries]` is lower precedence than constructor parameters. The complete precedence order is:
+The retry-budget precedence order is:
 
-1. `--max-retries N`, applied under the provider's resolved retry kwarg
-2. `--model-params` with the provider's retry kwarg, such as `'{"max_retries": N}'` or `'{"retries": N}'`
-3. `[models.providers.<provider>.params]` with the provider's retry kwarg
-4. `[retries.<provider>].max_retries`
-5. `[retries].max_retries`
-6. Provider SDK default
+1. `--max-retries N`
+2. `[retries.<provider>].max_retries`
+3. `[retries].max_retries`
+4. Deep Agents Code default (`5`)
 
 ## Startup approval mode
 
@@ -138933,25 +139032,75 @@ On a machine provisioned with a model gateway (for example, the LangSmith gatewa
 
 To use your own key instead, store it with `/auth` (leave the base URL blank for the provider default, or set it explicitly), or set the `DEEPAGENTS_CODE_` prefixed key and endpoint. Both override the gateway pair without leaving a mismatched endpoint behind.
 
+## JS interpreter
+
+The `[interpreter]` section tunes the built-in JavaScript interpreter (the `js_eval` tool), which runs agent-written code in a QuickJS sandbox. These keys apply only to config files; see [Command line options](/oss/deepagents/code/cli-reference#command-line-options) for the `--interpreter` and `--interpreter-tools` flag equivalents.
+
+```toml title="~/.deepagents/config.toml"
+[interpreter]
+enable_interpreter = true       # default
+timeout_seconds = 5.0           # default
+memory_limit_mb = 64            # default
+max_ptc_calls = 256             # default
+max_result_chars = 4000         # default
+ptc = "safe"                    # default: "safe"
+ptc_acknowledge_unsafe = false  # default
+```
+
+<ResponseField name="enable_interpreter" type="boolean" default="true" post={["optional"]}>
+    Wire the QuickJS REPL middleware (`js_eval`) into the main agent (local sessions only). Set to `false` to disable the interpreter entirely; re-enable for a session with `--interpreter`.
+</ResponseField>
+
+<ResponseField name="timeout_seconds" type="number" default="5.0" post={["optional"]}>
+    Per-call wall-clock timeout for the QuickJS REPL.
+</ResponseField>
+
+<ResponseField name="memory_limit_mb" type="integer" default="64" post={["optional"]}>
+    QuickJS heap memory cap in MB, shared across a session.
+</ResponseField>
+
+<ResponseField name="max_ptc_calls" type="integer" default="256" post={["optional"]}>
+    Maximum `tools.*` host-bridge invocations per `js_eval` call.
+</ResponseField>
+
+<ResponseField name="max_result_chars" type="integer" default="4000" post={["optional"]}>
+    Cap in characters on the `js_eval` result and captured stdout before truncation.
+</ResponseField>
+
+<ResponseField name="ptc" type="string | boolean | string[]" default='"safe"' post={["optional"]}>
+    [Programmatic tool calling](/oss/python/deepagents/interpreters#programmatic-tool-calling-ptc) allowlist for `js_eval`. Accepted values:
+
+    - `"safe"` (default): the read-only preset `read_file`, `glob`, `grep`. These tools are not approval-gated outside the REPL, so exposing them introduces no approval bypass. Network tools, subagent dispatch, shell execution, and file writes are deliberately excluded.
+    - `"all"`: every host tool. Requires `ptc_acknowledge_unsafe = true` unless approvals are globally disabled, because PTC calls bypass approval prompts.
+    - A list of tool names, e.g. `["safe", "web_search"]` — the `"safe"` entry expands to the preset. `"all"` is not allowed inside a list.
+    - `false` or `[]`: no tool access from the REPL (pure interpreter). `true` is rejected — use `"safe"`, `"all"`, or an explicit list.
+</ResponseField>
+
+<ResponseField name="ptc_acknowledge_unsafe" type="boolean" default="false" post={["optional"]}>
+    Acknowledge that `ptc = "all"` exposes every tool to PTC calls that bypass approval prompts. Required for `ptc = "all"` unless running with approvals disabled.
+</ResponseField>
+
 ## Agent runtime limits
 
 The LangGraph graph step budget is the maximum number of node invocations the `dcode` agent graph may execute in a single turn. Configure this recursion limit with the `[runtime]` section:
 
 ```toml title="~/.deepagents/config.toml"
 [runtime]
-recursion_limit = 2000
+recursion_limit = 5000
 ```
 
-The default is `2000`. Valid values are integers from `25` to `100000` (inclusive). Values outside this range or non-integer values log a warning and fall back to the default.
+Deep Agents Code does not set a default. When no source sets a valid value, the LangGraph server default applies. Values from managed configuration, the environment, and `config.toml` must be integers from `25` to `100000` (inclusive). Invalid values log a warning and resolution continues to the next source. The `--recursion-limit` flag accepts any integer greater than or equal to `1`.
 
 Precedence (highest to lowest):
 
-1. `--recursion-limit` CLI flag
-2. `DEEPAGENTS_CODE_RECURSION_LIMIT` environment variable
-3. `[runtime].recursion_limit` in `config.toml`
-4. Built-in default (`2000`)
+1. Administrator-owned `managed_config.toml`
+2. `--recursion-limit` CLI flag
+3. `DEEPAGENTS_CODE_RECURSION_LIMIT` environment variable
+4. `[runtime].recursion_limit` in `config.toml`
+5. `LANGGRAPH_DEFAULT_RECURSION_LIMIT` environment variable
+6. LangGraph server default
 
-Use `dcode config get runtime.recursion_limit` to see the effective value and its source.
+Use `dcode config get runtime.recursion_limit` to see the effective Deep Agents Code value and its source. An unset result leaves the limit to the LangGraph server.
 
 <Tabs>
     <Tab title="CLI flag">
@@ -138998,12 +139147,15 @@ Use `dcode config get runtime.recursion_limit` to see the effective value and it
 # Configuration
 Source: https://docs.langchain.com/oss/deepagents/code/configuration
 
-Deep Agents Code stores configuration under `~/.deepagents/` and in project-level dotfiles. For the full directory tree, session storage, and skill paths, see [Data locations](/oss/deepagents/code/configuration#data-locations).
+Deep Agents Code stores user configuration in its profile directory, which defaults to `~/.deepagents/`, and in project-level dotfiles. Administrators can enforce settings from a fixed system path with [`managed_config.toml`](#managed-configuration). For the full directory tree, session storage, and skill paths, see [Data locations](/oss/deepagents/code/configuration#data-locations).
 
 The main config files are:
 <CardGroup cols={2}>
     <Card title="Config file" icon="file-code" href="/oss/deepagents/code/config-file">
         Edit `config.toml` for model defaults, provider settings, themes, and update settings.
+    </Card>
+    <Card title="Managed configuration" icon="shield-lock" href="#managed-configuration">
+        Set administrator-controlled settings for every user with `managed_config.toml`.
     </Card>
     <Card title="Environment variables" icon="variable" href="/oss/deepagents/code/configuration#environment-variables">
         Set global API keys and secrets in `~/.deepagents/.env` or shell exports.
@@ -139018,16 +139170,17 @@ The main config files are:
 
 ## How settings resolve
 
-Deep Agents Code merges settings from several sources. Which source wins depends on the setting type.
+Deep Agents Code uses tiered configuration. The precedence order depends on the setting type.
 
-**General options** (interpreter limits, update settings, themes, and other `config.toml` keys) resolve in this order:
+**General options** (interpreter limits, update settings, themes, and other `config.toml` keys) use the first available value in this order:
 
-1. `DEEPAGENTS_CODE_`-prefixed environment variable
-2. Canonical environment variable (when applicable)
-3. `~/.deepagents/config.toml`
-4. Built-in default
+1. Administrator-owned `managed_config.toml`
+2. `DEEPAGENTS_CODE_`-prefixed environment variable
+3. Canonical environment variable (when applicable)
+4. `~/.deepagents/config.toml`
+5. Built-in default
 
-Use `dcode config show` or `dcode config get <key>` to see the effective value and source. See [Inspect configuration](#inspect-configuration).
+Use `dcode config` or `dcode config get <key>` to see the current value and where it comes from. See [Inspect configuration](#inspect-configuration).
 
 **Provider API keys** use a separate order. See [Key resolution order](/oss/deepagents/code/credentials#key-resolution-order).
 
@@ -139037,19 +139190,18 @@ Use `dcode config show` or `dcode config get <key>` to see the effective value a
 
 ## Inspect configuration
 
-The `dcode config` command group reports what configuration is in effect and where each value comes from, without starting a session. This is useful for confirming that an environment variable or `config.toml` setting is being picked up, and for sharing a redacted snapshot in a bug report.
+The `dcode config` commands show the settings Deep Agents Code uses and where each value comes from, without starting a session. Use them to confirm that an administrator setting, environment variable, or `config.toml` setting is active.
 
 | Command | Description |
 |---------|-------------|
-| `dcode config show` | Resolve every option against the live environment and `config.toml`, printing the effective value and which source provided it |
-| `dcode config list` (alias `ls`) | List every available option with its type, default, and where it can be set, without resolving values |
-| `dcode config get <key>` | Show the effective value and source for a single option, e.g. `dcode config get interpreter.memory_limit_mb` |
-| `dcode config path` | Show the on-disk config file locations (`config.toml`, project and global `.env`, `hooks.json`, and managed state files) and whether each exists |
+| `dcode config` | Show every setting, its current value, and where that value comes from |
+| `dcode config get <key>` | Show the current value and source for one setting, for example, `dcode config get interpreter.memory_limit_mb` |
+| `dcode config path` | Show the file locations for `managed_config.toml`, `config.toml`, project and global `.env` files, `hooks.json`, and managed state, including whether each file exists |
 
-All four commands accept `--json` for machine-readable output. For the full list of management subcommands, see [CLI reference](/oss/deepagents/code/cli-reference).
+Add `--verbose` to `dcode config` or `dcode config get` to show descriptions, defaults, and where each setting can be defined. Combine `--verbose` with `--json` to include accepted types and other reference details. All three commands accept `--json` for machine-readable output. For the full list of commands, see [CLI reference](/oss/deepagents/code/cli-reference).
 
 <Warning>
-    Provider credentials and other secrets are reported as configured / not configured only—their values are never printed by `config show` or `config get`, so the output is safe to paste into a bug report.
+    Provider credentials and other secrets are reported as configured / not configured only. Their values are never printed by `config` or `config get`.
 </Warning>
 
 ## Environment variables
@@ -139065,7 +139217,41 @@ For provider keys specifically, see [Provider credentials](/oss/deepagents/code/
 
 ### Loading order and precedence
 
-At startup, Deep Agents Code reads the nearest project `.env`, found by searching the directory you launch from and walking up through its parents (the first `.env` found wins), then `~/.deepagents/.env` as a global fallback for all projects. A project `.env` wins over the global one, and neither overrides a value already set in your shell. Running `/reload` re-reads both `.env` files so you can change keys without restarting, with shell values still taking precedence. This applies to every variable Deep Agents Code reads (for example, `TAVILY_API_KEY` or the `DEEPAGENTS_CODE_*` settings), except `DEEPAGENTS_CODE_DANGEROUSLY_ENABLE_PROJECT_MCP_SERVERS` and `DEEPAGENTS_CODE_DISABLED_PROJECT_MCP_SERVERS`. Deep Agents Code ignores these project MCP trust settings in a project `.env` so a repository cannot approve its own servers. Set them in your shell or the global `~/.deepagents/.env` instead.
+At startup, Deep Agents Code reads the nearest project `.env`, found by searching the directory you launch from and walking up through its parents (the first `.env` found wins), then `~/.deepagents/.env` as a global fallback for all projects. A project `.env` wins over the global one, and neither overrides a value already set in your shell.
+
+To skip the project `.env` entirely (the global `~/.deepagents/.env` still loads), set `startup.read_project_dotenv`.
+
+<Tabs>
+    <Tab title="Config file">
+        ```toml title="~/.deepagents/config.toml"
+        [startup]
+        read_project_dotenv = false
+        ```
+    </Tab>
+    <Tab title="Environment variable">
+        ```bash
+        export DEEPAGENTS_CODE_READ_PROJECT_DOTENV=0
+        ```
+    </Tab>
+</Tabs>
+
+The setting resolves from managed config, the environment variable, and the user `config.toml`. All of those are read before any project `.env` is applied, so a project `.env` cannot turn the toggle off (or back on) for itself.
+
+Deep Agents Code ignores environment variables that could alter executable lookup, interpreter or shell startup, Git behavior, or trust settings when they come from dotenv files.
+
+<Accordion title="View environment variables blocked in dotenv files">
+    The following keys cannot be set in either project or global dotenv files:
+
+    - Profile and trust roots: `DEEPAGENTS_HOME`, `DEEPAGENTS_HOME_IS_DEFAULT`, `DEEPAGENTS_CODE_READ_PROJECT_DOTENV`, `DEEPAGENTS_INHERITED_PYTHONPATH`
+    - Dynamic-linker preload/audit: `DYLD_INSERT_LIBRARIES`, `DYLD_LIBRARY_PATH`, `LD_AUDIT`, `LD_LIBRARY_PATH`, `LD_PRELOAD`
+    - Interpreter startup/path: `NODE_OPTIONS`, `PATH`, `PYTHONEXECUTABLE`, `PYTHONHOME`, `PYTHONPATH`, `PYTHONSTARTUP`
+    - Shell startup hooks: `BASH_ENV`, `ENV`, `BASHOPTS`, `SHELLOPTS`, `CDPATH`, `GLOBIGNORE`
+    - Credential-prompt hijack: `GIT_ASKPASS`, `SSH_ASKPASS`
+    - Git config/exec injection: `GIT_DIR`, `GIT_WORK_TREE`, `GIT_OBJECT_DIRECTORY`, `GIT_EXEC_PATH`, `GIT_EDITOR`, `GIT_PAGER`, `GIT_SSH`, `GIT_SSH_COMMAND`, plus the prefix families `GIT_CONFIG_COUNT`, `GIT_CONFIG_KEY_*`, `GIT_CONFIG_VALUE_*`, `GIT_CONFIG_PARAMETERS`, `GIT_CONFIG_SYSTEM`, and `GIT_CONFIG_GLOBAL`
+    - Windows process variables: `COMSPEC`, `SYSTEMROOT`, `WINDIR`
+
+    A project `.env` also cannot set `DEEPAGENTS_CODE_DANGEROUSLY_ENABLE_PROJECT_MCP_SERVERS`, `DEEPAGENTS_CODE_DISABLED_PROJECT_MCP_SERVERS`, `DEEPAGENTS_CODE_AUTO_CLASSIFIER_MODEL`, `DEEPAGENTS_CODE_AUTO_CLASSIFIER_TIMEOUT`, or `TERM_PROGRAM`. Set these in your shell or the global `~/.deepagents/.env` instead.
+</Accordion>
 
 <Warning>
     Running `dcode` inside an untrusted project directory exposes you to project-controlled files. A malicious `.env`, `Makefile`, or build script in that directory can influence the agent's process environment and what it runs. Treat any directory you would not run arbitrary scripts in as untrusted, and use a [remote sandbox](/oss/deepagents/code/remote-sandboxes) for untrusted repositories.
@@ -139110,6 +139296,25 @@ export DEEPAGENTS_CODE_EXTRA_SKILLS_DIRS="~/shared-skills:/opt/team-skills"
 ```
 
 When the environment variable is set, it takes precedence over the config file value. Changes take effect on `/reload`.
+
+## Profile location (`DEEPAGENTS_HOME`)
+
+`DEEPAGENTS_HOME` selects the directory Deep Agents Code uses as its user profile — everything normally stored under `~/.deepagents/` moves under the configured path. This includes `config.toml`, the global `.env`, `~/.deepagents/.mcp.json` and `hooks.json`, per-agent directories (`AGENTS.md`, `skills/`, `memories/`, `agents/`), plugins, and `.state/` (sessions, input history, credentials, and locks). When unset, the profile defaults to `~/.deepagents`.
+
+Valid forms are an absolute path or a path beginning with `~/`:
+
+```bash
+export DEEPAGENTS_HOME="~/profiles/work"        # resolved against your home directory
+export DEEPAGENTS_HOME="/opt/dcode-profiles/work"  # absolute; works even with no resolvable home
+```
+
+Relative paths and `~user` forms are rejected. The resolved path must also not be the filesystem root, the home directory itself, an existing non-directory, an unreadable or unsearchable directory, or a symlink with a missing target — these fail at launch with an error.
+
+<Warning>
+    `DEEPAGENTS_HOME` is a trust boundary: it selects which `config.toml`, `.env`, and `.mcp.json` Deep Agents Code treats as user-trusted. It must be set in the inherited shell environment (for example, `export DEEPAGENTS_HOME=...` before launching). It is captured at launch, before dotenv loading, and no `.env` file may set or change it — a project-controlled `.env` could otherwise relocate the trust root to files it controls. Child processes inherit the resolved path.
+</Warning>
+
+The alias `~/.agents/skills/` (shared across AI CLI tools) is resolved from the launch home directory, not from `DEEPAGENTS_HOME`. See [Data locations](#data-locations) for the full directory tree.
 
 ## Themes
 
@@ -139206,9 +139411,50 @@ To opt out of automatic updates:
     </Tab>
 </Tabs>
 
-The environment variable takes precedence over the config file.
+The environment variable takes precedence over the config file. Setting the environment variable to an empty value disables the feature.
 
 When enabled (default), Deep Agents Code checks PyPI for a newer version at session start and automatically upgrades. When disabled, Deep Agents Code shows an update hint with the appropriate install command instead.
+
+### Pricing catalog auto-update
+
+Deep Agents Code refreshes its model pricing catalog from upstream hourly in the background so cost estimates stay current. To opt out:
+
+<Tabs>
+    <Tab title="Config file">
+        ```toml
+        [update]
+        prices_auto_update = false
+        ```
+    </Tab>
+    <Tab title="Environment variable">
+        ```bash
+        export DEEPAGENTS_CODE_PRICES_AUTO_UPDATE=0
+        ```
+    </Tab>
+</Tabs>
+
+### Custom pricing overrides
+
+For models that the catalog does not cover, add rates to `~/.deepagents/prices.json`. The file uses the [genai-prices](https://github.com/pydantic/genai-prices) provider-array schema. For example:
+
+```json
+[
+  {
+    "id": "my-provider",
+    "name": "My provider",
+    "api_pattern": "gateway\\.example\\.com",
+    "models": [
+      {
+        "id": "my-model",
+        "match": { "equals": "my-model" },
+        "prices": { "input_mtok": 2.5, "output_mtok": 10.0 }
+      }
+    ]
+  }
+]
+```
+
+Rates are in USD per million tokens. Restart Deep Agents Code after editing the file. Custom rates apply only when the genai-prices catalog does not include the model.
 
 To suppress automatic update checks entirely:
 
@@ -139234,6 +139480,99 @@ After an upgrade, Deep Agents Code shows a "what's new" banner on the next launc
 
 At session exit, if a newer version was detected during the session, an update banner is displayed as a reminder.
 
+## Display options
+
+These `[ui]` keys tune what the terminal UI shows.
+
+### Session usage stats
+
+Deep Agents Code shows session usage statistics when a session ends (default on):
+
+<Tabs>
+    <Tab title="Config file">
+        ```toml
+        [ui]
+        show_usage_stats = false
+        ```
+    </Tab>
+    <Tab title="Environment variable">
+        ```bash
+        export DEEPAGENTS_CODE_SHOW_USAGE_STATS=0
+        ```
+    </Tab>
+</Tabs>
+
+The environment variable takes precedence; setting it to an empty value also disables the stats.
+
+### Collapse large pastes
+
+Large pastes into the chat input are collapsed into compact placeholders (default on). To keep the full pasted text visible:
+
+<Tabs>
+    <Tab title="Config file">
+        ```toml
+        [ui]
+        collapse_pastes = false
+        ```
+    </Tab>
+    <Tab title="Environment variable">
+        ```bash
+        export DEEPAGENTS_CODE_COLLAPSE_PASTES=0
+        ```
+    </Tab>
+</Tabs>
+
+## Automatic memory
+
+Deep Agents Code automatically saves learnings to memory. To keep loading memory while stopping automatic saves, change the [automatic memory setting](/oss/deepagents/code/memory-and-skills#automatic-memory):
+
+<Tabs>
+    <Tab title="Config file">
+        ```toml title="~/.deepagents/config.toml"
+        [memory]
+        auto_save = false
+        ```
+    </Tab>
+    <Tab title="Environment variable">
+        ```bash
+        export DEEPAGENTS_CODE_MEMORY_AUTO_SAVE=0
+        ```
+    </Tab>
+</Tabs>
+
+You can still save memories explicitly with `/remember`. The environment variable takes precedence over the config file.
+
+## Conversation history retention
+
+Offloading a thread with `/offload` writes a markdown archive under `~/.deepagents/conversation_history/`. A startup sweep deletes archives older than 30 days. The sweep only touches regular `.md` files directly inside the archive directory, never blocks startup, and logs and swallows filesystem errors.
+
+Change the retention window, or disable cleanup with `0`:
+
+<Tabs>
+    <Tab title="Config file">
+        ```toml title="~/.deepagents/config.toml"
+        [history]
+        retention_days = 90   # 0 disables the sweep
+        ```
+    </Tab>
+    <Tab title="Environment variable">
+        ```bash
+        export DEEPAGENTS_CODE_HISTORY_RETENTION_DAYS=90
+        ```
+    </Tab>
+</Tabs>
+
+The environment variable takes precedence over the config file. With a `DEEPAGENTS_HOME` profile, archives live under `$DEEPAGENTS_HOME/conversation_history/`.
+
+## Compact on resume
+
+Resuming a thread restores its full context, so the next turn pays for it. When a resumed thread's context exceeds a threshold, Deep Agents Code offers to compact it before your next message; declining is free and `/compact` (or `/offload`) remains available. The default threshold is 400,000 tokens; set it to `0` to disable the offer:
+
+```toml title="~/.deepagents/config.toml"
+[threads]
+compact_on_resume_threshold = 200000
+```
+
 ## Uninstall
 
 To remove the `dcode` and `deepagents-code` binaries and the isolated tool environment, run:
@@ -139247,6 +139586,129 @@ The uninstall command does not remove user configuration or session data. Deep A
 ```bash
 rm -rf ~/.deepagents
 ```
+
+## Managed configuration
+
+Managed configuration lets administrators control Deep Agents Code settings across a fleet. Deep Agents Code checks the administrator-owned `managed_config.toml` before user environment variables and config, so users cannot override settings defined there.
+
+### Locate the managed config file
+
+Deep Agents Code looks for `managed_config.toml` in a fixed location on each operating system:
+
+| Operating system | Path |
+|------------------|------|
+| macOS | `/Library/Application Support/dcode/managed_config.toml` |
+| Linux | `/etc/dcode/managed_config.toml` |
+| Windows | `<ProgramData>\dcode\managed_config.toml` |
+
+On Windows, Deep Agents Code finds ProgramData through the system registry, not the `%ProgramData%` environment variable. Environment variables cannot change the managed config location. If the registry is unavailable, Deep Agents Code checks `C:\ProgramData\dcode\managed_config.toml`. If that file is also missing, Deep Agents Code cannot determine whether an administrator configured a policy, so commands that use configuration stop instead of running without it.
+
+### Create a managed policy
+
+Use the same TOML sections and keys as `~/.deepagents/config.toml`. Run `dcode config --verbose --json` to see the available settings, their accepted types, and whether they can be set in a config file.
+
+For example, the following policy pins Manual approval mode, removes YOLO from the `Shift+Tab` mode cycle, limits shell auto-approval, restricts model use, disables the JavaScript interpreter, and enables client-side LangSmith secret redaction:
+
+```toml title="managed_config.toml"
+[startup]
+mode = "manual"
+yolo_switcher = false
+
+[shell]
+allow_list = ["git", "make"]
+
+[models]
+allowed = ["acme:production", "openai:*"]
+
+[interpreter]
+enable_interpreter = false
+
+[tracing]
+langsmith_redact = true
+```
+
+Only administrators should have permission to edit this file. Deep Agents Code treats it as read-only. Users can still save preferences to `config.toml`, but administrator settings remain in effect until they are removed from `managed_config.toml`.
+
+### Restrict model use
+
+Set `[models].allowed` to exact, case-sensitive `provider:model` specifications, or use `provider:*` to allow all discoverable models from one provider. The allowlist applies to launch defaults, `--model`, `/model`, saved defaults, Auto classifiers, rubric graders, and explicit local subagent models.
+
+```toml title="managed_config.toml"
+[models]
+allowed = [
+    "acme:production",
+    "openai:*",
+]
+default = "acme:production"
+auto_classifier = "openai:gpt-5.5"
+```
+
+If you omit `allowed`, users can select any model. An empty list blocks all models. If a user's list is invalid, Deep Agents Code blocks all models. If the administrator's list is invalid, Deep Agents Code blocks startup, reload, and other commands that use configuration. The administrator's list replaces the user's list rather than combining with it. The managed `default`, `recent`, and `auto_classifier` values must also appear in the administrator's allowlist.
+
+Adding a model under `[models.providers.<name>].models` makes it available for selection but does not allow it automatically. Add the exact model or a provider wildcard to the allowlist. A wildcard covers only the models available for that provider. If no models are available, Deep Agents Code cannot choose a default. When Deep Agents Code can identify the provider for a bare model name entered in the interface, it converts the name to `provider:model` before checking the allowlist.
+
+<Warning>
+    `[sandboxes].default` selects the backend when a user launches with `--sandbox`. It does not force sandboxing. A launch without `--sandbox` runs on the host and reports that it did not use the managed backend.
+</Warning>
+
+### Load policy remotely
+
+You can store the policy on a central server while keeping its location in the local `managed_config.toml`:
+
+```toml title="managed_config.toml"
+[managed_config]
+source = "https://config.example.com/dcode-policy.toml"
+```
+
+When you configure a remote policy, the local file can contain only the `[managed_config].source` setting. Put the complete policy in the remote TOML file. Deep Agents Code does not combine remote and local policy settings, and the remote file cannot point to another source.
+
+<Accordion title="View remote policy requirements">
+    The URL must use HTTPS, contain no credentials or query parameters, and be no more than 2,048 ASCII characters. Deep Agents Code does not follow redirects, use proxy environment variables, or save the remote policy to disk.
+
+    The server must return a non-empty UTF-8 TOML file with HTTP status `200`, no compression, and a maximum size of 1 MiB. Requests time out after five seconds.
+
+    <Warning>
+        `SSL_CERT_FILE` and `SSL_CERT_DIR` can change which certificate authorities Python trusts. Make sure users cannot change these variables for the Deep Agents Code process.
+    </Warning>
+</Accordion>
+
+### Validate a managed policy
+
+Use the configuration and diagnostic commands after deploying or changing policy:
+
+```bash
+dcode config path
+dcode config
+dcode config get startup.mode
+dcode doctor
+```
+
+`dcode config path` shows the managed file location and whether Deep Agents Code can read it. `dcode config` and `dcode config get` label settings from the file as `managed config`. `dcode doctor` lists parsing errors, invalid values, and the settings that need correction. For a remote policy, it also shows the local file and remote URL. If an update fails, it confirms whether the session continues to use the previous valid policy.
+
+### Fix an invalid policy
+
+Deep Agents Code stops rather than run without required administrator settings when it cannot read or parse the managed file, cannot download the complete remote policy, or cannot safely apply the policy. Commands that use configuration exit with code `78`. You can still run `dcode config`, `dcode doctor`, `dcode auth path`, and help commands to troubleshoot the problem.
+
+If an update fails during a running session, Deep Agents Code continues to use the previous valid policy and reports the failure. A new process cannot start until it can load a valid policy.
+
+<Accordion title="View settings that fail closed">
+    An invalid value for any of the following settings stops startup because falling back to a user value could remove a required restriction:
+
+    - `interpreter.enable_interpreter`
+    - `interpreter.ptc`
+    - `interpreter.ptc_acknowledge_unsafe`
+    - `models.allowed`
+    - `models.auto_classifier`
+    - `runtime.recursion_limit`
+    - `sandboxes.default`
+    - `shell.allow_list`
+    - `skills.extra_allowed_dirs`
+    - `startup.mode`
+    - `startup.yolo_switcher`
+    - `tracing.langsmith_redact`
+
+    A known configuration section also stops startup if it has the wrong TOML structure. For other settings, Deep Agents Code ignores an invalid administrator value, uses the next valid source, and lists the ignored setting in `dcode config` and `dcode doctor`.
+</Accordion>
 
 ## Managed deployments
 
@@ -139296,7 +139758,7 @@ curl -LsSf https://langch.in/dcode | DEEPAGENTS_CODE_VERSION="0.1.16" bash
     Path to the uv binary. Auto-detected if unset.
 </ResponseField>
 
-Auto-update is enabled by default for managed installs. To opt out, set `DEEPAGENTS_CODE_AUTO_UPDATE=0` in the user's shell profile or deploy a `config.toml` with `[update] auto_update = false` to `~/.deepagents/config.toml`. To suppress automatic updates and update checks entirely, set `DEEPAGENTS_CODE_NO_UPDATE_CHECK=1` or deploy `[update] check = false`.
+Auto-update is enabled by default for managed installations. To control updates for every user, set `[update] auto_update = false` or `[update] check = false` in [`managed_config.toml`](#managed-configuration). For other installations, use `DEEPAGENTS_CODE_AUTO_UPDATE=0`, `DEEPAGENTS_CODE_NO_UPDATE_CHECK=1`, or the corresponding settings in `~/.deepagents/config.toml`.
 
 To route every user's model traffic through a managed gateway (provisioning a gateway key and base URL fleet-wide), see [Managed gateways](/oss/deepagents/code/config-file#managed-gateways).
 
@@ -139305,7 +139767,7 @@ To route every user's model traffic through a managed gateway (provisioning a ga
 All Deep Agents Code-specific environment variables use the `DEEPAGENTS_CODE_` prefix. See [`DEEPAGENTS_CODE_` prefix](#deepagents_code_-prefix) for how the prefix also works as an override for third-party credentials.
 
 <ResponseField name="DEEPAGENTS_CODE_AUTO_UPDATE" type="string" post={["optional"]}>
-    Toggle automatic Deep Agents Code updates. Enabled by default; set to `0`, `false`, `no`, or `off` to opt out.
+    Toggle automatic Deep Agents Code updates. Enabled by default; set to `0`, `false`, `no`, or `off` (or an empty value) to opt out.
 </ResponseField>
 
 <ResponseField name="DEEPAGENTS_CODE_AUTO_CLASSIFIER_TIMEOUT" type="integer" post={["optional"]}>
@@ -139336,36 +139798,68 @@ All Deep Agents Code-specific environment variables use the `DEEPAGENTS_CODE_` p
     Comma-separated project MCP server names to pre-approve by name for any project. This is a process-wide escape hatch: A different project, command change, or URL change under the same server name still matches. When set, this variable replaces saved approvals for the process. Prefer saved approvals from the project MCP prompt when possible.
 </ResponseField>
 
+<ResponseField name="DEEPAGENTS_CODE_COLLAPSE_PASTES" type="string" default="true" post={["optional"]}>
+    Collapse large chat-input pastes into compact placeholders. Set to a falsy value (or empty) to keep full pasted text visible. Overrides `[ui].collapse_pastes`. See [Collapse large pastes](#collapse-large-pastes).
+</ResponseField>
+
 <ResponseField name="DEEPAGENTS_CODE_EXTRA_SKILLS_DIRS" type="string" post={["optional"]}>
     Colon-separated paths added to the [skill containment allowlist](#skill-directory-allowlist).
+</ResponseField>
+
+<ResponseField name="DEEPAGENTS_CODE_HISTORY_RETENTION_DAYS" type="integer" default="30" post={["optional"]}>
+    Days an offloaded conversation-history archive is kept before the startup sweep deletes it; `0` disables cleanup. Overrides `[history].retention_days`. See [Conversation history retention](#conversation-history-retention).
 </ResponseField>
 
 <ResponseField name="DEEPAGENTS_CODE_LANGSMITH_PROJECT" type="string" post={["optional"]}>
     Override the LangSmith project name for Deep Agents Code's own agent traces. Shell commands still run with the user's original `LANGSMITH_PROJECT`, so app, test, or script traces can appear in a separate project. See [Trace with LangSmith](/oss/deepagents/code/quickstart#trace-with-langsmith).
 </ResponseField>
 
-<ResponseField name="DEEPAGENTS_CODE_LANGSMITH_REDACT" type="string" default="false" post={["optional"]}>
-    Toggle client-side secret redaction for Deep Agents Code's LangSmith agent-trace inputs and outputs. Accepts `1`, `true`, `yes`, or `on` to enable redaction and `0`, `false`, `no`, or `off` to disable it, case-insensitively. When redaction is enabled, tracing is disabled for that run if redaction cannot be configured. See [Configure LangSmith trace redaction](/oss/deepagents/code/config-file#redact-langsmith-trace-secrets).
+<ResponseField name="DEEPAGENTS_CODE_LANGSMITH_REDACT" type="string" default="true" post={["optional"]}>
+    Toggle client-side secret redaction for Deep Agents Code's LangSmith agent-trace inputs and outputs. Enabled by default. Accepts `1`, `true`, `yes`, or `on` to enable redaction and `0`, `false`, `no`, or `off` to disable it, case-insensitively. When redaction is enabled, tracing is disabled for that run if redaction cannot be configured. See [Configure LangSmith trace redaction](/oss/deepagents/code/config-file#redact-langsmith-trace-secrets).
 </ResponseField>
 
 <ResponseField name="DEEPAGENTS_CODE_LANGSMITH_REPLICA_PROJECTS" type="string" post={["optional"]}>
     A second LangSmith project to *also* write agent traces to. When set and tracing is active, each agent run is dual-written to the primary project (from `DEEPAGENTS_CODE_LANGSMITH_PROJECT`, or `deepagents-code` by default) and this project. Off by default. See [Trace with LangSmith](/oss/deepagents/code/quickstart#trace-with-langsmith).
 </ResponseField>
 
+<ResponseField name="DEEPAGENTS_CODE_MEMORY_AUTO_SAVE" type="string" default="true" post={["optional"]}>
+    Let the agent proactively save learnings to memory. Set to a falsy value (or empty) to keep loading memory while stopping unprompted auto-saving; explicit saves still work. Overrides `[memory].auto_save`. See [Automatic memory](/oss/deepagents/code/memory-and-skills#automatic-memory).
+</ResponseField>
+
 <ResponseField name="DEEPAGENTS_CODE_NO_UPDATE_CHECK" type="string" post={["optional"]}>
     Disable automatic update checking when set. This also prevents automatic update installs at startup.
+</ResponseField>
+
+<ResponseField name="DEEPAGENTS_HOME" type="string" post={["optional"]}>
+    Select the user profile and trust root instead of the default `~/.deepagents`. Accepts an absolute path or a path beginning with `~/`; `~user` forms and relative paths are rejected. Must be set in the inherited shell environment — no `.env` file may set it. See [Profile location](#profile-location-deepagents_home).
 </ResponseField>
 
 <ResponseField name="DEEPAGENTS_CODE_ONBOARDING" type="string" post={["optional"]}>
     Override the first-run onboarding flow. Set to a truthy value to force it open on every startup; set to a falsy value to suppress it entirely (useful for CI and provisioned machines). Leave unset for the default first-run behavior.
 </ResponseField>
 
+<ResponseField name="DEEPAGENTS_CODE_PRICES_AUTO_UPDATE" type="string" default="true" post={["optional"]}>
+    Refresh the model pricing catalog from upstream hourly in the background. Set to a falsy value (or empty) to opt out. Overrides `[update].prices_auto_update`. See [Pricing catalog auto-update](#pricing-catalog-auto-update).
+</ResponseField>
+
+<ResponseField name="DEEPAGENTS_CODE_READ_PROJECT_DOTENV" type="string" default="true" post={["optional"]}>
+    Load the project `.env` (found walking up from the working directory) into the process environment. Set to a falsy value to skip an untrusted repository's file; the global `~/.deepagents/.env` still loads. Overrides `[startup].read_project_dotenv`. See [Loading order and precedence](#loading-order-and-precedence).
+</ResponseField>
+
 <ResponseField name="DEEPAGENTS_CODE_RECURSION_LIMIT" type="integer" post={["optional"]}>
-    LangGraph graph step budget, which is the maximum number of node invocations the `dcode` agent graph may execute per turn. Valid range: `25`–`100000`. Out-of-range or non-integer values log a warning and fall back to the default (`2000`). Overridden by `--recursion-limit` at the CLI. See [Agent runtime limits](/oss/deepagents/code/config-file#agent-runtime-limits).
+    LangGraph graph step budget, which is the maximum number of node invocations the `dcode` agent graph may execute per turn. Invalid values log a warning and resolution continues to the next source. When unset, Deep Agents Code inherits `LANGGRAPH_DEFAULT_RECURSION_LIMIT` or leaves the limit to the LangGraph server. See [Agent runtime limits](/oss/deepagents/code/config-file#agent-runtime-limits).
+</ResponseField>
+
+<ResponseField name="LANGGRAPH_DEFAULT_RECURSION_LIMIT" type="integer" post={["optional"]}>
+    Upstream LangGraph graph step budget inherited when no Deep Agents recursion-limit source wins. Set it in your shell or the global `~/.deepagents/.env`. Deep Agents Code ignores it in a project `.env` because it bypasses the bounded `runtime.recursion_limit` resolver. See [Agent runtime limits](/oss/deepagents/code/config-file#agent-runtime-limits).
 </ResponseField>
 
 <ResponseField name="DEEPAGENTS_CODE_SHELL_ALLOW_LIST" type="string" post={["optional"]}>
     Comma-separated shell commands to allow (or `recommended` / `all`).
+</ResponseField>
+
+<ResponseField name="DEEPAGENTS_CODE_SHOW_USAGE_STATS" type="string" default="true" post={["optional"]}>
+    Show session usage statistics when a session ends. Set to a falsy value (or empty) to hide them. Overrides `[ui].show_usage_stats`. See [Session usage stats](#session-usage-stats).
 </ResponseField>
 
 <ResponseField name="DEEPAGENTS_CODE_USER_ID" type="string" post={["optional"]}>
@@ -139409,19 +139903,19 @@ Output:
   ├ Data directory: /Users/naomi/.deepagents (exists)
   └ Config file: /Users/naomi/.deepagents/config.toml (exists)
 
-  Tip: Run `dcode config show` or `dcode config get <key>` to drill into config details.
+  Tip: Run `dcode config` or `dcode config get <key>` to drill into config details.
        Run `dcode --version` (or `dcode -v`) for dependency versions.
 ```
 
 <Tip>
-    Pair `dcode doctor` with `dcode config show` when you need both a high-level health check and the exact source of a specific setting.
+    Pair `dcode doctor` with `dcode config` to check overall health and see where a specific setting comes from.
 </Tip>
 
 ## Data locations
 
 Deep Agents Code stores data in two directory hierarchies:
 
-- **`~/.deepagents/`** — Deep Agents-specific data (agent memory, skills, sessions)
+- **`~/.deepagents/`** — Deep Agents-specific data (agent memory, skills, sessions). Relocatable with [`DEEPAGENTS_HOME`](#profile-location-deepagents_home); the paths below are then rooted at that directory instead.
 - **`~/.agents/`** — Tool-agnostic data (skills shared across AI CLI tools)
 
 ### Directory structure
@@ -139770,7 +140264,15 @@ Use `/goal` when you know the outcome you want, but want Deep Agents Code to pro
 
 Deep Agents Code drafts acceptance criteria for review before starting the task.
 
-In the inline review you can accept the proposal, edit the criteria, request another revision, or cancel it. After you accept the criteria, the goal stays active across turns until it is paused, completed, blocked, or cleared.
+How draft criteria are handled depends on your [approval mode](/oss/deepagents/code/approval-modes):
+
+<Accordion title="Review behavior by approval mode">
+    - **Manual**: Always opens the inline review.
+    - **Auto**: Opens the review by default. Set `goals.auto_accept_criteria = true` in `~/.deepagents/config.toml` to apply generated criteria automatically.
+    - **YOLO**: Applies generated criteria without review.
+</Accordion>
+
+After the criteria are accepted, the goal stays active across turns until it is paused, completed, blocked, or cleared.
 
 This approach lets you work toward a larger objective over multiple turns:
 
@@ -140612,17 +141114,17 @@ For remote MCP servers, set `type` to `"sse"` or `"http"` and provide a `url`:
     Server names must match `[A-Za-z0-9_-]+`. Names are used as on-disk basenames for OAuth token files, so path separators and other shell metacharacters are rejected at config load.
 </Note>
 
-### Header environment variables
+### Environment variable interpolation
 
-Header values support `${VAR}` substitution from the parent shell, resolved at server activation rather than at config load. One unset variable only fails the server that needs it; the rest still come up.
+String values in `command`, `args`, `env`, `url`, and `headers` support `${VAR}` references to parent-shell environment variables. Use `${VAR:-default}` to provide a value when the variable is unset or empty.
 
-```json title=".mcp.json"
+```json title="~/.deepagents/.mcp.json"
 {
     "mcpServers": {
-        "internal-api": {
-            "type": "http",
-            "url": "https://api.example.com/mcp",
-            "headers": { "Authorization": "Bearer ${INTERNAL_API_TOKEN}" }
+        "work-docs": {
+            "command": "npx",
+            "args": ["-y", "@modelcontextprotocol/server-filesystem", "${WORK_DOCS_DIR:-/tmp/work-docs}"],
+            "env": { "LOG_LEVEL": "${MCP_LOG_LEVEL:-info}" }
         }
     }
 }
@@ -140750,9 +141252,19 @@ To connect Deep Agents Code to LangSmith, use the [LangSmith Remote MCP](/langsm
 
 ### Run the login flow
 
+List configured OAuth servers without stored credentials:
+
+```bash
+dcode mcp login
+```
+
+Then run the login flow for a server:
+
 ```bash
 dcode mcp login linear
 ```
+
+The list uses the same trust-gated configuration as the login flow. It reports servers that have `auth: "oauth"` but no stored token. It does not check token expiration.
 
 What happens depends on the server's host:
 
@@ -140787,6 +141299,8 @@ The `<sha256-16(url)>` segment is the first 16 hex characters of the SHA-256 of 
 ### Re-authentication
 
 When refresh fails at runtime (the refresh token expired or was revoked), Deep Agents Code marks the server as `unauthenticated` instead of crashing the agent. The welcome banner shows the count of unauthenticated servers, and `/mcp` reports the reason per server. Re-run `dcode mcp login <server>` to refresh credentials — your conversation continues without restarting.
+
+To re-authenticate an OAuth server without leaving your session, open `/mcp`, select the server, and press `Enter`.
 
 ## Server status
 
@@ -140891,8 +141405,8 @@ Connected MCP servers and their tools are automatically listed in the agent's sy
         A pre-flight validation rejected `--mcp-config` (or an auto-discovered `.mcp.json`). Common causes: an unsupported server name (must match `[A-Za-z0-9_-]+`), `auth: oauth` on a stdio server, both `command` and `url` set on the same entry, or a header value that isn't a string. Fix the highlighted reason and relaunch — Deep Agents Code no longer dumps a multi-page subprocess trace for config errors.
     </Accordion>
 
-    <Accordion title="`${VAR}` header references fail">
-        Header interpolation runs at activation time, so an unset variable only fails the server that needs it. Export the variable in the parent shell or add it to `~/.deepagents/.env`. To debug, set `DEEPAGENTS_CODE_DEBUG=1` and inspect the per-session log path printed to stderr on shutdown.
+    <Accordion title="`${VAR}` references fail">
+        Export the variable in the parent shell, add it to `~/.deepagents/.env`, or give the reference a `${VAR:-default}` fallback. To debug, set `DEEPAGENTS_CODE_DEBUG=1` and inspect the per-session log path printed to stderr on shutdown.
     </Accordion>
 </AccordionGroup>
 
@@ -140940,6 +141454,8 @@ As you use the agent, it automatically stores information in `~/.deepagents/<age
 1. **Research**: Searches memory for relevant context before starting tasks
 2. **Response**: Checks memory when uncertain during execution
 3. **Learning**: Automatically saves new information for future sessions
+
+To keep loading memory while stopping automatic saves, see [Automatic memory](/oss/deepagents/code/configuration#automatic-memory).
 
 The agent organizes its memories by topic with descriptive filenames:
 
@@ -142004,9 +142520,12 @@ The agent uses its built-in tools, skills, and memory to help you with tasks.
         - `/skill-creator [task]`: Guide for creating effective agent skills.
         - `/offload` (alias `/compact`) - Free up context window space by offloading messages to storage with a summary placeholder. The agent can retrieve the full history from the offloaded file if needed.
         - `/context`: Open a color-coded context-window usage report with model capacity, usage categories, and remaining space.
+        - `/context-doctor`: Audit the context injected into the session and its estimated token cost. See [Audit injected context](/oss/deepagents/code/cli-reference#audit-injected-context).
+        - `/tools`: List the built-in and MCP tools available to the current agent. See [List available tools](/oss/deepagents/code/cli-reference#list-available-tools).
+        - `/cost`: Show the thread's estimated cost. See [Track thread cost](/oss/deepagents/code/cli-reference#track-thread-cost).
         - `/tokens`: Display current context window token usage breakdown.
-        - `/clear`: Clear conversation history and start a new thread.
-        - `/force-clear`: Stop active work, clear the chat, and start a new thread.
+        - `/clear`: Start a fresh thread.
+        - `/force-clear`: Recover a stuck session with a fresh thread.
         - `/copy`: Copy the latest assistant message to the clipboard.
         - `/prompts`: Search, preview, copy, and reuse previously submitted prompts.
         - `/threads`: Browse and resume previous conversation threads.
@@ -142050,9 +142569,10 @@ The agent uses its built-in tools, skills, and memory to help you with tasks.
         | `Enter` | Submit prompt |
         | `Shift+Enter`, `Ctrl+J`, `Alt+Enter`, or `Ctrl+Enter` | Insert newline |
         | `@filename` | Auto-complete files and inject content |
-        | `Shift+Tab` or `Ctrl+T` | Toggle between Manual and Auto [approval mode](/oss/deepagents/code/approval-modes) |
-        | `Ctrl+X` | Open prompt in external editor |
-        | `Ctrl+N` | Review pending notifications |
+        | `Shift+Tab` | Cycle [approval modes](/oss/deepagents/code/approval-modes) |
+        | `Ctrl+G` | Open prompt in external editor |
+        | `Ctrl+T` | Expand or collapse the subagent panel when one is present |
+        | `Ctrl+N` | Review pending notifications when the panel is open |
         | `Ctrl+O` | Expand/collapse the most recent tool output |
         | `Escape` | Interrupt current operation |
         | `Ctrl+C` | Interrupt or quit |
@@ -142098,9 +142618,11 @@ Run `/context` to open a color-coded report of the current model's context-windo
 
 Provider-reported totals remain distinct from local conversation estimates. When a provider total is unavailable, the report labels the conversation count as an estimate and marks the total usage as unavailable. Use `/tokens` when you want a text summary in the conversation transcript instead.
 
+When usage grows faster than expected, run `/context-doctor` to attribute tokens to each injected component: the base system prompt, memory files, the skills index, built-in tool schemas, and MCP tool schemas. To confirm which tools the agent can currently call, run `/tools`. For the thread's running cost estimate, run `/cost`; the same figure appears in the status bar. See [Diagnose and audit a session](/oss/deepagents/code/cli-reference#diagnose-and-audit-a-session).
+
 ### External editor
 
-Press `Ctrl+X` or type `/editor` to compose prompts in an external editor. Deep Agents Code checks `$VISUAL`, then `$EDITOR`, then falls back to `vi` (macOS/Linux) or `notepad` (Windows). GUI editors (VS Code, Cursor, Zed, etc.) automatically receive a `--wait` flag so Deep Agents Code blocks until you close the file.
+Press `Ctrl+G` or type `/editor` to compose prompts in an external editor. Deep Agents Code checks `$VISUAL`, then `$EDITOR`, then falls back to `vi` (macOS/Linux) or `notepad` (Windows). GUI editors (VS Code, Cursor, Zed, etc.) automatically receive a `--wait` flag so Deep Agents Code blocks until you close the file.
 
 ```bash
 # Set in your shell profile (~/.zshrc, ~/.bashrc, etc.)
