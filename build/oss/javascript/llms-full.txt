@@ -24421,6 +24421,11 @@ const agent = await createDeepAgent({
 
 This example uses `FilesystemBackend` to load skills from disk. For other storage options, including loading skills from remote sources, see [Backends and remote skill loading](#backends-and-remote-skill-loading).
 
+
+
+Each source path can point at a directory that contains skill directories, or directly at a skill directory with `SKILL.md`.
+
+
 <ParamField body="skills" type="list[str]" optional>
     List of skill source paths.
 
@@ -26245,11 +26250,15 @@ Use [LangSmith](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_c
 
 1. **Check the skill path.** Paths must use forward slashes and be relative to the backend root. With `FilesystemBackend`, the path is relative to `root_dir`. With `StateBackend`, pass skill files in `invoke(files={...})` using `create_file_data()`.
 
+
+
 2. **Validate `SKILL.md` [frontmatter](#frontmatter-fields).** The [`name`](#frontmatter-fields) must match the parent directory name and follow the [Agent Skills specification](https://agentskills.io/specification). Use the [`skills-ref` validation tool](https://github.com/agentskills/agentskills/tree/main/skills-ref) to check formatting.
 
 3. **Check file size.** Deep Agents skips `SKILL.md` files over 10 MB during discovery.
 
 4. **Check layered sources.** When the same skill name appears in multiple sources, the [last source wins](#usage). An older or empty skill from a later path can override the one you expect.
+
+
 
 ### Supporting files not found
 
@@ -32025,17 +32034,18 @@ Custom backends connect Deep Agents to storage systems such as databases, object
     </Card>
 </CardGroup>
 
-## Community integrations
+## All backends
 
-<Note>
-The community maintains these backend integrations. They are contributed on an open-source basis and are not managed or maintained by LangChain.
-</Note>
-
-| Backend | Description | Source |
-|---------|-------------|--------|
-| [MongoDB VFS Adapter](https://github.com/langchain-ai/langchain-mongodb/tree/main/libs/langchain-mongodb-deepagents-vfs) | Virtual filesystem backend backed by MongoDB Atlas. Persist agent files, including memories, artifacts, and conversation history, in a MongoDB collection. | [`langchain-mongodb/langchain-mongodb-deepagents-vfs`](https://github.com/langchain-ai/langchain-mongodb/tree/main/libs/langchain-mongodb-deepagents-vfs) |
+| Backend | Description | Package | Source |
+|---------|-------------|---------|--------|
+| [Azure Blob Backend](https://github.com/langchain-ai/langchain-azure/tree/main/libs/azure-storage) | Azure Blob Storage implementation of the Deep Agents `BackendProtocol`. Persist agent workspace files, memories, and artifacts in a blob container. | `langchain-azure-storage` | [`langchain-ai/langchain-azure`](https://github.com/langchain-ai/langchain-azure/tree/main/libs/azure-storage) |
+| [MongoDB VFS Adapter](https://github.com/langchain-ai/langchain-mongodb/tree/main/libs/langchain-mongodb-deepagents-vfs) | Virtual filesystem backend backed by MongoDB Atlas. Persist agent files, including memories, artifacts, and conversation history, in a MongoDB collection. | `langchain-mongodb-deepagents-vfs` | [`langchain-ai/langchain-mongodb`](https://github.com/langchain-ai/langchain-mongodb/tree/main/libs/langchain-mongodb-deepagents-vfs) |
 
 Have a backend to share? [Open a PR](https://github.com/langchain-ai/docs) to add it here.
+
+<Info>
+    If you'd like to contribute an integration, see [Contributing integrations](/oss/javascript/contributing#add-a-new-integration).
+</Info>
 
 ---
 
@@ -32461,12 +32471,37 @@ import { ChatAnthropic } from "@langchain/anthropic"
 
 const llm = new ChatAnthropic({
     model: "claude-haiku-4-5-20251001",
-    temperature: 0,
+    // temperature: 0, // Non-default values are rejected on newer Claude models; see Sampling parameters
     maxTokens: undefined,
     maxRetries: 2,
     // other params...
 });
 ```
+
+## Sampling parameters
+
+Newer Claude models reject non-default sampling parameters. Setting `temperature`, `topP`, or `topK` to a non-default value on `claude-opus-5`, `claude-fable-5`, `claude-opus-4-8`, `claude-opus-4-7`, or `claude-sonnet-5` returns a 400 error:
+
+```typescript
+const model = new ChatAnthropic({ model: "claude-opus-5", temperature: 0 });
+await model.invoke("Hello!");
+// BadRequestError: 400
+// {"type":"error","error":{"type":"invalid_request_error",
+//  "message":"`temperature` is deprecated for this model."}}
+```
+
+Support by model:
+
+| Models | `temperature` / `topP` / `topK` |
+| --- | --- |
+| `claude-opus-5`, `claude-fable-5`, `claude-opus-4-8`, `claude-opus-4-7`, `claude-sonnet-5` | Non-default values rejected (400). Omit the parameters, or pass defaults only (for example, `temperature: 1`). |
+| `claude-opus-4-6`, `claude-sonnet-4-6`, `claude-haiku-4-5`, and earlier | Accepted |
+
+<Warning>
+    **Upgrading the model string?**
+
+    Code written as `new ChatAnthropic({ model, temperature: 0 })` breaks when you upgrade the model to one of the newer models above. Remove the sampling parameters rather than adjusting their values. On these models, steer output style through prompting instead. See the [Anthropic migration guide](https://platform.claude.com/docs/en/about-claude/models/migration-guide) for details.
+</Warning>
 
 ## Invocation
 
@@ -81174,7 +81209,7 @@ The middleware defines an `after_model` hook that runs after the model generates
 
 1. The agent invokes the model to generate a response.
 2. The middleware inspects the response for tool calls.
-3. If any calls require human input, the middleware builds a `HITLRequest` with `action_requests` and `review_configs` and calls [interrupt](https://reference.langchain.com/javascript/langchain-langgraph/index/interrupt).
+3. If any calls require human input, the middleware builds a [HITLRequest](https://reference.langchain.com/javascript/langchain/index/HITLRequest) with `action_requests` and `review_configs` and calls [interrupt](https://reference.langchain.com/javascript/langchain-langgraph/index/interrupt).
 4. The agent waits for human decisions.
 5. Based on the `HITLResponse` decisions, the middleware executes approved or edited calls, synthesizes [ToolMessage](https://reference.langchain.com/javascript/langchain-core/messages/ToolMessage)'s for rejected calls, returns human replies directly as [ToolMessage](https://reference.langchain.com/javascript/langchain-core/messages/ToolMessage)'s for `respond` decisions, and resumes execution.
 
@@ -88979,7 +89014,7 @@ Below, we show some common ways you can use tool calling.
         console.log(response.tool_calls)
         // [
         //   { name: 'get_weather', args: { location: 'Boston' }, id: 'call_1' },
-        //   { name: 'get_time', args: { location: 'Tokyo' }, id: 'call_2' }
+        //   { name: 'get_weather', args: { location: 'Tokyo' }, id: 'call_2' }
         // ]
 
 
@@ -97562,6 +97597,8 @@ Along the way you will explore the following concepts:
         });
         ```
 
+
+        The following expander has everything together in a runnable script:
 
         <Expandable title="Full example code">
 
