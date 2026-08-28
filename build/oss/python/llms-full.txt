@@ -14140,7 +14140,7 @@ Different errors need different handling strategies:
 |------------|--------------|----------|----------------------|
 | Transient errors (network issues, rate limits) | System (automatic) | Retry with exponential backoff | [ModelRetryMiddleware](https://reference.langchain.com/python/langchain/agents/middleware/model_retry/ModelRetryMiddleware), [ToolRetryMiddleware](https://reference.langchain.com/python/langchain/agents/middleware/tool_retry/ToolRetryMiddleware) |
 | LLM-recoverable errors (tool failures, parsing issues) | LLM | Convert to error `ToolMessage` and let the model adjust | [ToolErrorMiddleware](https://reference.langchain.com/python/langchain/agents/middleware/tool_error/ToolErrorMiddleware) |
-| User-fixable errors (missing information, unclear instructions) | Human | Pause with `interrupt()` | [Human-in-the-loop](/oss/python/deepagents/human-in-the-loop) |
+ | User-fixable errors (missing information, unclear instructions) | Human | Pause with `interrupt()` | [Human-in-the-loop](/oss/python/deepagents/human-in-the-loop) |
 | Provider outage | System (automatic) | Fall back to an alternative model | [ModelFallbackMiddleware](https://reference.langchain.com/python/langchain/agents/middleware/model_fallback/ModelFallbackMiddleware) |
 | Excessive calls (runaway loops) | System (automatic) | Cap model and tool calls per run | [ModelCallLimitMiddleware](https://reference.langchain.com/python/langchain/agents/middleware/model_call_limit/ModelCallLimitMiddleware), [ToolCallLimitMiddleware](https://reference.langchain.com/python/langchain/agents/middleware/tool_call_limit/ToolCallLimitMiddleware) |
 | Unexpected errors | Developer | Let them bubble up | No middleware; let the exception propagate |
@@ -14179,9 +14179,9 @@ agent = create_agent(
 
   Use [ToolErrorMiddleware](https://reference.langchain.com/python/langchain/agents/middleware/tool_error/ToolErrorMiddleware) to catch tool exceptions and convert them into error `ToolMessage`s so the LLM can see what went wrong and try again:
 
-<Note>
-`ToolErrorMiddleware` requires `langchain>=1.3.14`.
-</Note>
+  <Note>
+  `ToolErrorMiddleware` requires `langchain>=1.3.14`.
+  </Note>
 
 ```python
 from langchain.agents import create_agent
@@ -14201,10 +14201,8 @@ agent = create_agent(
 )
 ```
 
-
-
-
   </Tab>
+
 
   <Tab title="User-fixable" icon="user">
 
@@ -19699,6 +19697,8 @@ Source: https://docs.langchain.com/oss/python/deepagents/openwiki
 # Deep Agents overview
 Source: https://docs.langchain.com/oss/python/deepagents/overview
 
+import { PatternEmbed } from "/snippets/pattern-embed.jsx"
+
 Deep Agents is the easiest way to start building agents and applications that are powered by LLMs—with built-in capabilities for file systems for context management, subagent-spawning, and long-term memory.
 Optional capabilities such as [task planning](#task-planning) and [skills](#skills) extend the harness when your use case needs them.
 You can use deep agents for any task, including complex, multi-step tasks.
@@ -19713,6 +19713,10 @@ Deep Agents comes with the following capabilities:
 - **Improve over time**: Update memory, skills, and prompts based on real usage
 
 See [Core capabilities](#core-capabilities) for a full breakdown of each component.
+
+## Try it
+
+<PatternEmbed pattern="deep-agents-comparison" />
 
 ## Quickstart
 
@@ -22622,7 +22626,7 @@ For more on this topic, see research on [prompt injection](https://simonwillison
 
 ## Full code
 
-The following is the complete script for the agent:
+The following is the complete script for the agent using Gemini. For other models please see the step-by-step approach to see what changes:
 
 Save as `agent.py` and run with `python agent.py`:
 
@@ -129777,9 +129781,10 @@ You can create custom PII types by providing a `detector` parameter. This allows
 1. **Custom function** - Complex detection logic with validation
 
 ```python
-from langchain.agents import create_agent
-from langchain.agents.middleware import PIIMiddleware
 import re
+
+from langchain.agents import create_agent
+from langchain.agents.middleware import PIIMatch, PIIMiddleware
 
 
 # Method 1: Regex pattern string
@@ -129809,13 +129814,9 @@ agent2 = create_agent(
 )
 
 # Method 3: Custom detector function
-def detect_ssn(content: str) -> list[dict[str, str | int]]:
-    """Detect SSN with validation.
-
-    Returns a list of dictionaries with 'text', 'start', and 'end' keys.
-    """
-    import re
-    matches = []
+def detect_ssn(content: str) -> list[PIIMatch]:
+    """Detect SSNs with validation."""
+    matches: list[PIIMatch] = []
     pattern = r"\d{3}-\d{2}-\d{4}"
     for match in re.finditer(pattern, content):
         ssn = match.group(0)
@@ -129823,7 +129824,8 @@ def detect_ssn(content: str) -> list[dict[str, str | int]]:
         first_three = int(ssn[:3])
         if first_three not in [0, 666] and not (900 <= first_three <= 999):
             matches.append({
-                "text": ssn,
+                "type": "ssn",
+                "value": ssn,
                 "start": match.start(),
                 "end": match.end(),
             })
@@ -129849,11 +129851,19 @@ agent3 = create_agent(
 
 The detector function must accept a string (content) and return matches:
 
-Returns a list of dictionaries with `text`, `start`, and `end` keys:
+Returns a list of `PIIMatch` objects:
 ```python
-def detector(content: str) -> list[dict[str, str | int]]:
+from langchain.agents.middleware import PIIMatch
+
+
+def detector(content: str) -> list[PIIMatch]:
     return [
-        {"text": "matched_text", "start": 0, "end": 12},
+        {
+            "type": "custom_type",
+            "value": "matched_text",
+            "start": 0,
+            "end": 12,
+        },
         # ... more matches
     ]
 ```
@@ -140735,21 +140745,31 @@ This quickstart shows you how to create a fully functional AI agent in just a fe
 
 ## Install dependencies
 
+<Note>
+    **Python 3.11+**
+
+    To run the code in this Quickstart, use Python 3.11 or higher.
+</Note>
+
+
 Install the following packages to follow along:
 
 <CodeGroup>
     ```bash uv
+    uv python pin 3.11
     uv init
     uv add langchain
     uv sync
     ```
 
     ```bash pip
+    # Install Python 3.11+ separately if needed.
     pip install -U langchain
     ```
 
     ```bash venv
-    python3 -m venv .venv
+    # Install Python 3.11+ separately if needed.
+    python3.11 -m venv .venv
     source .venv/bin/activate
     # Windows: .venv\Scripts\activate
     pip install -U langchain
@@ -140763,89 +140783,140 @@ Install the following packages to follow along:
 
 Get an API key from [any supported model provider](/oss/python/integrations/providers/overview) (for example, Google Gemini or OpenAI).
 
-Set the API keys, for example:
+Set the API keys in your shell or in a `.env` file, for example:
 
 <Tabs>
   <Tab title="OpenAI">
+    <CodeGroup>
+    ```bash Shell
+    export OPENAI_API_KEY="your-api-key"
+    ```
 
-```bash
-export OPENAI_API_KEY="your-api-key"
-```
-
+    ```bash .env
+    OPENAI_API_KEY=your-api-key
+    ```
+    </CodeGroup>
   </Tab>
   <Tab title="Google Gemini">
+    <CodeGroup>
+    ```bash Shell
+    export GOOGLE_API_KEY="your-api-key"
+    ```
 
-```bash
-export GOOGLE_API_KEY="your-api-key"
-```
-
+    ```bash .env
+    GOOGLE_API_KEY=your-api-key
+    ```
+    </CodeGroup>
   </Tab>
   <Tab title="Claude (Anthropic)">
+    <CodeGroup>
+    ```bash Shell
+    export ANTHROPIC_API_KEY="your-api-key"
+    ```
 
-```bash
-export ANTHROPIC_API_KEY="your-api-key"
-```
-
+    ```bash .env
+    ANTHROPIC_API_KEY=your-api-key
+    ```
+    </CodeGroup>
   </Tab>
   <Tab title="OpenRouter">
+    <CodeGroup>
+    ```bash Shell
+    export OPENROUTER_API_KEY="your-api-key"
+    ```
 
-```bash
-export OPENROUTER_API_KEY="your-api-key"
-```
-
+    ```bash .env
+    OPENROUTER_API_KEY=your-api-key
+    ```
+    </CodeGroup>
   </Tab>
   <Tab title="Fireworks">
+    <CodeGroup>
+    ```bash Shell
+    export FIREWORKS_API_KEY="your-api-key"
+    ```
 
-```bash
-export FIREWORKS_API_KEY="your-api-key"
-```
-
+    ```bash .env
+    FIREWORKS_API_KEY=your-api-key
+    ```
+    </CodeGroup>
   </Tab>
   <Tab title="Baseten">
+    <CodeGroup>
+    ```bash Shell
+    export BASETEN_API_KEY="your-api-key"
+    ```
 
-```bash
-export BASETEN_API_KEY="your-api-key"
-```
-
+    ```bash .env
+    BASETEN_API_KEY=your-api-key
+    ```
+    </CodeGroup>
   </Tab>
   <Tab title="Ollama">
+    <CodeGroup>
+    ```bash Shell
+    # Local: Ollama must be running (https://ollama.com)
+    # Cloud: Set your Ollama API key for hosted inference
+    export OLLAMA_API_KEY="your-api-key"
+    ```
 
-```bash
-# Local: Ollama must be running (https://ollama.com)
-# Cloud: Set your Ollama API key for hosted inference
-export OLLAMA_API_KEY="your-api-key"
-```
-
+    ```bash .env
+    # Local: Ollama must be running (https://ollama.com)
+    # Cloud: Set your Ollama API key for hosted inference
+    OLLAMA_API_KEY=your-api-key
+    ```
+    </CodeGroup>
   </Tab>
   <Tab title="Azure">
+    <CodeGroup>
+    ```bash Shell
+    export AZURE_OPENAI_API_KEY="your-api-key"
+    export AZURE_OPENAI_ENDPOINT="https://your-resource.openai.azure.com"
+    export AZURE_OPENAI_DEPLOYMENT_NAME="your-deployment"
+    ```
 
-```bash
-export AZURE_OPENAI_API_KEY="your-api-key"
-export AZURE_OPENAI_ENDPOINT="https://your-resource.openai.azure.com"
-export AZURE_OPENAI_DEPLOYMENT_NAME="your-deployment"
-```
-
+    ```bash .env
+    AZURE_OPENAI_API_KEY=your-api-key
+    AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
+    AZURE_OPENAI_DEPLOYMENT_NAME=your-deployment
+    ```
+    </CodeGroup>
   </Tab>
   <Tab title="AWS Bedrock">
+    <CodeGroup>
+    ```bash Shell
+    export AWS_ACCESS_KEY_ID="your-access-key"
+    export AWS_SECRET_ACCESS_KEY="your-secret-key"
+    export AWS_REGION="us-east-1"
+    ```
 
-```bash
-export AWS_ACCESS_KEY_ID="your-access-key"
-export AWS_SECRET_ACCESS_KEY="your-secret-key"
-export AWS_REGION="us-east-1"
-```
-
+    ```bash .env
+    AWS_ACCESS_KEY_ID=your-access-key
+    AWS_SECRET_ACCESS_KEY=your-secret-key
+    AWS_REGION=us-east-1
+    ```
+    </CodeGroup>
   </Tab>
   <Tab title="HuggingFace">
+    <CodeGroup>
+    ```bash Shell
+    export HUGGINGFACEHUB_API_TOKEN="hf_..."
+    ```
 
-```bash
-export HUGGINGFACEHUB_API_TOKEN="hf_..."
-```
-
+    ```bash .env
+    HUGGINGFACEHUB_API_TOKEN=hf_...
+    ```
+    </CodeGroup>
   </Tab>
   <Tab title="Other">
     See the full list of supported [chat model integrations](/oss/python/integrations/chat).
   </Tab>
 </Tabs>
+
+To load a `.env` file, use [`python-dotenv`](https://pypi.org/project/python-dotenv/) (`load_dotenv()`).
+
+
+
 
 <Tip>
     **Using LangSmith Gateway**
@@ -141290,9 +141361,7 @@ Along the way you will explore the following concepts:
 
 
         <Warning>
-            Since the code invokes the model with the entire text from The Great Gatsby, it uses a large amount of tokens.
-
-            You can view example output in the next step.
+            This example sends the entire text of The Great Gatsby to the model and may take a minute or two to respond. You can view example output in the next step.
         </Warning>
 
         Let's try both:
@@ -141328,16 +141397,19 @@ Along the way you will explore the following concepts:
         your available tools and reasoning, do not fabricate numbers: use `null` for that field and spell out
         the limitation in `how_you_computed_counts`. If you encounter any errors please report what the error was and what the error message was."""
 
+        print("Running create_agent...", flush=True)
         agent_result = agent.invoke(
             {"messages": [{"role": "user", "content": content}]},
             config={"configurable": {"thread_id": "great-gatsby-lc"}},
         )
+        print("Running create_deep_agent...", flush=True)
         deep_agent_result = deep_agent.invoke(
             {"messages": [{"role": "user", "content": content}]},
             config={"configurable": {"thread_id": "great-gatsby-da"}},
         )
+        print("\ncreate_agent:")
         print(agent_result["messages"][-1].content_blocks)
-        print("\n")
+        print("\ncreate_deep_agent:")
         print(deep_agent_result["messages"][-1].content_blocks)
         ```
 
@@ -141421,16 +141493,19 @@ Along the way you will explore the following concepts:
         your available tools and reasoning, do not fabricate numbers: use `null` for that field and spell out
         the limitation in `how_you_computed_counts`. If you encounter any errors please report what the error was and what the error message was."""
 
+        print("Running create_agent...", flush=True)
         agent_result = agent.invoke(
             {"messages": [{"role": "user", "content": content}]},
             config={"configurable": {"thread_id": "great-gatsby-lc"}},
         )
+        print("Running create_deep_agent...", flush=True)
         deep_agent_result = deep_agent.invoke(
             {"messages": [{"role": "user", "content": content}]},
             config={"configurable": {"thread_id": "great-gatsby-da"}},
         )
+        print("\ncreate_agent:")
         print(agent_result["messages"][-1].content_blocks)
-        print("\n")
+        print("\ncreate_deep_agent:")
         print(deep_agent_result["messages"][-1].content_blocks)
         ```
 
