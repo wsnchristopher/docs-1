@@ -419,7 +419,7 @@ Each condition in the `conditions` array specifies:
 - **`operator`** - The comparison operator
 - **`attribute_value`** - The value to compare against
 
-##### Operators
+#### Operators
 
 | Operator | Description |
 |----------|-------------|
@@ -430,7 +430,7 @@ Each condition in the `conditions` array specifies:
 | `matches` | Glob pattern matching with `*` and `?` wildcards |
 | `not_matches` | Match when value doesn't match glob pattern |
 
-##### `_if_exists` variants
+#### `_if_exists` variants
 
 Each operator has an `_if_exists` variant that matches by default when the tag key is absent, or evaluates the condition normally when the tag exists:
 
@@ -13869,6 +13869,80 @@ If you use self-hosted LangSmith, see the [self-hosted changelog](/langsmith/sel
 <Tabs>
 <Tab title="LangSmith Cloud">
 
+<Update label="August 24-31, 2026" rss={{ title: "2026-08-24 - LangSmith Cloud update" }}>
+
+## Observability and evaluations
+
+### Tracing
+
+- ABAC policies can grant access to matching project traces.
+- Open deployment threads directly in tracing.
+- Clearer Engine issue actions now appear on traces.
+- You can read shared threads through the public API.
+- Trace and tree filters now apply to thread evaluations.
+- Unsupported run filters now return clearer errors.
+- Studio Trace nested run selection now works correctly.
+- The Gateway usage view can open filtered traces.
+
+### Datasets and experiments
+
+- Experiment evaluator column names now use the full column width.
+- You can clone model configurations.
+- Tuned Evaluators are easier to find in tracing projects.
+- Data grids now adapt to enlarged browser fonts.
+- Form errors are announced consistently.
+- The dashboard crosshair stays synchronized across charts.
+- The Engine chat launcher now suggests questions.
+
+### Engine
+
+- Engine now uses application-scoped project counts.
+- Create existing Engine issues in Linear.
+- You can open a pull request for an Engine issue straight from the toolbar.
+- Engine issues stay in sync with Linear.
+- Engine now shows a release announcement in the sidebar.
+- Engine now distinguishes a missing capability from an errored or partially wired tool, reducing false-positive Feature Gap issues.
+- Pull requests for Engine fixes now open automatically.
+- Opening a second linked trace from an Engine issue now works reliably.
+- Open PR also works for fixes that have fallen behind the base branch.
+- Engine usage now costs 40% fewer Usage Credits.
+
+### Gateway
+
+- Newer OpenAI models now route through Amazon Bedrock.
+- Trailing slashes now work on LLM Gateway routes.
+- Recursive LLM Gateway configurations are now prevented.
+- PII redaction is now a separate LLM Gateway entitlement.
+- Claude Max OAuth traffic is now excluded from Gateway spend.
+- Saved model configurations now work on the unified LLM Gateway endpoint.
+- Custom providers now work on the unified LLM Gateway endpoint.
+- Gateway data policies are available by default.
+- You can use saved model configurations in LLM Gateway routing.
+- Vertex AI gateway now supports existing web credentials.
+- OpenAI-compatible API base paths are now respected.
+- Custom provider configurations become available faster.
+- LLM gateway traces no longer capture request and response content by default.
+- Long-lived API keys are now available in the Gateway quickstart.
+
+### Platform and deployment
+
+- Dedicated deployments now run at least two replicas.
+- Run rules now support Redis cluster-safe mode.
+- Thread annotation queues are now available in self-hosted deployments.
+- Thread automations can add to annotation queues in self-hosted deployments.
+- Sandbox execution timeout errors are clearer.
+- Updating a sandbox's proxy config no longer conflicts with a start.
+
+### Fleet
+
+- Fleet sandbox APIs now work with external OIDC auth.
+- Fleet computers keep uploaded Excel workbooks locally.
+- Check Outlook calendar availability.
+
+</Update>
+
+
+
 <Update label="August 17-24, 2026" rss={{ title: "2026-08-17 - LangSmith Cloud update" }}>
 
 ## Observability and evaluations
@@ -15969,6 +16043,16 @@ The experiments table now displays loading progress bars showing the number of r
 </Tab>
 <Tab title="LangSmith Fleet">
 
+
+<Update label="August 24-31, 2026" rss={{ title: "2026-08-24 - Fleet product update" }}>
+
+## Fleet
+
+- Fleet sandbox APIs now work with external OIDC auth.
+- Fleet computers keep uploaded Excel workbooks locally.
+- Check Outlook calendar availability.
+
+</Update>
 
 <Update label="August 17-24, 2026" rss={{ title: "2026-08-17 - Fleet product update" }}>
 
@@ -30122,7 +30206,7 @@ sandboxes:
     name: "sandbox-juicefs"
     storage: "wasb"
     bucket: "https://container-name.core.windows.net"
-    accessKey: "<storage-account-name>" # Account name, not a credential.
+    storageAccountName: "<storage-account-name>"
     redis:
       metaURL: "redis://redis-host:6379/1"
   juicefsFormatJob:
@@ -46918,6 +47002,16 @@ Weekly updates to [LangSmith Fleet](/langsmith/fleet).
 **Subscribe**: This changelog includes an [RSS feed](https://docs.langchain.com/langsmith/fleet-changelog/rss.xml) that can integrate with [Slack](https://slack.com/help/articles/218688467-Add-RSS-feeds-to-Slack), [email](https://zapier.com/apps/email/integrations/rss/1441/send-new-rss-feed-entries-via-email), Discord bots like [Readybot](https://readybot.io/) or [RSS Feeds to Discord Bot](https://rss.app/en/bots/rssfeeds-discord-bot), and other subscription tools.
 </Callout>
 
+
+<Update label="August 24-31, 2026" rss={{ title: "2026-08-24 - Fleet product update" }}>
+
+## Fleet
+
+- Fleet sandbox APIs now work with external OIDC auth.
+- Fleet computers keep uploaded Excel workbooks locally.
+- Check Outlook calendar availability.
+
+</Update>
 
 <Update label="August 17-24, 2026" rss={{ title: "2026-08-17 - Fleet product update" }}>
 
@@ -124055,7 +124149,7 @@ You should record the agent's audio from the speaker, so that the recording refl
 # Trace OpenAI applications
 Source: https://docs.langchain.com/langsmith/trace-openai
 
-The [`wrap_openai`](https://reference.langchain.com/python/langsmith/wrappers/_openai/wrap_openai) / [`wrapOpenAI`](https://reference.langchain.com/javascript/langsmith/wrappers/wrapOpenAI) methods in Python/TypeScript allow you to wrap your OpenAI client in order to automatically log traces -- no decorator or function wrapping required! Using the wrapper ensures that messages, including tool calls and multimodal content blocks will be rendered nicely in LangSmith. Also note that the wrapper works seamlessly with the [`@traceable`](https://reference.langchain.com/python/langsmith/run_helpers/traceable) decorator or [`traceable`](https://reference.langchain.com/javascript/functions/langsmith.traceable.traceable.html) function and you can use both in the same application.
+The [`wrap_openai`](https://reference.langchain.com/python/langsmith/wrappers/_openai/wrap_openai) / [`wrapOpenAI`](https://reference.langchain.com/javascript/langsmith/wrappers/wrapOpenAI) methods in Python/TypeScript allow you to wrap your OpenAI client in order to automatically log traces -- no decorator or function wrapping required! Using the wrapper ensures that messages, including tool calls and multimodal content blocks will be rendered nicely in LangSmith. Also note that the wrapper works seamlessly with the [`@traceable`](https://reference.langchain.com/python/langsmith/run_helpers/traceable) decorator or [`traceable`](https://reference.langchain.com/javascript/langsmith/traceable/traceable) function and you can use both in the same application.
 
 <Note>
 The `LANGSMITH_TRACING` environment variable must be set to `'true'` in order for traces to be logged to LangSmith, even when using [`wrap_openai`](https://reference.langchain.com/python/langsmith/wrappers/_openai/wrap_openai) or [`wrapOpenAI`](https://reference.langchain.com/javascript/langsmith/wrappers/wrapOpenAI). This allows you to toggle tracing on and off without changing your code.
