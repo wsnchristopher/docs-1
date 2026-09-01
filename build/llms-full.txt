@@ -54324,58 +54324,29 @@ Pass a LangChain chat model instance instead when you need to configure model pa
 
 ### Use LLM Gateway
 
-You can use [LLM Gateway](langsmith/llm-gateway) to control rate limits, fallbacks, and more.
+You can use [LLM Gateway](/langsmith/llm-gateway) to apply rate limits, fallbacks, and other policies to model calls.
 
-In order to use LLM Gateway, you should:
-- Use the ChatOpenAI model directly
-- Set a base url of `https://gateway.smith.langchain.com/v1`
-- Use your `LANGSMITH_API_KEY` for authentication. Set `LANGSMITH_GATEWAY_API_KEY` only if you need a different key for gateway calls.
+Prefix the gateway model ID with `langsmith:`:
 
 
 
 ```ts
 import { defineDeepAgent } from "managed-deepagents";
-import { ChatOpenAI } from "@langchain/openai";
-
-const apiKey =
-  process.env.LANGSMITH_GATEWAY_API_KEY ??
-  process.env.LANGSMITH_API_KEY ??
-  "missing-langsmith-api-key";
-const baseURL = "https://gateway.smith.langchain.com/v1";
 
 export const agent = defineDeepAgent({
   name: "my-agent",
-  model: new ChatOpenAI({
-    model: "moonshotai/Kimi-K3",
-    apiKey,
-    configuration: { baseURL },
-  }),
+  model: "langsmith:moonshotai/kimi-k3",
 });
 ```
 
 
 <Note>
-The model slug should be `provider/model-name` when using Gateway. When NOT using Gateway, it is normally `provider:model-name`
+Gateway model IDs use a slash between provider and model (`langsmith:provider/model-name`). Model strings that call a provider directly use a colon (`provider:model-name`).
 </Note>
 
-In order to scaffold your project to use Gateway from the start, you can pass a `--gateway` flag when initializing your agent:
+The gateway routes each request by model ID. `moonshotai/kimi-k3` is a LangChain-hosted model, so it requires no provider secret and draws on [Gateway Credits](/langsmith/llm-gateway-credits). A model ID that starts with a provider your workspace has configured, such as `anthropic/claude-opus-5`, uses that [provider secret](/langsmith/llm-gateway-admin-setup#1-add-provider-secrets) and bills to your own provider account.
 
-
-
-<CodeGroup>
-    ```bash npm
-    npx managed-deepagents init my-agent --gateway
-    ```
-
-    ```bash pnpm
-    pnpm dlx managed-deepagents init my-agent --gateway
-    ```
-
-    ```bash bun
-    bunx managed-deepagents init my-agent --gateway
-    ```
-</CodeGroup>
-
+For more information, see [LLM Gateway](/langsmith/llm-gateway).
 
 ## Tools
 
@@ -61655,25 +61626,52 @@ export LANGSMITH_API_KEY="lsv2_..._....cbed3e"
 
 ## Claude Code CLI
 
-Choose the authentication method that matches how your organization pays for Anthropic usage.
+Claude Code supports two separate authentication methods. Choose one before configuring:
 
-### Use a workspace provider key
+- **Workspace provider secret**: The organization manages billing and policies through a provider key stored in workspace secrets. Use this method for org-managed usage.
+- **Claude subscription OAuth**: Anthropic bills LLM calls to the user's personal Claude Plus or Max subscription instead of the workspace provider secret, while LangSmith still enforces gateway permissions, policies, and tracing. Use this method when developers have their own subscriptions.
 
-Point Claude Code at the standard Messages endpoint and use a provider-prefixed model ID:
+### Use a workspace provider secret
+
+Set `ANTHROPIC_API_KEY` to your LangSmith API key. Claude Code reads these variables from your shell environment or from the `env` block in `~/.claude/settings.json`.
+
+If your LangSmith deployment is on a regional or self-hosted instance, replace the gateway hostname in the examples below with your [regional gateway](/langsmith/llm-gateway-api-formats#use-a-regional-gateway) hostname.
+
+#### Use Anthropic models only
+
+Set `ANTHROPIC_BASE_URL` to the Anthropic-format gateway endpoint. The gateway infers the `anthropic/` provider prefix from the endpoint:
 
 ```bash
-export ANTHROPIC_BASE_URL="https://gateway.smith.langchain.com"
+export ANTHROPIC_BASE_URL="https://gateway.smith.langchain.com/anthropic/"
 export ANTHROPIC_API_KEY="$LANGSMITH_API_KEY"
-export ANTHROPIC_MODEL="anthropic/claude-opus-5"
 
 claude
 ```
 
-Claude Code appends `/v1/messages` to `ANTHROPIC_BASE_URL`. The gateway uses the `anthropic/` prefix to resolve the workspace's Anthropic provider secret.
+#### Route model tiers across providers
 
+Set `ANTHROPIC_BASE_URL` to the gateway root, then map each Claude model tier to a provider-prefixed gateway model ID:
+
+```bash
+export ANTHROPIC_BASE_URL="https://gateway.smith.langchain.com"
+export ANTHROPIC_API_KEY="$LANGSMITH_API_KEY"
+export ANTHROPIC_DEFAULT_OPUS_MODEL="anthropic/claude-opus-5"
+export ANTHROPIC_DEFAULT_SONNET_MODEL="openai/gpt-5.6-terra"
+export ANTHROPIC_DEFAULT_HAIKU_MODEL="fireworks/accounts/fireworks/models/glm-5p2"
+
+claude
+```
+
+The model IDs are examples. Map each tier to any model configured in your workspace secrets or available through [Gateway Credits](/langsmith/llm-gateway-credits); the gateway handles request translation across providers. For details, see [API formats](/langsmith/llm-gateway-api-formats#understand-translation-behavior).
+
+<a id="use-claude-subscription-oauth"></a>
 ### Use Claude subscription OAuth
 
-Claude Code Plus and Max users can send their saved Anthropic OAuth credential through the gateway. This mode is available to all organizations and does not require an `ANTHROPIC_API_KEY` in workspace provider secrets.
+<Note>
+Claude subscription OAuth requires an active Claude Code Plus or Max subscription. If you are using a workspace Anthropic API key, use the [workspace provider secret](#use-a-workspace-provider-secret) method instead.
+</Note>
+
+Claude Code Plus and Max users can send their saved Anthropic OAuth credential through the gateway. This mode does not require an `ANTHROPIC_API_KEY` in workspace provider secrets.
 
 Log in to Claude Code with your subscription, then configure the gateway:
 
@@ -61684,13 +61682,17 @@ export ANTHROPIC_CUSTOM_HEADERS="X-Api-Key: $LANGSMITH_API_KEY"
 claude
 ```
 
-Claude Code uses and refreshes the OAuth credential from its saved login. It also sends the required OAuth capability in the `anthropic-beta` header automatically.
+Treat the `ANTHROPIC_CUSTOM_HEADERS` value as a secret: it embeds your LangSmith API key, so keep it out of shell history, dotfiles, and shared configuration.
 
-The LangSmith API key authenticates the gateway request and remains subject to gateway permissions and policies. The gateway forwards the OAuth bearer to Anthropic, so Anthropic bills the call to the user's Claude subscription instead of the workspace provider key.
+Claude Code uses and refreshes the OAuth credential from its saved login, including the required OAuth capability in the `anthropic-beta` header.
+
+The LangSmith API key authenticates the gateway request and remains subject to gateway permissions and policies. The gateway forwards the OAuth bearer to Anthropic, so Anthropic bills the call to the user's Claude subscription instead of the workspace provider secret. To confirm calls route through the gateway, check that traces appear in the `gateway` tracing project as described in [Verify the setup](#verify-the-setup).
 
 <Warning>
 Leave `ANTHROPIC_AUTH_TOKEN` and `ANTHROPIC_API_KEY` unset for this mode. Either variable takes precedence over the saved subscription login.
+</Warning>
 
+<Warning>
 Claude Desktop plugins break when the gateway is configured.
 </Warning>
 
@@ -80789,32 +80791,16 @@ Pass a LangChain chat model instance instead when you need to configure model pa
 
 ### Use LLM Gateway
 
-You can use [LLM Gateway](langsmith/llm-gateway) to control rate limits, fallbacks, and more.
+You can use [LLM Gateway](/langsmith/llm-gateway) to apply rate limits, fallbacks, and other policies to model calls.
 
-In order to use LLM Gateway, you should:
-- Use the ChatOpenAI model directly
-- Set a base url of `https://gateway.smith.langchain.com/v1`
-- Use your `LANGSMITH_API_KEY` for authentication. Set `LANGSMITH_GATEWAY_API_KEY` only if you need a different key for gateway calls.
+Prefix the gateway model ID with `langsmith:`:
 
-```py
-import os
-
+```python
 from managed_deepagents import define_deep_agent
-from langchain_openai import ChatOpenAI
-
-api_key = os.environ.get(
-    "LANGSMITH_GATEWAY_API_KEY",
-    os.environ.get("LANGSMITH_API_KEY", "missing-langsmith-api-key"),
-)
-base_url = "https://gateway.smith.langchain.com/v1"
 
 agent = define_deep_agent(
     name="my-agent",
-    model=ChatOpenAI(
-        model="moonshotai/Kimi-K3",
-        api_key=api_key,
-        base_url=base_url,
-    ),
+    model="langsmith:moonshotai/kimi-k3",
 )
 ```
 
@@ -80822,17 +80808,12 @@ agent = define_deep_agent(
 
 
 <Note>
-The model slug should be `provider/model-name` when using Gateway. When NOT using Gateway, it is normally `provider:model-name`
+Gateway model IDs use a slash between provider and model (`langsmith:provider/model-name`). Model strings that call a provider directly use a colon (`provider:model-name`).
 </Note>
 
-In order to scaffold your project to use Gateway from the start, you can pass a `--gateway` flag when initializing your agent:
+The gateway routes each request by model ID. `moonshotai/kimi-k3` is a LangChain-hosted model, so it requires no provider secret and draws on [Gateway Credits](/langsmith/llm-gateway-credits). A model ID that starts with a provider your workspace has configured, such as `anthropic/claude-opus-5`, uses that [provider secret](/langsmith/llm-gateway-admin-setup#1-add-provider-secrets) and bills to your own provider account.
 
-```bash
-uvx --from managed-deepagents mda init my-agent --gateway
-```
-
-
-
+For more information, see [LLM Gateway](/langsmith/llm-gateway).
 
 ## Tools
 
