@@ -54507,15 +54507,15 @@ To add Slack to an existing project, run the channel initialization command from
 
 <CodeGroup>
     ```bash npm
-    npx mda channel init slack
+    npx mda channels init slack
     ```
 
     ```bash pnpm
-    pnpm exec mda channel init slack
+    pnpm exec mda channels init slack
     ```
 
     ```bash bun
-    bunx mda channel init slack
+    bunx mda channels init slack
     ```
 </CodeGroup>
 
@@ -54842,10 +54842,10 @@ The LangSmith API key authenticates the deploy. The agent's model provider also 
 | `mda --version` | Show the installed CLI version. |
 | `mda init <name>` | Scaffold a TypeScript Managed Deep Agents project. |
 | `mda build [path]` | Compile a project into a managed LangGraph app without deploying. |
-| `mda eval …` / `mda evals …` | Initialize a Harbor workspace and continue eval authoring in a coding agent. |
+| `mda evals …` | Initialize a Harbor workspace and continue eval authoring in a coding agent. |
 | `mda dev [path]` | Compile a project and run it on the local LangGraph dev server. |
 | `mda deploy [path]` | Compile, sync Context Hub context, upload, and deploy to LangSmith. |
-| `mda channel init slack` | Add a Slack channel declaration to the current project. |
+| `mda channels init slack` | Add a Slack channel declaration to the current project. |
 | `mda logs [path]` | Tail Agent Server logs for a deployed agent. |
 | `mda delete [path]` / `mda destroy [path]` | Delete a deployed agent and the LangSmith resources it created. |
 
@@ -54930,15 +54930,15 @@ Run the following command from the root of an existing managed deep agent projec
 
 <CodeGroup>
     ```bash npm
-    npx mda channel init slack
+    npx mda channels init slack
     ```
 
     ```bash pnpm
-    pnpm exec mda channel init slack
+    pnpm exec mda channels init slack
     ```
 
     ```bash bun
-    bunx mda channel init slack
+    bunx mda channels init slack
     ```
 </CodeGroup>
 
@@ -54973,7 +54973,7 @@ Use `mda build` to compile a project into a managed LangGraph app without deploy
 
 ## Evaluate projects
 
-Use `mda evals init` to initialize a Harbor workspace. The command is also available as `mda eval`. Use the interactive handoff to develop complete tasks with a coding agent and the `eval-engineering` skill.
+Use `mda evals init` to initialize a Harbor workspace. Use the interactive handoff to develop complete tasks with a coding agent and the `eval-engineering` skill.
 
 
 
@@ -75614,9 +75614,17 @@ If you also have a webhook automation rule on this project and want the webhook 
 
 Configure a sampling rate to control the percentage of filtered runs that trigger the automation action. For example, to control costs, you may want to set a filter to only apply the evaluator to 10% of traces. In order to do this, you would set the sampling rate to 0.1.
 
-## Apply a rule to past runs
+## Apply a rule to past runs or threads
 
-Apply a rule to past runs by toggling the **Apply to past runs** and entering a "Backfill from" date. This is only possible upon rule creation.
+To apply the rule to past runs or threads, in the **Configure Evaluator** panel:
+
+1. In **Source**, select **Runs** or **Threads**.
+1. Expand **Advanced**.
+1. Toggle on **Apply to past runs from date** or **Apply to past threads from date**, then enter a date.
+
+You can only backfill when you create the rule.
+
+When you backfill a [thread-level evaluation rule](/langsmith/online-evaluations-multi-turn), LangSmith finds threads with matching trace activity between the start date you selected and the time you created the rule, then applies the rule's filters. Once each selected thread is idle, LangSmith evaluates its root-run history and attaches the feedback to a representative trace in the thread. After the backfill finishes, the rule stays active and keeps evaluating new matching threads through the normal live flow.
 
 <Note>
 The backfill is processed as a background job, so you will not see the results immediately.
@@ -81024,7 +81032,7 @@ uvx --from managed-deepagents mda init my-agent --channel slack
 To add Slack to an existing project, run the channel initialization command from the project root:
 
 ```bash
-uv run mda channel init slack
+uv run mda channels init slack
 ```
 
 
@@ -81324,10 +81332,10 @@ The LangSmith API key authenticates the deploy. The agent's model provider also 
 | `mda --version` | Show the installed CLI version. |
 | `mda init <name>` | Scaffold a Python Managed Deep Agents project. |
 | `mda build [path]` | Compile a project into a managed LangGraph app without deploying. |
-| `mda eval …` / `mda evals …` | Initialize a Harbor workspace and continue eval authoring in a coding agent. |
+| `mda evals …` | Initialize a Harbor workspace and continue eval authoring in a coding agent. |
 | `mda dev [path]` | Compile a project and run it on the local LangGraph dev server. |
 | `mda deploy [path]` | Compile, sync Context Hub context, upload, and deploy to LangSmith. |
-| `mda channel init slack` | Add a Slack channel declaration to the current project. |
+| `mda channels init slack` | Add a Slack channel declaration to the current project. |
 | `mda logs [path]` | Tail Agent Server logs for a deployed agent. |
 | `mda delete [path]` / `mda destroy [path]` | Delete a deployed agent and the LangSmith resources it created. |
 
@@ -81391,7 +81399,7 @@ Eval tasks are opt-in and are not created by `mda init`. Run `mda evals init -i`
 Run the following command from the root of an existing managed deep agent project:
 
 ```bash
-uv run mda channel init slack
+uv run mda channels init slack
 ```
 
 
@@ -81417,7 +81425,7 @@ uv run mda build
 
 ## Evaluate projects
 
-Use `mda evals init` to initialize a Harbor workspace. The command is also available as `mda eval`. Use the interactive handoff to develop complete tasks with a coding agent and the `eval-engineering` skill.
+Use `mda evals init` to initialize a Harbor workspace. Use the interactive handoff to develop complete tasks with a coding agent and the `eval-engineering` skill.
 
 ```bash
 uv run mda evals init -i
