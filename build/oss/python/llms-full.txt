@@ -71408,6 +71408,14 @@ Browse the complete collection of integrations available for Python. LangChain P
     </Card>
 
     <Card
+        title="ChronoVec"
+        href="https://mchl-labs.github.io/chronovec/integrations/langchain"
+        icon="link"
+    >
+        Versioned vector store with snapshot queries and branch/merge speculative memory for LangChain agents.
+    </Card>
+
+    <Card
         title="cloro"
         href="https://docs.cloro.dev"
         icon="link"
@@ -72965,6 +72973,14 @@ Browse the complete collection of integrations available for Python. LangChain P
     </Card>
 
     <Card
+        title="Opsen"
+        href="https://opsen.dev/docs"
+        icon="link"
+    >
+        [opsen](https://opsen.dev) runs agent sandboxes and proxies their model calls, so machine, model and tool spend land under one task id.
+    </Card>
+
+    <Card
         title="Oracle AI Database"
         href="/oss/python/integrations/providers/oracleai"
         icon="link"
@@ -73106,6 +73122,14 @@ Browse the complete collection of integrations available for Python. LangChain P
         icon="link"
     >
         Agent-native headless browser with Set of Mark (SOM) structured UI extraction.
+    </Card>
+
+    <Card
+        title="Plivo"
+        href="https://github.com/plivo-dev/langchain-plivo-tools"
+        icon="link"
+    >
+        LangChain tools for sending SMS messages and placing voice calls through the Plivo communications APIs.
     </Card>
 
     <Card
@@ -89140,6 +89164,7 @@ Sandboxes provide isolated execution environments for running agent-generated co
 | [`E2BSandbox`](https://e2b.dev/docs) | <span data-sort-value="13000"><a href="https://pypi.org/project/langchain-e2b/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-e2b/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`VercelSandbox`](https://vercel.com/docs/sandbox) | <span data-sort-value="3000"><a href="https://pypi.org/project/langchain-vercel-sandbox/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-vercel-sandbox/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`OpenSandboxBackend`](https://github.com/AyushSonuu/langchain-sandbox-opensandbox#readme) | <span data-sort-value="1000"><a href="https://pypi.org/project/langchain-sandbox-opensandbox/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-sandbox-opensandbox/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`OpsenSandbox`](https://opsen.dev/docs) | <span data-sort-value="301"><a href="https://pypi.org/project/langchain-opsen/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opsen/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`KubernetesSandbox`](https://gitlab.com/bitkaio/langchain/kubernetes-sandbox) | <span data-sort-value="298"><a href="https://pypi.org/project/langchain-kubernetes/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-kubernetes/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`NonoSandbox`](https://github.com/always-further/langchain-nono) | <span data-sort-value="279"><a href="https://pypi.org/project/langchain-nono/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-nono/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`OpenShellSandbox`](https://github.com/langchain-ai/langchain-nvidia/tree/main/libs/openshell) | <span data-sort-value="276"><a href="https://pypi.org/project/langchain-nvidia-openshell/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-nvidia-openshell/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
@@ -97264,6 +97289,7 @@ The following table shows tools that generate video, image, or audio assets:
 | [`SignatrustGenerateReceiptTool`](https://signatrust.net/docs/api) | <span data-sort-value="174"><a href="https://pypi.org/project/langchain-signatrust/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-signatrust/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`W2A`](https://w2a-protocol.org/) | <span data-sort-value="172"><a href="https://pypi.org/project/langchain-w2a/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-w2a/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`iFlow Search`](https://platform.iflow.cn/) | <span data-sort-value="171"><a href="https://pypi.org/project/iflow-search-langchain/" target="_blank"><img src="https://static.pepy.tech/badge/iflow-search-langchain/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`PlivoToolkit`](https://github.com/plivo-dev/langchain-plivo-tools) | <span data-sort-value="171"><a href="https://pypi.org/project/langchain-plivo-tools/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-plivo-tools/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`GracefulFailTool`](https://selfheal.dev/docs) | <span data-sort-value="168"><a href="https://pypi.org/project/graceful-fail/" target="_blank"><img src="https://static.pepy.tech/badge/graceful-fail/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`PaySafe`](https://paysafe-agent.com) | <span data-sort-value="167"><a href="https://pypi.org/project/langchain-paysafe/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-paysafe/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`DeweyResearchTool`](https://github.com/meetdewey/langchain-dewey) | <span data-sort-value="166"><a href="https://pypi.org/project/langchain-dewey/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-dewey/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
@@ -107395,6 +107421,7 @@ vector_store = WeaviateVectorStore(
 | [`YDB`](https://ydb.tech/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="694"><a href="https://pypi.org/project/langchain-ydb/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-ydb/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Mariadb`](https://mariadb.com/docs/connectors/other/langchain-mariadb/api-reference) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="627"><a href="https://pypi.org/project/langchain-mariadb/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-mariadb/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Intel's visual data management system (VDMS)`](https://github.com/IntelLabs/vdms) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="624"><a href="https://pypi.org/project/langchain-vdms/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-vdms/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`ChronoVecVectorStore`](https://mchl-labs.github.io/chronovec/integrations/langchain) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="585"><a href="https://pypi.org/project/chronovec/" target="_blank"><img src="https://static.pepy.tech/badge/chronovec/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Google memorystore for Redis`](/oss/python/integrations/vectorstores/google_memorystore_redis) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="552"><a href="https://pypi.org/project/langchain-google-memorystore-redis/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-memorystore-redis/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`ShannonBaseVectorStore`](https://github.com/apoorva-01/langchain-shannonbase) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="519"><a href="https://pypi.org/project/langchain-shannonbase/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-shannonbase/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`TypesenseVectorStore`](https://github.com/typesense/langchain-typesense#readme) | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="519"><a href="https://pypi.org/project/langchain-typesense/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-typesense/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
@@ -128658,6 +128685,45 @@ async def main():
         agent = create_agent("claude-sonnet-5", tools)
         return await agent.ainvoke({"messages": [{"role": "user", "content": "..."}]})
 ```
+
+<Accordion title="Example: Query LangChain docs">
+
+The [LangChain docs MCP server](/use-these-docs) is a public HTTP endpoint at `https://docs.langchain.com/mcp`. Connect an agent to it to search and read documentation without writing custom tools:
+
+```python
+from langchain.agents import create_agent
+from langchain.mcp import MCPAdapter
+
+
+async def main():
+    async with MCPAdapter("https://docs.langchain.com/mcp") as adapter:  # [!code highlight]
+        tools = await adapter.list_tools()
+        agent = create_agent("claude-sonnet-5", tools)
+        return await agent.ainvoke(
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "How do I add short-term memory to a LangChain agent?",
+                    }
+                ]
+            }
+        )
+```
+
+<Note>
+The docs MCP server is public and does not require an API key. For IDE and coding-agent setup (Claude Code, Cursor, and others), see [Use docs programmatically](/use-these-docs).
+</Note>
+
+The server exposes these tools:
+
+| Tool | Description |
+|------|-------------|
+| `search_docs_by_lang_chain` | Search docs for relevant guides, how-tos, and examples. |
+| `query_docs_filesystem_docs_by_lang_chain` | Read or search docs through a virtual filesystem (`rg`, `head`, `cat`, and related commands). |
+| `submit_feedback` | Report a problem with a documentation page. |
+
+</Accordion>
 
 ## Transports
 
