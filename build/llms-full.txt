@@ -1763,7 +1763,7 @@ Set up your LangSmith account: create API keys, configure your profile, connect 
         You can log in with **Google**, **GitHub**, or **email**.
     </Step>
     <Step title="Create an API key" icon="key">
-        Go to your [Settings page](https://smith.langchain.com/settings) → **API Keys** → **Create API Key**.
+        Go to your [Settings page](https://smith.langchain.com/settings) > **API Keys** > **Create API Key**.
         Copy the key and save it securely.
     </Step>
 </Steps>
@@ -1909,6 +1909,10 @@ Personal Access Tokens (PATs) are used to authenticate requests to the LangSmith
 
 PATs are prefixed with `lsv2_pt_`
 
+Members can revoke or delete their own PATs. [Organization Admins](/langsmith/rbac#organization-admin) and [Organization Operators](/langsmith/rbac#organization-operator) can also list, revoke, and delete any member's PAT. For the steps, refer to [Create an account and API key](/langsmith/create-account-api-key).
+
+Revoking a token stops it from authenticating but keeps its record, listed with a **Revoked** badge, so the token, its owner, and its last use stay visible. Deleting removes the record entirely. Because authentication results are cached, a revoked or deleted token stops working within a minute rather than instantly. Service keys can only be deleted, not revoked.
+
 #### Service keys
 
 Service keys are similar to PATs, but are used to authenticate requests to the LangSmith API on behalf of a service account. Only admins can create service keys. We recommend using these for applications / services that need to interact with the LangSmith API, such as LangGraph agents or other integrations. Service keys may be scoped to a single workspace, multiple workspaces, or the entire organization, and can be used to authenticate requests to the LangSmith API for whichever workspace(s) it has access to.
@@ -1956,6 +1960,7 @@ The following table provides an overview of organization level permissions:
 | View data retention settings                | ✅                   | ✅                 | ✅                  |
 | View usage limits                           | ✅                   | ✅                 | ✅                  |
 | Create personal access tokens (PATs)        | ❌                   | ✅                 | ✅                  |
+| View, revoke, and delete any member's PATs  | ❌                   | ❌                 | ✅                  |
 | Admin access to all workspaces              | ❌                   | ❌                 | ✅                  |
 | Manage billing settings                     | ❌                   | ❌                 | ✅                  |
 | Create workspaces                           | ❌                   | ❌                 | ✅                  |
@@ -6357,7 +6362,7 @@ You can preview alert behavior over a historical time window to understand how m
     ### 1. Create a Service in PagerDuty
 
     1. Log in to your PagerDuty account
-    2. Navigate to **Services → Service Directory**
+    2. Navigate to **Services > Service Directory**
     3. Click **+ New Service**
     4. Complete the following fields:
        - **Name**: Provide a descriptive name (e.g., "LangSmith Monitoring")
@@ -6590,7 +6595,7 @@ You can preview alert behavior over a historical time window to understand how m
       **Step 5: Configure the webhook alert in LangSmith**
 
       1. In LangSmith, navigate to your project.
-      2. Select **Alerts → Create Alert**.
+      2. Select **Alerts > Create Alert**.
       3. Define your alert metrics and conditions.
       4. In the notification section, select **Webhook**.
       5. Configure the webhook with the following settings:
@@ -6701,7 +6706,7 @@ You can preview alert behavior over a historical time window to understand how m
       **Step 3: Configure the webhook alert in LangSmith**
 
       1. In LangSmith, navigate to your project.
-      2. Select **Alerts → Create Alert**.
+      2. Select **Alerts > Create Alert**.
       3. Define your alert metrics and conditions.
       4. In the notification section, select **Webhook**.
       5. Configure the webhook with the following settings:
@@ -6755,20 +6760,20 @@ You can preview alert behavior over a historical time window to understand how m
       **Step 1: Create a SendGrid API key**
 
       1. Log in to your [SendGrid dashboard](https://app.sendgrid.com).
-      2. Navigate to **Settings → API Keys**.
+      2. Navigate to **Settings > API Keys**.
       3. Click **Create API Key**.
-      4. Choose **Restricted Access** and enable **Mail Send → Full Access**.
+      4. Choose **Restricted Access** and enable **Mail Send > Full Access**.
       5. Click **Create & View**, copy the key, and store it securely.
 
       **Step 2: Verify your sender email**
 
-      1. In SendGrid, navigate to **Settings → Sender Authentication**.
+      1. In SendGrid, navigate to **Settings > Sender Authentication**.
       2. Complete either **Domain Authentication** (recommended) or **Single Sender Verification** for the address you want to send from.
 
       **Step 3: Configure the webhook alert in LangSmith**
 
       1. In LangSmith, navigate to your project.
-      2. Select **Alerts → Create Alert**.
+      2. Select **Alerts > Create Alert**.
       3. Define your alert metrics and conditions.
       4. In the notification section, select **Webhook**.
       5. Configure the webhook with the following settings:
@@ -6856,7 +6861,7 @@ You can preview alert behavior over a historical time window to understand how m
 
       **Prerequisites**
 
-      - A Google Chat space with an incoming webhook configured. In Google Chat, open the space → **Apps & integrations** → **Add webhooks**, create a webhook, and copy the URL.
+      - A Google Chat space with an incoming webhook configured. In Google Chat, open the space, then go to **Apps & integrations** > **Add webhooks**, create a webhook, and copy the URL.
       - A Google Cloud project with Cloud Run or Cloud Functions enabled, or equivalent hosting.
 
       **Step 1: Deploy the handler**
@@ -6970,7 +6975,7 @@ You can preview alert behavior over a historical time window to understand how m
       }
       ```
 
-      Set `GCHAT_WEBHOOK_URL` and `LANGSMITH_SHARED_SECRET` in **Project Settings → Script Properties**.
+      Set `GCHAT_WEBHOOK_URL` and `LANGSMITH_SHARED_SECRET` in **Project Settings > Script Properties**.
 
       <Warning>
       Apps Script web apps cannot read custom HTTP request headers, so the shared secret must be passed as a **query string parameter** (`?secret=...`) rather than a header. Include it in the LangSmith webhook URL rather than the Headers field.
@@ -8705,7 +8710,7 @@ Set a number of reviewers or the maximum time you want to reserve the item to a 
 - **Use assigned reviewers**: Enable this toggle to use specific workspace members instead of a count-based threshold. When enabled:
 
     - A multi-select user picker appears so you can choose specific workspace members as assigned reviewers.
-    - An item is marked **Completed** only when every assigned reviewer has submitted their review. Queue items progress through three states: **Needs Review** → **Needs Others' Review** → **Completed**.
+    - An item is marked **Completed** only when every assigned reviewer has submitted their review. Queue items progress through three states: **Needs Review**, **Needs Others' Review**, and **Completed**.
     - Non-assigned workspace members can still annotate items, but their submissions do not count toward completion.
     - Any workspace member can edit the assigned reviewers list in the queue settings.
 
@@ -9989,6 +9994,7 @@ Audit log events are returned in [OCSF v1.7.0 API Activity (Class UID 6003)](htt
 | `resources` | List of UUIDs for the resources affected by the operation (e.g., the role that was updated, the workspace that was created). |
 | `metadata.uid` | Unique identifier for this audit log event. |
 | `unmapped.original_audit_log` | The full LangSmith-native audit log record, including `organization_id` and `workspace_id`. |
+| `unmapped.original_audit_log.enrichments.resource_owner_ls_user_id` | UUID of the member who owns the resource the operation acted on, for the operations that record it, such as revoking or deleting a personal access token. A value different from `actor.user.uid` means an administrator acted on another member's resource. |
 
 ## Forwarding to external systems
 
@@ -9998,7 +10004,7 @@ To forward audit log events to an external SIEM or logging platform, you can run
 
 | Category | Operations (`api.operation`) |
 |----------|-----------|
-| **API keys & credentials** | `create_api_key`, `delete_api_key`, `create_personal_access_token`, `delete_personal_access_token`, `create_service_key`, `delete_service_key`, `update_service_key`, `create_service_account`, `delete_service_account`, `list_org_personal_access_tokens`, `list_org_service_keys` |
+| **API keys & credentials** | `create_api_key`, `delete_api_key`, `create_personal_access_token`, `delete_personal_access_token`, `create_service_key`, `delete_service_key`, `update_service_key`, `create_service_account`, `delete_service_account`, `revoke_personal_access_token`, `list_org_personal_access_tokens`, `list_all_org_personal_access_tokens`, `list_org_service_keys` |
 | **Roles** | `create_role`, `update_role`, `delete_role` |
 | **Organizations** | `create_organization`, `create_provisioned_saas_org`, `create_tenant`, `invite_provisioned_org_member`, `claim_pending_organization_invite`, `delete_pending_organization_invite` |
 | **Organization members** | `invite_user_to_org`, `invite_users_to_org_batch`, `update_org_member`, `delete_org_member`, `delete_org_pending_member`, `add_basic_auth_users_to_org`, `update_basic_auth_user` |
@@ -11615,7 +11621,7 @@ gcloud storage hmac create \
   langsmith-bulk-export@YOUR_PROJECT.iam.gserviceaccount.com
 ```
 
-Save the `accessId` and `secret` from the output. You can also generate HMAC keys in the GCP Console under **Cloud Storage → Settings → Interoperability → Create a key for a service account**.
+Save the `accessId` and `secret` from the output. You can also generate HMAC keys in the GCP Console under **Cloud Storage > Settings > Interoperability > Create a key for a service account**.
 
 ## 4. Create a bulk export destination
 
@@ -17813,7 +17819,7 @@ To build and run a valid application, the LangGraph CLI requires a JSON configur
     <Tab title="Python">
     Run LangGraph API server in development mode with hot reloading and debugging capabilities. This lightweight server requires no Docker installation and is suitable for development and testing. State is persisted to a local directory.
 
-        <Note>Currently, the CLI only supports Python >= 3.11.</Note>
+        <Note>Currently, the CLI only supports Python 3.11 or later.</Note>
 
     <Tip>
     If you need more information on when to use `langgraph dev` vs `langgraph up`, refer to the [Local development & testing guide](/langsmith/local-dev-testing) for a detailed comparison.
@@ -21642,7 +21648,7 @@ Each webhook applies to the entire workspace. Every configured endpoint receives
 
 To add a webhook:
 
-1. In the [LangSmith UI](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=langsmith-context-hub-webhooks), go to **Settings** → **Integrations** → **Context Hub webhooks**.
+1. In the [LangSmith UI](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=langsmith-context-hub-webhooks), go to **Settings** > **Integrations** > **Context Hub webhooks**.
 1. Click **Add webhook**.
 1. Enter a publicly reachable HTTPS URL.
 1. (Optional) Add custom request headers, such as an `Authorization` header.
@@ -23369,7 +23375,11 @@ To log [traces](/langsmith/observability-concepts#traces) and run [evaluations](
 </Steps>
 
 <Tip>
-  To delete an API key, navigate to the [**Settings** page](https://smith.langchain.com/settings), find the key in the **API Keys** section, and select the trash icon <Icon icon="trash" iconType="solid"/> in the **Actions** column.
+  To revoke or delete a key, navigate to the [**Settings** page](https://smith.langchain.com/settings), find the key in the **API Keys** section, and select the trash icon <Icon icon="trash" iconType="solid"/> in the **Actions** column. For a personal access token, type the key's name, then select **Revoke** to stop the token from authenticating while keeping its record, or **Delete** to remove the record entirely. Neither action can be undone. Service keys can only be deleted.
+</Tip>
+
+<Tip>
+  [Organization Admins](/langsmith/rbac#organization-admin) and [Organization Operators](/langsmith/rbac#organization-operator) can view, revoke, and delete every member's personal access tokens. In the **API Keys** section of the [**Settings** page](https://smith.langchain.com/settings), open the **Personal** tab and switch the scope from **My keys** to **All members**.
 </Tip>
 
 <Tip>
@@ -25479,7 +25489,7 @@ Use the returned `id` to reference this destination in subsequent bulk export op
 
 ### Credentials configuration
 
-<Note>**Requires LangSmith Helm version >= `0.10.34` (application version >= `0.10.91`)**</Note>
+<Note>**Requires LangSmith Helm version `0.10.34` or later (application version `0.10.91` or later)**</Note>
 
 We support the following additional credentials formats besides static `access_key_id` and `secret_access_key`:
 
@@ -26298,7 +26308,7 @@ On [LangSmith cloud](/langsmith/cloud), each `all_experiments` export includes a
 ### Schedule recurring exports
 
 <Note>
-Requires LangSmith Helm version >= `0.10.42` (application version >= `0.10.109`)
+Requires LangSmith Helm version `0.10.42` or later (application version `0.10.109` or later)
 </Note>
 
 Scheduled exports collect runs periodically and export to the configured destination. To create a scheduled export, include `interval_hours` and omit `end_time`:
@@ -26350,7 +26360,7 @@ If a scheduled bulk export is created with `start_time=2025-07-16T00:00:00Z` and
 ### Limit exported fields
 
 <Note>
-Requires LangSmith Helm version >= `0.12.11` (application version >= `0.12.42`). Supported in both one-time and scheduled exports.
+Requires LangSmith Helm version `0.12.11` or later (application version `0.12.42` or later). Supported in both one-time and scheduled exports.
 </Note>
 
 You can improve export speed and reduce file size by limiting which fields are included using the `export_fields` parameter. If you omit `export_fields`, all fields except `feedbacks` are included.
@@ -30166,7 +30176,7 @@ polly:
 ## Enable Sandboxes
 
 <Note>
-Self-hosted Sandboxes require LangSmith Helm chart v17 (`0.17.x`).
+Self-hosted Sandboxes on Azure require LangSmith Helm chart v17 (`0.17.x`).
 </Note>
 
 Sandboxes are disabled by default. After installation, see [LangSmith Sandboxes](/langsmith/sandboxes) for user workflows in the LangSmith UI and APIs.
@@ -32800,7 +32810,7 @@ async def fake_route(request: Request):
 ## Distributed tracing in TypeScript
 
 <Note>
-Distributed tracing in TypeScript requires `langsmith` version `>=0.1.31`
+Distributed tracing in TypeScript requires `langsmith>=0.1.31`
 </Note>
 
 First, we obtain the current run tree from the client and convert it to `langsmith-trace` and `baggage` header values, which we can pass to the server:
@@ -39465,7 +39475,7 @@ LangSmith supports evaluating **existing** experiments in a comparative manner. 
 ## Prerequisites
 
 * If you haven't already created experiments to compare, check out the [quick start](/langsmith/evaluation-quickstart) or the [how-to guide](/langsmith/evaluate-llm-application) to get started with evaluations.
-* This guide requires `langsmith` Python version `>=0.2.0` or JS version `>=0.2.9`.
+* This guide requires `langsmith>=0.2.0` for Python or `langsmith>=0.2.9` for JS.
 
 <Info>
 You can also use [`evaluate_comparative()`](https://docs.smith.langchain.com/reference/python/evaluation/langsmith.evaluation._runner.evaluate_comparative) with more than two existing experiments.
@@ -41246,7 +41256,7 @@ ls_client.create_examples(
 
 #### TypeScript
 
-Requires version >= 0.2.13
+Requires version 0.2.13 or later
 
 You can use the `uploadExamplesMultipart` method to upload examples with attachments.
 
@@ -43435,7 +43445,7 @@ LangSmith supports two types of evaluation based on when and where they run:
         You can log in with **Google**, **GitHub**, or **email**.
     </Step>
     <Step title="Create an API key" icon="key">
-        Go to your [Settings page](https://smith.langchain.com/settings) → **API Keys** → **Create API Key**.
+        Go to your [Settings page](https://smith.langchain.com/settings) > **API Keys** > **Create API Key**.
         Copy the key and save it securely.
     </Step>
 </Steps>
@@ -56579,7 +56589,7 @@ Ask the coding agent to follow the skill's review flow and use the Managed Deep 
 <Prompt
     description="Develop Harbor evals with the eval-engineering skill"
     icon="flask"
-    actions={["copy", "cursor"]}
+    actions={["copy"]}
 >
 Use the eval-engineering skill to develop Harbor evals for this Managed
 Deep Agent. Inspect the project and existing evals first. Draft the Task
@@ -57497,7 +57507,7 @@ Or paste this prompt into your coding agent:
 <Prompt
     description="Build a Managed Deep Agent with the quickstart"
     icon="sparkles"
-    actions={["copy", "cursor"]}
+    actions={["copy"]}
 >
 Create and deploy a Managed Deep Agent in this working directory by following the Managed Deep Agents quickstart.
 
@@ -58656,9 +58666,9 @@ You can update these settings in the LangSmith UI or with the LangSmith API:
 
 In the [LangSmith UI](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=langsmith-jit-invite-sso):
 
-1. Navigate to **Settings** → **Organization** → **Access and Security** → **General**.
+1. Navigate to **Settings** > **Organization** > **Access and Security** > **General**.
 1. Toggle **Enable JIT provisioning** and **Allow invites** as needed.
-1. [Configure SSO default workspaces and roles](#configure-default-sso-settings) in **Settings** → **Organization** → **SSO Configuration**.
+1. [Configure SSO default workspaces and roles](#configure-default-sso-settings) in **Settings** > **Organization** > **SSO Configuration**.
 
 </Tab>
 <Tab title="API" icon="code">
@@ -58813,7 +58823,7 @@ When [JIT provisioning](#jit-provisioning) is enabled, configure default setting
 
 1. Default workspaces. Select one or more workspaces that users are automatically added to. Users receive the same role in all selected workspaces. To configure:
 
-    1. Go to **Settings** → **Organization** → **SSO Configuration**.
+    1. Go to **Settings** > **Organization** > **SSO Configuration**.
     1. Set **Default workspace role**.
     1. Select **Default workspaces**.
     1. Save your configuration.
@@ -62324,7 +62334,7 @@ You need [`organization:manage` permission](/langsmith/organization-workspace-op
 
 The gateway resolves provider API keys from your workspace's Provider Secrets—this is how it proxies calls to upstream providers without individual users needing local copies of provider keys.
 
-Go to **Settings → Integrations → Provider Secrets** and add the keys for the providers you want to proxy through the gateway:
+Go to **Settings > Integrations > Provider Secrets** and add the keys for the providers you want to proxy through the gateway:
 
 | Secret name | Provider |
 | --- | --- |
@@ -62348,7 +62358,7 @@ The built-in roles `WORKSPACE_USER` and `WORKSPACE_VIEWER` do not include the `g
 
 Requires an RBAC-enabled plan.
 
-1. Go to **Settings → Members/Roles**.
+1. Go to **Settings > Members/Roles**.
 1. Create a new workspace role.
 1. Grant it at minimum `gateway:invoke` and `workspaces:read`.
 1. Assign users who need gateway access to this role.
@@ -62367,7 +62377,7 @@ Use this if you don't need fine-grained access control, or if you don't have RBA
 
 Gateway policy management requires `organization:manage` permission.
 
-Go to **Settings → Gateway → LLM Gateway** to create governance policies. You can configure:
+Go to **LLM Gateway** to create governance policies. You can configure:
 
 - **Spend limits:** hard caps at the organization, workspace, API key, or user level. Refer to [Spend policies](/langsmith/llm-gateway-spend-policies).
 - **Data protection:** detect and redact PII and secrets before they reach the model. Refer to [Data protection](/langsmith/llm-gateway-data-protection).
@@ -63208,7 +63218,7 @@ In addition to the [built-in providers](/langsmith/llm-gateway-direct-model-acce
 
 ## How it works
 
-A custom provider is defined by a [model configuration](/langsmith/model-configurations) that you save under **Settings → Model configurations** in the [LangSmith UI](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=langsmith-llm-gateway-custom-providers). The provider you select in that configuration sets the format the gateway speaks to your upstream:
+A custom provider is defined by a [model configuration](/langsmith/model-configurations) that you save under **Settings > Model configurations** in the [LangSmith UI](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=langsmith-llm-gateway-custom-providers). The provider you select in that configuration sets the format the gateway speaks to your upstream:
 
 | Configuration provider | Wire format | Example endpoints |
 | --- | --- | --- |
@@ -63236,8 +63246,8 @@ Both routes look up the same configuration, resolve the same secret, and proxy t
 
 ## 1. Create a custom provider configuration
 
-1. Add the upstream endpoint's API key as a workspace secret under **Settings → Integrations → Provider Secrets**. Give it a descriptive name (for example, `MY_PROVIDER_API_KEY`).
-1. Go to **Settings → Model configurations** and create a configuration with **OpenAI Compatible Endpoint** or **Anthropic** as the provider.
+1. Add the upstream endpoint's API key as a workspace secret under **Settings > Integrations > Provider Secrets**. Give it a descriptive name (for example, `MY_PROVIDER_API_KEY`).
+1. Go to **Settings > Model configurations** and create a configuration with **OpenAI Compatible Endpoint** or **Anthropic** as the provider.
 1. Set the **Base URL** to your upstream endpoint (for example, `https://my-inference-server.example.com/v1`) and the **Model Name** to a model identifier the endpoint expects.
 1. Set the **API Key Name** to the secret you created.
 1. Save the configuration with a **name**. This name is what you'll use in the gateway route.
@@ -63370,7 +63380,7 @@ The gateway detects and redacts API keys, tokens, and credentials across a wide 
 Creating and managing policies requires `organization:manage` permission.
 </Warning>
 
-1. Go to **Settings → Gateway → LLM Gateway**.
+1. Go to **LLM Gateway**.
 1. Click **Create policy**.
 1. Select **PII redaction** or **Secrets redaction** as the policy type.
 1. Configure which categories to detect (or enable all).
@@ -63619,7 +63629,7 @@ Creating and managing fallback chains requires `organization:manage` permission.
 
 To create a fallback chain:
 
-1. Go to **Settings → Gateway → LLM Gateway** and select the **Model Fallbacks** tab.
+1. Go to **LLM Gateway** and select the **Model Fallbacks** tab.
 1. Click **Create fallback chain**.
 1. Select the **Workspace** where the chain applies.
 1. Select the primary provider and model. Requests to this provider-prefixed model ID use the chain when the primary attempt fails.
@@ -63721,7 +63731,7 @@ Default spend bucketing follows these rules:
 
 To separate a default spend limit by header:
 
-1. Go to **Settings → Gateway → LLM Gateway** and select **Cost Controls**.
+1. Go to **LLM Gateway** and select **Cost Controls**.
 1. Click **Create spend limit**.
 1. Select **Workspace**, **User**, or **API Key**, then select the option to apply the limit to every subject of that type by default.
 1. Select **Separate limits by custom header**.
@@ -63744,7 +63754,7 @@ Explicit header conditions follow these rules:
 - **Every matching policy is enforced**: A request that matches both a plain subject policy and a policy with a header condition counts against both, and either one can block it.
 - **At most 10 conditions**: A policy carries no more than 10 subject conditions in total.
 
-1. Go to **Settings → Gateway → LLM Gateway**.
+1. Go to **LLM Gateway**.
 1. Click **Create policy**.
 1. Select the policy type and subject scope, then set the limits.
 1. Under **Custom header condition (optional)**, enter the **Header name** without its `X-Gateway-` prefix (for example, `Customer-Id`) and the **Header value** to match (for example, `acme`).
@@ -64031,7 +64041,7 @@ When a request matches policies at multiple tiers, only the most specific tier a
 Creating and managing policies requires `organization:manage` permission. For the full permissions breakdown, refer to [Traces, Engine, and access control](/langsmith/llm-gateway-access).
 </Warning>
 
-1. Go to **Settings → Gateway → LLM Gateway** and select **Model Access**.
+1. Go to **LLM Gateway** and select **Model Access**.
 1. Click **Create model access**.
 1. Enter a **Policy name**.
 1. Select the scope under **Applies to** (organization, workspace, user, or API key).
@@ -64378,7 +64388,7 @@ If your application also emits its own LangSmith traces, for example, through [L
 
 ## 4. Set a spend policy (optional)
 
-Go to **Settings → Gateway → LLM Gateway** in LangSmith to create a spend policy. For example, you can set a daily $10 cap on your API key. When the cap is reached, the gateway returns a `402` response with the message: `"Request blocked by gateway policies: R&D Spend Cap"`.
+Go to **LLM Gateway** in LangSmith to create a spend policy. For example, you can set a daily $10 cap on your API key. When the cap is reached, the gateway returns a `402` response with the message: `"Request blocked by gateway policies: R&D Spend Cap"`.
 
 See [Spend policies](/langsmith/llm-gateway-spend-policies) for the full guide on policy dimensions, time windows, and conflict resolution.
 
@@ -64476,7 +64486,7 @@ Rules:
 Creating and managing policies requires `organization:manage` permission. For the full permissions breakdown, refer to [Traces, Engine, and access control](/langsmith/llm-gateway-access).
 </Warning>
 
-1. Go to **Settings → Gateway → LLM Gateway**.
+1. Go to **LLM Gateway**.
 1. Click **Create policy**.
 1. Select **Rate limit** as the policy type.
 1. Select the subject scope (user, workspace, or API key).
@@ -64559,7 +64569,7 @@ You can apply multiple time windows to the same scope. For example, a workspace 
 Creating and managing policies requires `organization:manage` permission. For the full permissions breakdown, refer to [Traces, Engine, and access control](/langsmith/llm-gateway-access).
 </Warning>
 
-1. Go to **Settings → Gateway → LLM Gateway** and select **Cost Controls**.
+1. Go to **LLM Gateway** and select **Cost Controls**.
 1. Click **Create spend limit**.
 1. Select the scope (organization, workspace, API key, or user).
 1. (Optional) To apply the same default limit independently to every custom header value, apply the limit to every subject of the selected type by default, select **Separate limits by custom header**, and enter the header name.
@@ -66143,7 +66153,7 @@ export LANGSMITH_PROJECT=my-custom-project
 ```
 
 <Warning>
-The `LANGSMITH_PROJECT` flag is only supported in JS SDK versions >= 0.2.16, use `LANGCHAIN_PROJECT` instead if you are using an older version.
+The `LANGSMITH_PROJECT` flag is only supported in JS SDK 0.2.16 or later, use `LANGCHAIN_PROJECT` instead if you are using an older version.
 </Warning>
 
 If the project specified does not exist, LangSmith will automatically create it when the first trace is ingested.
@@ -66956,7 +66966,7 @@ if (primaryRunId) {
 </CodeGroup>
 
 <Note>
-The `compute_run_id_for_secondary_replica` / `computeRunIdForSecondaryReplica` helper is available in Python SDK >= 0.10.8 and JS SDK >= 0.8.5. If you are using an earlier SDK version, upgrade to use this feature.
+The `compute_run_id_for_secondary_replica` / `computeRunIdForSecondaryReplica` helper is available in Python SDK 0.10.8 or later and JS SDK 0.8.5 or later. If you are using an earlier SDK version, upgrade to use this feature.
 </Note>
 
 ### Route between LangSmith and OpenTelemetry destinations
@@ -71742,7 +71752,7 @@ Shared traces are accessible to anyone with the link, even without a LangSmith a
 To unshare a trace, use either of the following methods:
 
 1. Open the shared trace, click **Public** in the toolbar at the top of the Details view, then click **Unshare** in the dialog.
-1. Go to **Settings** → **Shared URLs** to view all publicly shared traces in the selected workspace. Click **Unshare** next to the trace you want to unshare.
+1. Go to **Settings** > **Shared URLs** to view all publicly shared traces in the selected workspace. Click **Unshare** next to the trace you want to unshare.
 
 ## View server logs
 
@@ -76513,7 +76523,7 @@ LangSmith works with many frameworks and providers. Browse [available integratio
         You can log in with **Google**, **GitHub**, or **email**.
     </Step>
     <Step title="Create an API key" icon="key">
-        Go to your [Settings page](https://smith.langchain.com/settings) → **API Keys** → **Create API Key**.
+        Go to your [Settings page](https://smith.langchain.com/settings) > **API Keys** > **Create API Key**.
         Copy the key and save it securely.
     </Step>
 </Steps>
@@ -77775,10 +77785,12 @@ Attribute-based access control (ABAC) policies for fine-grained permissions.
 | Create org-scoped service key (workspace-scoped)* | ✓ | ✓ | ⚠ | ✗ | `organization:pats:create` + `workspaces:manage-keys` |
 | Create org-scoped service key (org-wide)* | ✓ | ✗ | ✗ | ✗ | `organization:pats:create` + `organization:manage` |
 | Delete org-scoped service key (workspace-scoped)* | ✓ | ✓ | ⚠ | ✗ | `organization:read` + `workspaces:manage-keys` |
-| Update service key role | ✓ | ✗ | ✗ | ✗ | `organization:manage` |
-| List personal access tokens (PATs) | ✓ | ✓ | ✓ | ✗ | `organization:read` |
+| Update service key role | ✓ | ✓ | ✗ | ✗ | `organization:manage` |
+| List own personal access tokens (PATs) | ✓ | ✓ | ✓ | ✗ | `organization:read` |
+| List every member's personal access tokens (PATs) | ✓ | ✓ | ✗ | ✗ | `organization:pats:read` |
 | Create personal access token (PAT) | ✓ | ✓ | ✓ | ✗ | `organization:pats:create` |
-| Delete personal access token (PAT) | ✓ | ✓ | ✓ | ✗ | `organization:read` |
+| Revoke or delete own personal access token (PAT) | ✓ | ✓ | ✓ | ✗ | `organization:read` |
+| Revoke or delete another member's personal access token (PAT) | ✓ | ✓ | ✗ | ✗ | `organization:pats:manage` |
 
 <Note>
 \* Organization Operators and Organization Users can create or delete workspace-scoped service keys only in workspaces where their role grants `workspaces:manage-keys`, such as the Workspace Admin role. Creating an org-wide service key requires the Organization Admin role.
@@ -78940,7 +78952,7 @@ Gemini Enterprise Agent Platform uses a **service account JSON key** for authent
 
 #### Step 1: Create a service account
 
-1. Go to the [Google Cloud Console → IAM & Admin → Service Accounts](https://console.cloud.google.com/iam-admin/serviceaccounts).
+1. Go to the [Google Cloud Console > IAM & Admin > Service Accounts](https://console.cloud.google.com/iam-admin/serviceaccounts).
 2. Select your project and click **Create Service Account**.
 3. Give it a name (e.g., `langsmith-vertex-ai`) and click **Create and Continue**.
 4. Assign the role **Vertex AI User** (`roles/aiplatform.user`) and click **Done**.
@@ -78948,7 +78960,7 @@ Gemini Enterprise Agent Platform uses a **service account JSON key** for authent
 #### Step 2: Download the JSON key
 
 1. Click on the service account you just created.
-2. Go to the **Keys** tab and click **Add Key → Create new key**.
+2. Go to the **Keys** tab and click **Add Key > Create new key**.
 3. Choose **JSON** and click **Create**. A `.json` file will download to your machine.
 
 The downloaded file looks like this:
@@ -83841,7 +83853,7 @@ Ask the coding agent to follow the skill's review flow and use the Managed Deep 
 <Prompt
     description="Develop Harbor evals with the eval-engineering skill"
     icon="flask"
-    actions={["copy", "cursor"]}
+    actions={["copy"]}
 >
 Use the eval-engineering skill to develop Harbor evals for this Managed
 Deep Agent. Inspect the project and existing evals first. Draft the Task
@@ -84849,7 +84861,7 @@ Or paste this prompt into your coding agent:
 <Prompt
     description="Build a Managed Deep Agent with the quickstart"
     icon="sparkles"
-    actions={["copy", "cursor"]}
+    actions={["copy"]}
 >
 Create and deploy a Managed Deep Agent in this working directory by following the Managed Deep Agents quickstart.
 
@@ -86310,7 +86322,7 @@ Then attach your preferred debugger:
     ```
     </Tab>
     <Tab title="PyCharm">
-    1. Go to Run → Edit Configurations
+    1. Go to Run > Edit Configurations
     2. Click + and select "Python Debug Server"
     3. Set IDE host name: `localhost`
     4. Set port: `5678` (or the port number you chose in the previous step)
@@ -86390,6 +86402,8 @@ Organization roles are **distinct from the workspace RBAC feature** and are used
 - `organization:manage` - Full control over organization settings, SSO, security, billing
 - `organization:read` - Read access to all organization information
 - `organization:pats:create` - Create organization-level [personal access tokens](/langsmith/administration-overview#personal-access-tokens-pats)
+- `organization:pats:read` - View every organization member's personal access tokens
+- `organization:pats:manage` - Revoke or delete any organization member's personal access token
 
 For a comprehensive list of required permissions along with the operations and roles that can perform them, refer to the [Organization and workspace reference](/langsmith/organization-workspace-operations).
 
@@ -86399,6 +86413,7 @@ For a comprehensive list of required permissions along with the operations and r
 - Manage [billing](/langsmith/billing) and subscription plans
 - Create and delete [workspaces](/langsmith/set-up-hierarchy)
 - Invite and remove organization members
+- View, revoke, and delete any member's [personal access tokens](/langsmith/administration-overview#personal-access-tokens-pats)
 - Assign organization and workspace roles to members
 - Create and manage [custom roles](#custom-roles)
 - Configure RBAC and ABAC (Attribute-Based Access Control) policies
@@ -86415,6 +86430,8 @@ Management access for day-to-day operations including workspace and user managem
 - `organization:manage` - Control over organization settings, workspaces, and non-admin users
 - `organization:read` - Read access to all organization information
 - `organization:pats:create` - Create personal access tokens
+- `organization:pats:read` - View every organization member's personal access tokens
+- `organization:pats:manage` - Revoke or delete any organization member's personal access token
 
 For a comprehensive list of required permissions along with the operations and roles that can perform them, refer to the [Organization and workspace reference](/langsmith/organization-workspace-operations).
 
@@ -86422,6 +86439,7 @@ For a comprehensive list of required permissions along with the operations and r
 - Create and manage [workspaces](/langsmith/set-up-hierarchy#set-up-a-workspace)
 - Invite organization members (all roles except Organization Admin)
 - Manage non-admin organization members (modify and remove Organization Users, Viewers, and Operators)
+- View, revoke, and delete any member's [personal access tokens](/langsmith/administration-overview#personal-access-tokens-pats)
 - Assign workspace roles to members
 - Create workspace-scoped service keys and service accounts
 - View organization [usage](/langsmith/usage-and-billing#usage-limits) and analytics
@@ -92684,7 +92702,27 @@ LangSmith supplies its required runtime tools separately when the sandbox starts
 
 ### Private registries
 
-To pull from a private registry, create a registry once with its credentials, then reference it by id when building a snapshot. Registries persist, so reuse one across snapshots.
+To pull from a private registry, create a registry once with its credentials, then reference it by ID when building a snapshot. Registries persist, so reuse one across snapshots.
+
+#### Find repositories and tags
+
+In the LangSmith UI, the **Container Image URI** field suggests repositories and tags from Docker Hub or the selected private registry. Search behavior depends on the registry provider and authentication method:
+
+| Source | Repository discovery | Tag discovery |
+| --- | --- | --- |
+| Docker Hub, without a saved registry | Searches Docker Official Images for a bare image name or a specified Docker Hub namespace | Searches tags after you select or enter a repository |
+| Docker Registry | Searches the registry catalog when the registry supports it | Searches tags after you select or enter a repository |
+| Harbor | Searches the accessible catalog | Searches tags after you select or enter a repository |
+| GitHub Container Registry (GHCR) | Searches within a specified GitHub owner | Searches tags after you select or enter a repository |
+| Google Artifact Registry (GAR) | Searches repositories within a project and location, then searches packages within the selected repository | Searches tags after you select or enter an image repository |
+| Amazon Elastic Container Registry (ECR), with username and password | Requires you to enter a complete repository | Searches tags after you enter a repository |
+| Amazon ECR, with an AWS IAM role | Searches repositories across the configured AWS account | Searches tags after you select or enter a repository |
+
+Repository and tag discovery is advisory and bounded. You can always enter a known repository, tag, or digest manually, including when a provider does not support search or returns no matches. Use a digest-qualified image URI when you need an immutable snapshot source.
+
+#### Authenticate with username and password
+
+Username and password authentication works with all supported private registry providers. For ECR, the password is an ECR authorization token and expires after 12 hours. Update the saved registry credentials when the token expires.
 
 <CodeGroup>
 
@@ -92729,6 +92767,75 @@ const snapshot = await client.createSnapshot(
 </CodeGroup>
 
 List, inspect, update, and delete registries with `client.registries.list()`, `client.registries.retrieve(name)`, `client.registries.update(name, ...)`, and `client.registries.delete(name)`.
+
+#### Authenticate to ECR with an AWS IAM role
+
+AWS IAM role authentication avoids storing an expiring ECR authorization token in LangSmith. It supports private ECR registries in the commercial AWS partition. Public ECR, AWS GovCloud, AWS China, and custom ECR-compatible domains continue to use username and password authentication.
+
+<Note>
+The **AWS IAM role** authentication method appears only when your LangSmith deployment supports it. If the option is unavailable, use username and password authentication.
+</Note>
+
+To register an ECR role:
+
+1. In LangSmith, open **Sandboxes > Registries**, select **Register Private Registry**, and enter your registry URL in the form `<aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com`.
+2. Select **AWS IAM role** under **Authentication method**. Copy the AWS principal ARN and workspace ID that LangSmith displays. LangSmith uses the workspace ID as `sts:ExternalId`.
+3. In AWS, create an IAM role or update an existing role with a trust policy that uses the exact values shown in LangSmith:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "<principal-arn-shown-in-langsmith>"
+      },
+      "Action": "sts:AssumeRole",
+      "Condition": {
+        "StringEquals": {
+          "sts:ExternalId": "<workspace-id-shown-in-langsmith>"
+        }
+      }
+    }
+  ]
+}
+```
+
+4. Give the role permission to discover and pull the required ECR images. The following policy grants access to every repository in one AWS account and region. Replace the placeholders, or narrow the repository resource to the repositories LangSmith can use:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "GetAuthorizationToken",
+      "Effect": "Allow",
+      "Action": "ecr:GetAuthorizationToken",
+      "Resource": "*"
+    },
+    {
+      "Sid": "DiscoverAndPullImages",
+      "Effect": "Allow",
+      "Action": [
+        "ecr:DescribeRepositories",
+        "ecr:ListImages",
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:BatchGetImage",
+        "ecr:GetDownloadUrlForLayer"
+      ],
+      "Resource": "arn:aws:ecr:<aws-region>:<aws-account-id>:repository/*"
+    }
+  ]
+}
+```
+
+5. For hosted LangSmith, add the `LangSmithSandboxECR=true` tag to the IAM role.
+6. Return to LangSmith, enter the role ARN in **AWS role ARN**, then register the private registry.
+
+LangSmith assumes the role separately for repository discovery, tag discovery, and each snapshot build attempt. It obtains a fresh ECR authorization token for delayed jobs and retries, and does not persist temporary AWS credentials or generated ECR tokens.
+
+For self-hosted deployments, administrators must set `SANDBOX_ECR_AWS_ROLE_PRINCIPAL_ARN` and provide the platform backend and snapshot workers with a compatible AWS SDK credential source. Leaving the setting unset hides AWS IAM role authentication and preserves username and password authentication.
 
 ## Build a snapshot from a Dockerfile
 
@@ -94515,7 +94622,7 @@ If you are using a managed service (such as Amazon RDS, Google Cloud SQL, or Azu
 | [PostgreSQL](/langsmith/self-host-external-postgres) | 14 | Primary relational store for operational data. Required for both LangSmith and standalone Agent Server deployments. Used to install the `btree_gin`, `btree_gist`, `pgcrypto`, `citext`, `ltree`, and `pg_trgm` extensions. |
 | [Redis](/langsmith/self-host-external-redis) | 6.2 | Used for queueing and caching. Standalone and Redis Cluster modes are both supported. As of Agent Server 0.8.0, the Redis-backed run queue requires Redis 6.2 or later: it enqueues runs with the `ZADD ... LT` flag, which was added in 6.2. |
 | [Valkey](/langsmith/self-host-external-redis) | 8 | Officially supported as a drop-in replacement for Redis. Standalone and Cluster modes are both supported. |
-| [ClickHouse](/langsmith/self-host-external-clickhouse) | Version specified in the [LangSmith Helm chart](https://github.com/langchain-ai/helm/releases) or greater | Stores traces and feedback. ClickHouse versions >= 24.2 require LangSmith v0.6 or later. Downgrades are not supported. |
+| [ClickHouse](/langsmith/self-host-external-clickhouse) | Version specified in the [LangSmith Helm chart](https://github.com/langchain-ai/helm/releases) or greater | Stores traces and feedback. ClickHouse 24.2 or later requires LangSmith v0.6 or later. Downgrades are not supported. |
 
 <Warning>
 **Redis < 6.2 and PostgreSQL < 14 are not supported.** A LangSmith installation pointed at an older Redis or PostgreSQL instance may fail to start or behave unpredictably. Upgrade your datastore before installing or upgrading LangSmith.
@@ -94539,8 +94646,8 @@ If you are using a managed service (such as Amazon RDS, Google Cloud SQL, or Azu
 
 ## Where these versions are enforced
 
-- PostgreSQL `>= 14`: refer to [Connect to an external PostgreSQL database](/langsmith/self-host-external-postgres#requirements).
-- Redis `>= 6.2` and Valkey `8`: refer to [Connect to an external Redis or Valkey database](/langsmith/self-host-external-redis#requirements).
+- PostgreSQL 14 or later: refer to [Connect to an external PostgreSQL database](/langsmith/self-host-external-postgres#requirements).
+- Redis 6.2 or later and Valkey 8: refer to [Connect to an external Redis or Valkey database](/langsmith/self-host-external-redis#requirements).
 - ClickHouse: use the version specified in the [LangSmith Helm chart](https://github.com/langchain-ai/helm/releases) or greater: refer to [Connect to an external ClickHouse database](/langsmith/self-host-external-clickhouse#requirements).
 - Kubernetes cluster prerequisites: refer to [Self-host LangSmith on Kubernetes](/langsmith/kubernetes#prerequisites).
 
@@ -95532,7 +95639,7 @@ Additionally, sensitive information can be configured to be not stored in Clickh
 * A provisioned ClickHouse instance that your LangSmith application will have network access to (see above for options).
 * A user with admin access to the ClickHouse database. This user will be used to create the necessary tables, indexes, and views.
 * We support both standalone ClickHouse and externally managed clustered deployments. For clustered deployments, ensure all nodes are running the same version. Note that clustered setups are not supported with bundled ClickHouse installations.
-* We only support ClickHouse versions >= 23.9. Use of ClickHouse versions >= 24.2 requires LangSmith v0.6 or later.
+* We only support ClickHouse 23.9 or later. Use of ClickHouse 24.2 or later requires LangSmith v0.6 or later.
 
 <Warning>
 Downgrading ClickHouse to an earlier version can cause data corruption of system tables and result in significant downtime. If you need assistance with a ClickHouse version change or are experiencing issues after an upgrade, contact support at [support.langchain.com](https://support.langchain.com) before attempting a downgrade.
@@ -95803,7 +95910,7 @@ For cloud-specific IAM/Workload Identity authentication, refer to the [IAM authe
   * [Google Cloud SQL](https://cloud.google.com/curated-resources/cloud-sql#section-1)
   * [Azure Database for PostgreSQL](https://azure.microsoft.com/en-us/products/postgresql#features)
 
-* Note: We only officially support PostgreSQL versions >= 14.
+* Note: We only officially support PostgreSQL 14 or later.
 
 * We support password and [IAM/Workload Identity](#iam-authentication) authentication.
 
@@ -96304,7 +96411,7 @@ For cloud-specific IAM/Workload Identity authentication, refer to the [IAM authe
   * [Google Cloud Memorystore](https://cloud.google.com/memorystore) (Redis or Valkey)
   * [Azure Cache for Redis](https://azure.microsoft.com/en-us/services/cache/)
 
-* **Supported versions:** Redis >= 6.2, or Valkey 8. Valkey is treated as a drop-in replacement for Redis throughout this guide.
+* **Supported versions:** Redis 6.2 or later, or Valkey 8. Valkey is treated as a drop-in replacement for Redis throughout this guide.
 * We support both Standalone and Redis Cluster (including Valkey Cluster). See the appropriate sections for deployment instructions.
 * We support no authentication, password, and [IAM/Workload Identity](#iam-authentication) authentication.
 * By default, we recommend an instance with at least 2 vCPUs and 8GB of memory. However, the actual requirements will depend on your tracing workload. We recommend monitoring your Redis instance and scaling up as needed.
@@ -98371,7 +98478,7 @@ You must have administrator-level access to your organization's Google Cloud Pla
 
 2. After you have created the project, open the [Credentials](https://console.developers.google.com/apis/credentials) page in the Google API Console (making sure the project in the top left corner is correct)
 
-3. Create new credentials: `Create Credentials → OAuth client ID`
+3. Create new credentials: `Create Credentials > OAuth client ID`
 
 4. Choose `Web application` as the `Application type` and enter a name for the application e.g. `LangSmith`
 
@@ -98586,7 +98693,7 @@ Per-provider SSO Groups Sync settings are stored on the SSO provider record and 
 
 <Tabs>
 <Tab title="UI">
-Once your IdP emits the groups claim, configure SSO Groups Sync from the UI in **Settings** → **Members and roles** → **SSO Configuration** → **SSO Groups Sync**. The claim name configured in the **Groups claim field** must match the claim emitted by your IdP.
+Once your IdP emits the groups claim, configure SSO Groups Sync from the UI in **Settings** > **Members and roles** > **SSO Configuration** > **SSO Groups Sync**. The claim name configured in the **Groups claim field** must match the claim emitted by your IdP.
 </Tab>
 <Tab title="API">
 
@@ -99527,7 +99634,7 @@ You can enable Fleet with `enable_fleet`. On AWS, it requires `enable_deployment
 Terraform creates a dedicated `langsmith_fleet` database on RDS and wires the `langsmith-fleet-postgres` and `langsmith-fleet-redis` secrets to the existing RDS and ElastiCache instances. Fleet reuses `langsmith_agent_builder_encryption_key`, so migrating from `enable_agent_builder` keeps the same key and data.
 
 <Note>
-Fleet requires the LangSmith Helm chart `>=0.15.0` and the Agent Builder or Fleet entitlement in your license.
+Fleet requires the LangSmith Helm chart 0.15.0 or later and the Agent Builder or Fleet entitlement in your license.
 </Note>
 
 Fleet installs the `standalone-fleet-api-server`, `standalone-fleet-tool-server`, `standalone-fleet-trigger-server`, and `standalone-fleet-queue` services.
@@ -103490,7 +103597,7 @@ Fleet is the current form of the feature formerly called Agent Builder, deployed
 You can enable Fleet with `enable_fleet`. Unlike the deprecated `enable_agent_builder` path, it does not require LangSmith Deployment. Terraform provisions a dedicated `fleet` database on Cloud SQL and wires the `langsmith-fleet-postgres` and `langsmith-fleet-redis` secrets to the existing Cloud SQL and Memorystore instances. Fleet reuses `langsmith_agent_builder_encryption_key`, so migrating from `enable_agent_builder` keeps the same key and data.
 
 <Note>
-Fleet requires the LangSmith Helm chart `>=0.15.0` and the Agent Builder or Fleet entitlement in your license.
+Fleet requires the LangSmith Helm chart 0.15.0 or later and the Agent Builder or Fleet entitlement in your license.
 </Note>
 
 ```hcl
@@ -121204,7 +121311,7 @@ The [LangSmith CLI](/langsmith/langsmith-cli) queries the same SmithDB-backed en
 
 ## About self-hosted
 
-- The new methods documented in this guide require `>=0.16` self-hosted version, independent of the data store used.
+- The new methods documented in this guide require self-hosted version 0.16 or later, independent of the data store used.
 - The deprecated methods stop working once ClickHouse is disabled.
 - Where possible, the SDK raises a warning or error identifying the version to upgrade to, instead of failing without explanation.
 
@@ -121240,7 +121347,7 @@ This guide is written to be fetched and applied directly by an AI coding agent. 
 <Prompt
     description="Migrate LangSmith SDK usage to SmithDB methods"
     icon="arrow-right"
-    actions={["copy", "cursor"]}
+    actions={["copy"]}
 >
 Migrate this codebase's LangSmith SDK usage to the new SmithDB-backed methods.
 
@@ -128325,7 +128432,8 @@ The [`langsmith-codex-plugins`](https://github.com/langchain-ai/langsmith-codex-
 
 Before setting up tracing, ensure you have:
 
-- [Codex CLI](https://developers.openai.com/codex/quickstart?setup=cli) v0.128 or later.
+- [Node.js](https://nodejs.org/) 22.x or later.
+- [Codex CLI](https://developers.openai.com/codex/quickstart?setup=cli) v0.153.4 or later, with synchronous `UserPromptSubmit` plugin hooks enabled and trusted.
 - A [LangSmith API key](/langsmith/create-account-api-key).
 
 ## Install and enable the plugin
@@ -128694,7 +128802,7 @@ Before setting up tracing, ensure you have:
 
 Install the plugin directly from the GitHub repository in Cursor's settings:
 
-1. Open **Cursor → Settings → Plugins**.
+1. Open **Cursor > Settings > Plugins**.
 2. Paste `https://github.com/langchain-ai/langsmith-cursor-plugins` into the plugin link field.
 3. Confirm to add **LangSmith Tracing for Cursor**.
 
@@ -129563,7 +129671,7 @@ export LANGSMITH_PROJECT=my-project
 ```
 
 <Warning>
-The `LANGSMITH_PROJECT` flag is only supported in JS SDK versions >= 0.2.16, use `LANGCHAIN_PROJECT` instead if you are using an older version.
+The `LANGSMITH_PROJECT` flag is only supported in JS SDK 0.2.16 or later, use `LANGCHAIN_PROJECT` instead if you are using an older version.
 </Warning>
 
 ### Dynamically
@@ -139146,7 +139254,7 @@ The attribute name is preserved end-to-end: the IdP attribute name, the SAML Att
 
 #### Configuration
 
-In **Settings** → **Members and roles** → **SSO Configuration**, scroll to the **SAML Attribute Mapping** section and add one row per non-standard attribute you want to forward:
+In **Settings** > **Members and roles** > **SSO Configuration**, scroll to the **SAML Attribute Mapping** section and add one row per non-standard attribute you want to forward:
 
 | Column | Description |
 | --- | --- |
@@ -139828,7 +139936,7 @@ Choose **SSO Groups Sync** when IdP admin involvement is minimal and reactive (l
 #### Configuration
 
 1. In your IdP: add the user's group memberships to the SSO token claim (default claim name: `groups`). Group names must follow the [SCIM naming convention](#group-naming-convention).
-2. In LangSmith: go to **Settings** → **Members and roles** → **SSO Configuration** → **SSO Groups Sync** and configure the following:
+2. In LangSmith: go to **Settings** > **Members and roles** > **SSO Configuration** > **SSO Groups Sync** and configure the following:
 
    | Setting | Description |
    | --- | --- |
@@ -139880,9 +139988,9 @@ To make a user's group memberships visible to LangSmith at login, you need to do
 
 In the LangSmith SAML application:
 
-1. **Directory** → **Profile Editor** → select the LangSmith application's user profile.
+1. Go to **Directory** > **Profile Editor**, then select the LangSmith application's user profile.
 2. Add a custom attribute named `groups` with **Type** `string array`.
-3. **Sign On** → edit the SAML settings and add an attribute statement:
+3. On **Sign On**, edit the SAML settings and add an attribute statement:
    - **Name**: `groups`
    - **Name format**: `Unspecified` (or `Basic`)
    - **Filter**: `Matches regex` with `.*` to send all groups, or use a more restrictive regex (e.g., `^LS:.*`) to limit to LangSmith-prefixed groups.
@@ -139892,7 +140000,7 @@ In the LangSmith SAML application:
 
 In the LangSmith Enterprise Application:
 
-1. **Single sign-on** → **Attributes & Claims** → **Add a group claim**.
+1. **Single sign-on** > **Attributes & Claims** > **Add a group claim**.
 2. Choose which groups to emit (typically **Groups assigned to the application**).
 3. Set **Source attribute** to `Cloud-only group display names` so the group name (which must match the [naming convention](#group-naming-convention)) is sent rather than the object ID.
 4. Set the claim **Name** to `groups` (or your configured **Groups claim field** value), with no namespace.
@@ -140105,7 +140213,7 @@ LangSmith provides several views into your [organization's](/langsmith/administr
 
 The usage graph shows aggregate trace consumption for your [organization](/langsmith/administration-overview#organizations), broken down by [workspace](/langsmith/administration-overview#workspaces). It covers the current billing period and does not show spend—for spend, refer to the invoice.
 
-Navigate to **Settings** → **Billing and Usage** → **Usage Graph**.
+Navigate to **Settings** > **Billing and Usage** > **Usage Graph**.
 
 ### Billable metrics
 
@@ -140127,7 +140235,7 @@ The usage graph uses the term `tenant_id` interchangeably with workspace ID.
 
 Enterprise customers with prepaid commitments can view how much of their contract has been consumed.
 
-Navigate to **Settings** → **Usage Configuration** → **Contract Usage**.
+Navigate to **Settings** > **Usage Configuration** > **Contract Usage**.
 
 This view shows:
 
@@ -140148,13 +140256,13 @@ If your contract spans multiple organizations under the same billing entity, the
 
 Invoices are available on **self-serve Cloud plans only**. Enterprise Cloud organizations have a separate usage view for tracking spend.
 
-Navigate to **Settings** → **Billing and Usage** → **Invoices** to see how your usage translates to spend. The first invoice shown is a draft of your current month's invoice, reflecting your running spend to date.
+Navigate to **Settings** > **Billing and Usage** > **Invoices** to see how your usage translates to spend. The first invoice shown is a draft of your current month's invoice, reflecting your running spend to date.
 
 ## Granular usage
 
 Granular usage gives you trace counts broken down by a dimension you choose (workspace, project, user, or API key) over a time range you select. This is useful for internal chargebacks, identifying high-usage teams, or auditing trace activity.
 
-Navigate to **Settings** → **Billing and Usage** → **Granular Usage**, or use the [granular usage API](/langsmith/granular-usage).
+Navigate to **Settings** > **Billing and Usage** > **Granular Usage**, or use the [granular usage API](/langsmith/granular-usage).
 
 ### What "traces" means here
 
@@ -140195,7 +140303,7 @@ Data collection begins from the moment the feature is enabled. There is no backf
 
 ### Aggregate usage on Self-hosted
 
-The usage graph is available on [Self-hosted](/langsmith/self-hosted) running Helm chart 0.9.5 or later. LangSmith automatically generates and syncs organization usage charts, available under **Settings** → **Usage and billing** → **Usage graph**:
+The usage graph is available on [Self-hosted](/langsmith/self-hosted) running Helm chart 0.9.5 or later. LangSmith automatically generates and syncs organization usage charts, available under **Settings** > **Usage and billing** > **Usage graph**:
 
 - **Usage by Workspace**: trace counts (root runs) per workspace
 - **Organization Usage**: total trace counts across the organization
@@ -144982,7 +145090,7 @@ Paste this prompt into your coding agent to connect the servers, or follow the s
 <Prompt
     description="Connect LangChain docs MCP servers"
     icon="plug"
-    actions={["copy", "cursor"]}
+    actions={["copy"]}
 >
 Connect both LangChain documentation MCP servers to my coding agent so it can look up current LangChain, LangGraph, and LangSmith docs and API reference.
 
@@ -146737,7 +146845,7 @@ The agent uses its built-in tools, skills, and memory to help you with tasks.
             Terminal emulators intercept `Cmd`-modified keys before they reach the running application, so Deep Agents Code never receives them directly. Instead, the terminal translates them into the readline shortcuts above.
 
             - **Ghostty:** Works out of the box. `Cmd+Left`, `Cmd+Right`, and `Cmd+Delete` are translated to `Ctrl+A`, `Ctrl+E`, and `Ctrl+U` by default.
-            - **iTerm2:** Not bound by default. Add the following under **Settings → Profiles → Keys → Key Mappings** as `Send Text with vim special chars`:
+            - **iTerm2:** Not bound by default. Add the following under **Settings > Profiles > Keys > Key Mappings** as `Send Text with vim special chars`:
                 - `Cmd+Left` → `\x01` (Ctrl+A)
                 - `Cmd+Right` → `\x05` (Ctrl+E)
                 - `Cmd+Delete` → `\x15` (Ctrl+U)
@@ -148611,7 +148719,7 @@ This includes our `llms.txt`, MCP server connection, and other quick access opti
 <Prompt
     description="Connect LangChain docs MCP servers"
     icon="plug"
-    actions={["copy", "cursor"]}
+    actions={["copy"]}
 >
 Connect both LangChain documentation MCP servers to my coding agent so it can look up current LangChain, LangGraph, and LangSmith docs and API reference.
 
@@ -150180,6 +150288,10 @@ Source: https://docs.langchain.com/langsmith/smith-api/orgs/list-all-org-persona
 
 # Delete org personal access token
 Source: https://docs.langchain.com/langsmith/smith-api/orgs/delete-org-personal-access-token
+
+
+# Revoke org personal access token
+Source: https://docs.langchain.com/langsmith/smith-api/orgs/revoke-org-personal-access-token
 
 
 # Set default SSO provision
