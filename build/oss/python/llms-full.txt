@@ -1627,6 +1627,12 @@ git clone https://github.com/langchain-ai/docs.git
 cd docs
 ```
 
+Install the pinned toolchain with [mise](https://mise.jdx.dev/getting-started.html), which reads the versions of Python, Node.js, uv, Vale, and the Mintlify CLI from `.mise.toml` and installs the repository's git hooks:
+
+```bash
+mise trust && mise install
+```
+
 ```bash
 make install
 ```
@@ -1686,6 +1692,7 @@ npx skills add langchain-ai/langchain-skills --skill '*' --yes --global
 
 Detect which agent or editor I am using. If I use Claude Code and prefer the plugin path, follow the marketplace install from that repository README (`/plugin marketplace add` then `/plugin install`). Do not invent alternate skill package names or install URLs. After installing, confirm the skills are available to the agent.
 </Prompt>
+    - This repository ships its own authoring skills in `.agents/skills/`, covering page creation, navigation placement, and redirects. Most agents read that path directly. For Claude Code, run `make skills` to link them.
 </Tip>
 
 <Tip>
@@ -1693,10 +1700,12 @@ If you are having issues with you local preview, try running `mint update` to en
 </Tip>
 
 <Accordion title="Prerequisites">
+    **Recommended:** run `mise trust && mise install` to get every pinned version at once. `.mise.toml` is the canonical pin for the toolchain, and its postinstall hook wires up the pre-commit and pre-push hooks.
+
     **Required:**
     - Python 3.13+
-    - [uv](https://docs.astral.sh/uv/) - Python package manager
-    - [Node.js](https://nodejs.org/en) and npm
+    - [uv](https://docs.astral.sh/uv/) 0.9.26 or later - Python package manager
+    - [Node.js](https://nodejs.org/en) 22.x and npm. Mintlify does not support Node 25 or later
     - [Make](https://www.gnu.org/software/make/)
     - [Git](https://git-scm.com/)
 
@@ -8079,7 +8088,7 @@ pip install "langchain[mcp]"
         async with MCPAdapter(config) as adapter:
             tools = await adapter.list_tools()
             agent = create_deep_agent(
-                model="anthropic:claude-sonnet-5",
+                model="anthropic:claude-sonnet-4-6",
                 tools=tools,
             )
             await agent.ainvoke(
@@ -11424,6 +11433,10 @@ print(result["structured_response"])
 # location='San Francisco, California' temperature=18.3 condition='Sunny' humidity=48 wind_speed=7.6 forecast='Pleasant sunny conditions expected to continue with temperatures around 64°F (18°C) during the day, dropping to around 52°F (11°C) at night. Clear skies with minimal precipitation expected.'
 ```
 
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/b8e8bfe6-1853-4907-a3d4-a178338f8924/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
+
 
 
 
@@ -14195,6 +14208,10 @@ for subagent in stream.subagents:
     subagent_names.append(subagent.name)
 ```
 
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/3a85e9e6-9081-44ff-8291-2f7a7a478d6d/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
+
 
 
 
@@ -14244,6 +14261,10 @@ for subagent in stream.subagents:
         print(f"{subagent.name}: failed")
 ```
 
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/f44ddc62-d081-4373-bfec-361fc211fced/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
+
 
 
 
@@ -14264,6 +14285,10 @@ for subagent in stream.subagents:
     for message in subagent.messages:
         print(f"[{subagent.name}]", message.text)
 ```
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/91503d73-11d1-4016-90f1-c1ac52e32f3b/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
 
 
 
@@ -14293,6 +14318,10 @@ for subagent in stream.subagents:
             print(call.error)
 ```
 
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/c3a01f68-bece-422d-add0-703090a068a5/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
+
 
 
 
@@ -14317,6 +14346,10 @@ for subagent in stream.subagents:
 
     subagent_names.append(subagent.name)
 ```
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/85a499ed-bde5-4fa7-8154-25522617d724/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
 
 
 
@@ -14357,6 +14390,10 @@ for name, item in stream.interleave("messages", "subagents"):
             print(f"[{item.name}]", message.text)
 ```
 
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/22b2e253-4b17-4633-9eb0-c036cb548ce1/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
+
 
 
 
@@ -14382,6 +14419,10 @@ for event in stream:
         print(f"[{source}] {block['text']}")
         text_deltas.append(block["text"])
 ```
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/ffce9a73-0179-440a-9b4a-96b448b39c3c/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
 
 
 
@@ -16789,6 +16830,10 @@ The two are independent and almost always passed together:
     )
     ```
 </CodeGroup>
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/25f2c799-ee4e-49a4-a482-89a17b9f66ba/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
 
 When deploying with the LangGraph SDK, the SDK manages threads for you and you pass the returned `thread_id` to each run:
 
@@ -19802,6 +19847,10 @@ result = agent.invoke(
 )
 ```
 
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/7dd40477-eaed-45b0-beb8-59be80e1758d/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
+
 
 
 
@@ -20152,6 +20201,10 @@ See [Core capabilities](#core-capabilities) for a full breakdown of each compone
     )
     ```
 </CodeGroup>
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/6303999e-5e08-4c66-b14c-ba5648f32f88/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
 
 
 
@@ -21701,9 +21754,9 @@ Pass that question to a [Deep Agent](/oss/python/deepagents/overview) with no cu
     ```python Google
     from deepagents import create_deep_agent
     from langchain.messages import HumanMessage
-    
+
     EXAMPLE_QUERY = "How do I stream intermediate tool results from a subagent?"
-    
+
     baseline_agent = create_deep_agent(
         model="google_genai:gemini-3.6-flash",
         tools=[],
@@ -21712,20 +21765,20 @@ Pass that question to a [Deep Agent](/oss/python/deepagents/overview) with no cu
             "Answer questions about LangChain APIs and patterns."
         ),
     )
-    
+
     result = baseline_agent.invoke(
         {"messages": [HumanMessage(content=EXAMPLE_QUERY)]}
     )
-    
+
     print(result["messages"][-1].text)
     ```
 
     ```python OpenAI
     from deepagents import create_deep_agent
     from langchain.messages import HumanMessage
-    
+
     EXAMPLE_QUERY = "How do I stream intermediate tool results from a subagent?"
-    
+
     baseline_agent = create_deep_agent(
         model="openai:gpt-5.5",
         tools=[],
@@ -21734,20 +21787,20 @@ Pass that question to a [Deep Agent](/oss/python/deepagents/overview) with no cu
             "Answer questions about LangChain APIs and patterns."
         ),
     )
-    
+
     result = baseline_agent.invoke(
         {"messages": [HumanMessage(content=EXAMPLE_QUERY)]}
     )
-    
+
     print(result["messages"][-1].text)
     ```
 
     ```python Anthropic
     from deepagents import create_deep_agent
     from langchain.messages import HumanMessage
-    
+
     EXAMPLE_QUERY = "How do I stream intermediate tool results from a subagent?"
-    
+
     baseline_agent = create_deep_agent(
         model="anthropic:claude-sonnet-4-6",
         tools=[],
@@ -21756,20 +21809,20 @@ Pass that question to a [Deep Agent](/oss/python/deepagents/overview) with no cu
             "Answer questions about LangChain APIs and patterns."
         ),
     )
-    
+
     result = baseline_agent.invoke(
         {"messages": [HumanMessage(content=EXAMPLE_QUERY)]}
     )
-    
+
     print(result["messages"][-1].text)
     ```
 
     ```python OpenRouter
     from deepagents import create_deep_agent
     from langchain.messages import HumanMessage
-    
+
     EXAMPLE_QUERY = "How do I stream intermediate tool results from a subagent?"
-    
+
     baseline_agent = create_deep_agent(
         model="openrouter:z-ai/glm-5.2",
         tools=[],
@@ -21778,20 +21831,20 @@ Pass that question to a [Deep Agent](/oss/python/deepagents/overview) with no cu
             "Answer questions about LangChain APIs and patterns."
         ),
     )
-    
+
     result = baseline_agent.invoke(
         {"messages": [HumanMessage(content=EXAMPLE_QUERY)]}
     )
-    
+
     print(result["messages"][-1].text)
     ```
 
     ```python Fireworks
     from deepagents import create_deep_agent
     from langchain.messages import HumanMessage
-    
+
     EXAMPLE_QUERY = "How do I stream intermediate tool results from a subagent?"
-    
+
     baseline_agent = create_deep_agent(
         model="fireworks:accounts/fireworks/models/glm-5p2",
         tools=[],
@@ -21800,20 +21853,20 @@ Pass that question to a [Deep Agent](/oss/python/deepagents/overview) with no cu
             "Answer questions about LangChain APIs and patterns."
         ),
     )
-    
+
     result = baseline_agent.invoke(
         {"messages": [HumanMessage(content=EXAMPLE_QUERY)]}
     )
-    
+
     print(result["messages"][-1].text)
     ```
 
     ```python Baseten
     from deepagents import create_deep_agent
     from langchain.messages import HumanMessage
-    
+
     EXAMPLE_QUERY = "How do I stream intermediate tool results from a subagent?"
-    
+
     baseline_agent = create_deep_agent(
         model="baseten:zai-org/GLM-5.2",
         tools=[],
@@ -21822,20 +21875,20 @@ Pass that question to a [Deep Agent](/oss/python/deepagents/overview) with no cu
             "Answer questions about LangChain APIs and patterns."
         ),
     )
-    
+
     result = baseline_agent.invoke(
         {"messages": [HumanMessage(content=EXAMPLE_QUERY)]}
     )
-    
+
     print(result["messages"][-1].text)
     ```
 
     ```python Ollama
     from deepagents import create_deep_agent
     from langchain.messages import HumanMessage
-    
+
     EXAMPLE_QUERY = "How do I stream intermediate tool results from a subagent?"
-    
+
     baseline_agent = create_deep_agent(
         model="ollama:north-mini-code-1.0",
         tools=[],
@@ -21844,14 +21897,18 @@ Pass that question to a [Deep Agent](/oss/python/deepagents/overview) with no cu
             "Answer questions about LangChain APIs and patterns."
         ),
     )
-    
+
     result = baseline_agent.invoke(
         {"messages": [HumanMessage(content=EXAMPLE_QUERY)]}
     )
-    
+
     print(result["messages"][-1].text)
     ```
 </CodeGroup>
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/cc30c5b2-c787-41ea-800c-a0f835bdcce5/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
 
 
 
@@ -22992,7 +23049,7 @@ For more on this topic, see research on [prompt injection](https://simonwillison
 
 ## Full code
 
-The following is the complete script for the agent using Gemini. For other models please see the step-by-step approach to see what changes:
+The following is the complete script for the agent using one set of example models. For other models please see the step-by-step approach to see what changes:
 
 Save as `agent.py` and run with `python agent.py`:
 
@@ -23007,7 +23064,7 @@ from langchain.messages import HumanMessage
 from langchain.tools import tool
 from langchain_core.documents import Document
 from langchain_core.vectorstores import InMemoryVectorStore
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 DOCS_BASE = "https://docs.langchain.com"
@@ -23055,7 +23112,7 @@ text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=20
 all_splits = text_splitter.split_documents(docs)
 print(f"Split documentation into {len(all_splits)} chunks.")
 
-embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
+embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 vector_store = InMemoryVectorStore(embedding=embeddings)
 vector_store.add_documents(documents=all_splits)
 print(f"Indexed {len(all_splits)} chunks.")
@@ -23157,7 +23214,7 @@ chunk_analyst_subagent = {
     "system_prompt": CHUNK_ANALYST_INSTRUCTIONS,
 }
 
-model = init_chat_model(model="google_genai:gemini-3.6-flash")
+model = init_chat_model(model="anthropic:claude-sonnet-4-6")
 
 agent = create_deep_agent(
     model=model,
@@ -24884,6 +24941,10 @@ These examples assume you have already created a sandbox/devbox using the provid
     ```
 </CodeGroup>
 
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/9f84b0dd-2df7-4f4d-9ba1-4094e58d429e/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
+
     </Tab>
     <Tab title="Daytona">
 
@@ -25998,6 +26059,10 @@ Trade-offs:
         client.delete_sandbox(ls_sandbox.name)
     ```
 </CodeGroup>
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/f7f985ac-d3be-4ce3-b23e-ec1b441ee466/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
 
 
 
@@ -30559,6 +30624,10 @@ result = agent.invoke(
 )
 ```
 
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/715bb23d-3529-4c28-b994-c174a89513ef/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
+
 
 
 
@@ -31190,6 +31259,10 @@ The simplest pattern is to iterate `stream.subagents` to track each delegated ta
                 print(f"[{item.name}] status: {item.status}")
     ```
 </CodeGroup>
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/a833f9e2-dc76-440a-81ff-3d24cd9cb6d3/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
 
 
 
@@ -33500,7 +33573,7 @@ uv add "langchain[mcp]"
         async with MCPAdapter(config) as adapter:
             tools = await adapter.list_tools()
             agent = create_deep_agent(
-                model="anthropic:claude-sonnet-5",
+                model="anthropic:claude-sonnet-4-6",
                 tools=tools,
             )
             await agent.ainvoke(
@@ -41659,7 +41732,11 @@ This doc helps you get started with Fireworks AI [chat models](/oss/python/langc
 
 | [Tool calling](/oss/python/langchain/tools) | [Structured output](/oss/python/langchain/structured-output) | [Image input](/oss/python/langchain/messages#multimodal) | Audio input | Video input | [Token-level streaming](/oss/python/langchain/streaming/) | Native async | [Token usage](/oss/python/langchain/models#token-usage) | [Logprobs](/oss/python/langchain/models#log-probabilities) |
 | :---: | :---: | :---: |  :---: | :---: | :---: | :---: | :---: | :---: |
-| ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
+
+<Note>
+    Image input requires a vision-capable model (e.g. Kimi K3). Not all models served by Fireworks support multimodal inputs.
+</Note>
 
 ## Setup
 
@@ -46805,6 +46882,23 @@ ai_msg.tool_calls
 
 For more on binding tools and tool call outputs, head to the [tool calling](/oss/python/langchain/tools) docs.
 
+### Async tools
+
+[Async tool calling](https://developers.openai.com/api/docs/guides/async-tool-calling) lets the model continue working after issuing a tool call, without waiting for the result. When using the Responses API, `ChatOpenAI` supports this by passing `extras={"async": True}` to `@tool`:
+
+```python
+from langchain.tools import tool
+
+@tool(extras={"async": True})  # [!code highlight]
+def lookup_price(sku: str) -> str:
+    """Look up the price of a product."""
+    return "1200"
+```
+
+<Note>
+    Async tools are only supported via the Responses API (`use_responses_api=True`). The `async` flag is round-tripped through the message history so that prompt-cache prefixes remain intact across turns.
+</Note>
+
 ### Custom tools
 
 <Info>
@@ -48024,6 +48118,33 @@ llm = ChatOpenAI(model="gpt-5-nano", reasoning_effort="medium")
 <Note>
     `reasoning_effort` as a standard parameter requires `langchain-openai>=1.4.1`.
 </Note>
+
+### Changing reasoning effort mid-conversation
+
+Use a [`configuration_update`](https://developers.openai.com/api/docs/guides/reasoning?api-mode=responses#change-reasoning-mid-conversation) content block to change reasoning effort between turns without modifying the request-level `reasoning_effort` parameter — keeping the prompt prefix cacheable. Embed the block directly in a `HumanMessage`:
+
+```python
+from langchain_openai import ChatOpenAI
+from langchain.messages import HumanMessage
+
+llm = ChatOpenAI(model="gpt-6-astra", use_responses_api=True, reasoning_effort="low")
+
+first = llm.invoke("Hello")
+
+# Raise reasoning effort from this message onward
+response = llm.invoke(
+    [
+        "Hello",
+        first,
+        HumanMessage(
+            [
+                {"type": "configuration_update", "reasoning": {"effort": "high"}},  # [!code highlight]
+                {"type": "text", "text": "How many distinct 5-card poker hands are a full house?"},
+            ]
+        ),
+    ]
+)
+```
 
 <Tip>
     **Troubleshooting: Empty responses from reasoning models**
@@ -55618,19 +55739,19 @@ The below document loaders allow you to load data from common data formats.
 | [`Google cloud storage file`](/oss/python/integrations/document_loaders/google_cloud_storage_file) | <span data-sort-value="11000000"><a href="https://pypi.org/project/langchain-google-community/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-community/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Google drive`](/oss/python/integrations/document_loaders/google_drive) | <span data-sort-value="11000000"><a href="https://pypi.org/project/langchain-google-community/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-community/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Google speech-to-text audio transcripts`](/oss/python/integrations/document_loaders/google_speech_to_text) | <span data-sort-value="11000000"><a href="https://pypi.org/project/langchain-google-community/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-community/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Oracle AI vector search document processing`](/oss/python/integrations/document_loaders/oracleai) | <span data-sort-value="226000"><a href="https://pypi.org/project/langchain-oracledb/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-oracledb/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Oracle autonomous database`](/oss/python/integrations/document_loaders/oracleadb_loader) | <span data-sort-value="226000"><a href="https://pypi.org/project/langchain-oracledb/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-oracledb/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`UnstructuredLoader`](/oss/python/integrations/document_loaders/unstructured_file) | <span data-sort-value="186000"><a href="https://pypi.org/project/langchain-unstructured/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-unstructured/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`AstraDB`](/oss/python/integrations/document_loaders/astradb) | <span data-sort-value="182000"><a href="https://pypi.org/project/langchain-astradb/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-astradb/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Docling`](/oss/python/integrations/document_loaders/docling) | <span data-sort-value="80000"><a href="https://pypi.org/project/langchain-docling/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-docling/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`PyMuPDF4LLMLoader`](https://github.com/pymupdf/langchain-pymupdf4llm) | <span data-sort-value="48000"><a href="https://pypi.org/project/langchain-pymupdf4llm/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-pymupdf4llm/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Upstage`](/oss/python/integrations/document_loaders/upstage) | <span data-sort-value="40000"><a href="https://pypi.org/project/langchain-upstage/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-upstage/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Google alloydb for postgresql`](/oss/python/integrations/document_loaders/google_alloydb) | <span data-sort-value="35000"><a href="https://pypi.org/project/langchain-google-alloydb-pg/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-alloydb-pg/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Oracle AI vector search document processing`](/oss/python/integrations/document_loaders/oracleai) | <span data-sort-value="230000"><a href="https://pypi.org/project/langchain-oracledb/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-oracledb/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Oracle autonomous database`](/oss/python/integrations/document_loaders/oracleadb_loader) | <span data-sort-value="230000"><a href="https://pypi.org/project/langchain-oracledb/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-oracledb/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`AstraDB`](/oss/python/integrations/document_loaders/astradb) | <span data-sort-value="174000"><a href="https://pypi.org/project/langchain-astradb/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-astradb/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`UnstructuredLoader`](/oss/python/integrations/document_loaders/unstructured_file) | <span data-sort-value="172000"><a href="https://pypi.org/project/langchain-unstructured/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-unstructured/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Docling`](/oss/python/integrations/document_loaders/docling) | <span data-sort-value="79000"><a href="https://pypi.org/project/langchain-docling/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-docling/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`PyMuPDF4LLMLoader`](https://github.com/pymupdf/langchain-pymupdf4llm) | <span data-sort-value="49000"><a href="https://pypi.org/project/langchain-pymupdf4llm/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-pymupdf4llm/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Upstage`](/oss/python/integrations/document_loaders/upstage) | <span data-sort-value="37000"><a href="https://pypi.org/project/langchain-upstage/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-upstage/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Google alloydb for postgresql`](/oss/python/integrations/document_loaders/google_alloydb) | <span data-sort-value="34000"><a href="https://pypi.org/project/langchain-google-alloydb-pg/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-alloydb-pg/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Google firestore (native mode)`](/oss/python/integrations/document_loaders/google_firestore) | <span data-sort-value="29000"><a href="https://pypi.org/project/langchain-google-firestore/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-firestore/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Google spanner`](/oss/python/integrations/document_loaders/google_spanner) | <span data-sort-value="28000"><a href="https://pypi.org/project/langchain-google-spanner/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-spanner/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`ApifyCrawlLoader`](https://docs.apify.com/integrations/langchain) | <span data-sort-value="23000"><a href="https://pypi.org/project/langchain-apify/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-apify/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`ApifyDatasetLoader`](https://docs.apify.com/integrations/langchain) | <span data-sort-value="23000"><a href="https://pypi.org/project/langchain-apify/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-apify/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Google cloud SQL for postgresql`](https://docs.cloud.google.com/sql/docs/postgres) | <span data-sort-value="22000"><a href="https://pypi.org/project/langchain-google-cloud-sql-pg/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-cloud-sql-pg/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Google spanner`](/oss/python/integrations/document_loaders/google_spanner) | <span data-sort-value="22000"><a href="https://pypi.org/project/langchain-google-spanner/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-spanner/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`DomPrunerLoader`](https://github.com/dong7812/dompruner-py) | <span data-sort-value="4000"><a href="https://pypi.org/project/dompruner/" target="_blank"><img src="https://static.pepy.tech/badge/dompruner/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`OpenDataLoader PDF`](https://github.com/opendataloader-project/langchain-opendataloader-pdf) | <span data-sort-value="3000"><a href="https://pypi.org/project/langchain-opendataloader-pdf/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendataloader-pdf/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Docugami`](/oss/python/integrations/document_loaders/docugami) | <span data-sort-value="2000"><a href="https://pypi.org/project/docugami-langchain/" target="_blank"><img src="https://static.pepy.tech/badge/docugami-langchain/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
@@ -55638,49 +55759,50 @@ The below document loaders allow you to load data from common data formats.
 | [`Azure blob storage loader`](/oss/python/integrations/document_loaders/azure_blob_storage) | <span data-sort-value="1000"><a href="https://pypi.org/project/langchain-azure-storage/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-azure-storage/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`PDFParser`](https://dev.writer.com/api-reference/tool-api/pdf-parser#parse-pdf) | <span data-sort-value="1000"><a href="https://pypi.org/project/langchain-writer/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-writer/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`SingleStoreLoader`](https://github.com/singlestore-labs/langchain-singlestore/) | <span data-sort-value="1000"><a href="https://pypi.org/project/langchain-singlestore/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-singlestore/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`SecureLangChainLoader`](https://github.com/arsbr/Veritensor) | <span data-sort-value="906"><a href="https://pypi.org/project/veritensor/" target="_blank"><img src="https://static.pepy.tech/badge/veritensor/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`SpidraLoader`](https://docs.spidra.io) | <span data-sort-value="777"><a href="https://pypi.org/project/langchain-spidra/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-spidra/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`MinerULoader`](https://mineru.net) | <span data-sort-value="712"><a href="https://pypi.org/project/langchain-mineru/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-mineru/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`AlfrescoLoader`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Loader.md#alfrescoloader) | <span data-sort-value="705"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`OpenDMALoader`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Loader.md) | <span data-sort-value="705"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Google memorystore for Redis`](/oss/python/integrations/document_loaders/google_memorystore_redis) | <span data-sort-value="598"><a href="https://pypi.org/project/langchain-google-memorystore-redis/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-memorystore-redis/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`CrwLoader`](https://fastcrw.com) | <span data-sort-value="597"><a href="https://pypi.org/project/langchain-crw/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-crw/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`HydrafetchLoader`](https://docs.hydrafetch.com) | <span data-sort-value="562"><a href="https://pypi.org/project/langchain-hydrafetch/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-hydrafetch/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`LyrenthLoader`](https://lyrenth.com/docs/integrations) | <span data-sort-value="548"><a href="https://pypi.org/project/langchain-lyrenth/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-lyrenth/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`PdfInspectorLoader`](https://github.com/undacmic/langchain-pdf-inspector) | <span data-sort-value="496"><a href="https://pypi.org/project/langchain-pdf-inspector/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-pdf-inspector/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`HyperbrowserLoader`](https://www.hyperbrowser.ai/docs/home) | <span data-sort-value="463"><a href="https://pypi.org/project/langchain-hyperbrowser/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-hyperbrowser/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`XNSBlobLoader`](https://docs.xns.tech) | <span data-sort-value="458"><a href="https://pypi.org/project/langchain-xns/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-xns/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`XNSLoader`](https://docs.xns.tech) | <span data-sort-value="458"><a href="https://pypi.org/project/langchain-xns/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-xns/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`CapslaneLoader`](https://capslane.com/integrations/langchain) | <span data-sort-value="936"><a href="https://pypi.org/project/capslane/" target="_blank"><img src="https://static.pepy.tech/badge/capslane/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`SecureLangChainLoader`](https://github.com/arsbr/Veritensor) | <span data-sort-value="807"><a href="https://pypi.org/project/veritensor/" target="_blank"><img src="https://static.pepy.tech/badge/veritensor/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`SpidraLoader`](https://docs.spidra.io) | <span data-sort-value="772"><a href="https://pypi.org/project/langchain-spidra/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-spidra/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`AlfrescoLoader`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Loader.md#alfrescoloader) | <span data-sort-value="725"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`OpenDMALoader`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Loader.md) | <span data-sort-value="725"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`MinerULoader`](https://mineru.net) | <span data-sort-value="674"><a href="https://pypi.org/project/langchain-mineru/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-mineru/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`HydrafetchLoader`](https://docs.hydrafetch.com) | <span data-sort-value="595"><a href="https://pypi.org/project/langchain-hydrafetch/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-hydrafetch/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`LyrenthLoader`](https://lyrenth.com/docs/integrations) | <span data-sort-value="571"><a href="https://pypi.org/project/langchain-lyrenth/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-lyrenth/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`CrwLoader`](https://fastcrw.com) | <span data-sort-value="563"><a href="https://pypi.org/project/langchain-crw/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-crw/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Google memorystore for Redis`](/oss/python/integrations/document_loaders/google_memorystore_redis) | <span data-sort-value="534"><a href="https://pypi.org/project/langchain-google-memorystore-redis/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-memorystore-redis/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`XNSBlobLoader`](https://docs.xns.tech) | <span data-sort-value="491"><a href="https://pypi.org/project/langchain-xns/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-xns/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`XNSLoader`](https://docs.xns.tech) | <span data-sort-value="491"><a href="https://pypi.org/project/langchain-xns/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-xns/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`QuanticDataLoader`](https://quanticdata.io/docs/) | <span data-sort-value="476"><a href="https://pypi.org/project/langchain-quanticdata/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-quanticdata/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Google bigtable`](/oss/python/integrations/document_loaders/google_bigtable) | <span data-sort-value="451"><a href="https://pypi.org/project/langchain-google-bigtable/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-bigtable/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`QuanticDataLoader`](https://quanticdata.io/docs/) | <span data-sort-value="432"><a href="https://pypi.org/project/langchain-quanticdata/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-quanticdata/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`PowerScaleDocumentLoader`](/oss/python/integrations/document_loaders/powerscale) | <span data-sort-value="423"><a href="https://pypi.org/project/powerscale-rag-connector/" target="_blank"><img src="https://static.pepy.tech/badge/powerscale-rag-connector/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`FirecrawlLoader`](https://docs.firecrawl.dev) | <span data-sort-value="412"><a href="https://pypi.org/project/langchain-firecrawl/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-firecrawl/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`langchain_box`](https://developer.box.com/) | <span data-sort-value="390"><a href="https://pypi.org/project/langchain-box/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-box/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Outline`](https://github.com/10Pines/langchain-outline) | <span data-sort-value="378"><a href="https://pypi.org/project/langchain-outline/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-outline/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`PolarisAIDataInsightLoader`](https://datainsight.polarisoffice.com/playground) | <span data-sort-value="367"><a href="https://pypi.org/project/langchain-polaris-ai-datainsight/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-polaris-ai-datainsight/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`PaddleOCR-VL`](https://www.paddleocr.com) | <span data-sort-value="355"><a href="https://pypi.org/project/langchain-paddleocr/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-paddleocr/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`ReplyLayerLoader`](https://replylayer.ai/docs/guides/langchain) | <span data-sort-value="329"><a href="https://pypi.org/project/langchain-replylayer/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-replylayer/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`OpeddFeedLoader`](https://opedd.com/for-ai-agents) | <span data-sort-value="322"><a href="https://pypi.org/project/langchain-opedd/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opedd/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`AnakinLoader`](https://anakin.io/docs/documentation) | <span data-sort-value="269"><a href="https://pypi.org/project/langchain-anakin/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-anakin/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`PdfmuseLoader`](https://github.com/casperkwok/pdfmuse) | <span data-sort-value="253"><a href="https://pypi.org/project/langchain-pdfmuse/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-pdfmuse/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Google Classroom`](/oss/python/integrations/document_loaders/google_classroom) | <span data-sort-value="242"><a href="https://pypi.org/project/langchain-google-classroom/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-classroom/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Kinetica document loader`](https://github.com/kineticadb/langchain-kinetica) | <span data-sort-value="236"><a href="https://pypi.org/project/langchain-kinetica/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-kinetica/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Google cloud SQL for mysql`](/oss/python/integrations/document_loaders/google_cloud_sql_mysql) | <span data-sort-value="230"><a href="https://pypi.org/project/langchain-google-cloud-sql-mysql/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-cloud-sql-mysql/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Google firestore in datastore mode`](/oss/python/integrations/document_loaders/google_datastore) | <span data-sort-value="229"><a href="https://pypi.org/project/langchain-google-datastore/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-datastore/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`HwpHwpxLoader`](https://github.com/jaypakdevkr/HWP-Loader) | <span data-sort-value="225"><a href="https://pypi.org/project/langchain-hwp-hwpx-loader/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-hwp-hwpx-loader/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`ProxyHatLoader`](https://docs.proxyhat.com) | <span data-sort-value="221"><a href="https://pypi.org/project/langchain-proxyhat/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-proxyhat/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`CVFileLoader`](https://cvfile.org) | <span data-sort-value="210"><a href="https://pypi.org/project/langchain-cvfile/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-cvfile/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`DiffbotCrawlLoader`](https://github.com/diffbot/langchain-diffbot) | <span data-sort-value="208"><a href="https://pypi.org/project/langchain-diffbot/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-diffbot/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`DiffbotExtractLoader`](https://github.com/diffbot/langchain-diffbot) | <span data-sort-value="208"><a href="https://pypi.org/project/langchain-diffbot/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-diffbot/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`AgentQLLoader`](https://docs.agentql.com/home) | <span data-sort-value="207"><a href="https://pypi.org/project/langchain-agentql/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-agentql/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`AirbyteLoader`](https://docs.airbyte.com/integrations/) | <span data-sort-value="202"><a href="https://pypi.org/project/langchain-airbyte/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-airbyte/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Google cloud SQL for SQL server`](/oss/python/integrations/document_loaders/google_cloud_sql_mssql) | <span data-sort-value="189"><a href="https://pypi.org/project/langchain-google-cloud-sql-mssql/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-cloud-sql-mssql/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`PlasmateSOMLLoader`](https://docs.plasmate.app/integration-langchain) | <span data-sort-value="160"><a href="https://pypi.org/project/langchain-plasmate/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-plasmate/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Undatasio`](https://undatas.io) | <span data-sort-value="159"><a href="https://pypi.org/project/langchain-undatasio/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-undatasio/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Soniox`](https://soniox.com/docs/stt/concepts/supported-languages) | <span data-sort-value="151"><a href="https://pypi.org/project/langchain-soniox/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-soniox/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`AgentMail`](https://github.com/agentmail-to/langchain-agentmail) | <span data-sort-value="145"><a href="https://pypi.org/project/langchain-agentmail/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-agentmail/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Google el carro for Oracle workloads`](https://github.com/googleapis/langchain-google-el-carro-python/) | <span data-sort-value="144"><a href="https://pypi.org/project/langchain-google-el-carro/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-el-carro/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`OxidizePdfLoader`](https://github.com/bzsanti/oxidize-pdf-integrations/tree/main/langchain) | <span data-sort-value="120"><a href="https://pypi.org/project/langchain-oxidize-pdf/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-oxidize-pdf/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`HyperbrowserLoader`](https://www.hyperbrowser.ai/docs/home) | <span data-sort-value="450"><a href="https://pypi.org/project/langchain-hyperbrowser/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-hyperbrowser/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`PowerScaleDocumentLoader`](/oss/python/integrations/document_loaders/powerscale) | <span data-sort-value="447"><a href="https://pypi.org/project/powerscale-rag-connector/" target="_blank"><img src="https://static.pepy.tech/badge/powerscale-rag-connector/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`FirecrawlLoader`](https://docs.firecrawl.dev) | <span data-sort-value="417"><a href="https://pypi.org/project/langchain-firecrawl/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-firecrawl/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`PaddleOCR-VL`](https://www.paddleocr.com) | <span data-sort-value="382"><a href="https://pypi.org/project/langchain-paddleocr/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-paddleocr/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`PdfInspectorLoader`](https://github.com/undacmic/langchain-pdf-inspector) | <span data-sort-value="379"><a href="https://pypi.org/project/langchain-pdf-inspector/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-pdf-inspector/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`langchain_box`](https://developer.box.com/) | <span data-sort-value="370"><a href="https://pypi.org/project/langchain-box/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-box/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`PolarisAIDataInsightLoader`](https://datainsight.polarisoffice.com/playground) | <span data-sort-value="363"><a href="https://pypi.org/project/langchain-polaris-ai-datainsight/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-polaris-ai-datainsight/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Outline`](https://github.com/10Pines/langchain-outline) | <span data-sort-value="355"><a href="https://pypi.org/project/langchain-outline/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-outline/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`ReplyLayerLoader`](https://replylayer.ai/docs/guides/langchain) | <span data-sort-value="331"><a href="https://pypi.org/project/langchain-replylayer/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-replylayer/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`OpeddFeedLoader`](https://opedd.com/for-ai-agents) | <span data-sort-value="301"><a href="https://pypi.org/project/langchain-opedd/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opedd/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Google Classroom`](/oss/python/integrations/document_loaders/google_classroom) | <span data-sort-value="254"><a href="https://pypi.org/project/langchain-google-classroom/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-classroom/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Google cloud SQL for mysql`](/oss/python/integrations/document_loaders/google_cloud_sql_mysql) | <span data-sort-value="254"><a href="https://pypi.org/project/langchain-google-cloud-sql-mysql/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-cloud-sql-mysql/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Kinetica document loader`](https://github.com/kineticadb/langchain-kinetica) | <span data-sort-value="242"><a href="https://pypi.org/project/langchain-kinetica/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-kinetica/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`AnakinLoader`](https://anakin.io/docs/documentation) | <span data-sort-value="239"><a href="https://pypi.org/project/langchain-anakin/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-anakin/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Google firestore in datastore mode`](/oss/python/integrations/document_loaders/google_datastore) | <span data-sort-value="237"><a href="https://pypi.org/project/langchain-google-datastore/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-datastore/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`PdfmuseLoader`](https://github.com/casperkwok/pdfmuse) | <span data-sort-value="234"><a href="https://pypi.org/project/langchain-pdfmuse/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-pdfmuse/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`HwpHwpxLoader`](https://github.com/jaypakdevkr/HWP-Loader) | <span data-sort-value="224"><a href="https://pypi.org/project/langchain-hwp-hwpx-loader/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-hwp-hwpx-loader/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`CVFileLoader`](https://cvfile.org) | <span data-sort-value="220"><a href="https://pypi.org/project/langchain-cvfile/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-cvfile/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`ProxyHatLoader`](https://docs.proxyhat.com) | <span data-sort-value="220"><a href="https://pypi.org/project/langchain-proxyhat/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-proxyhat/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`AirbyteLoader`](https://docs.airbyte.com/integrations/) | <span data-sort-value="212"><a href="https://pypi.org/project/langchain-airbyte/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-airbyte/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`DiffbotCrawlLoader`](https://github.com/diffbot/langchain-diffbot) | <span data-sort-value="211"><a href="https://pypi.org/project/langchain-diffbot/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-diffbot/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`DiffbotExtractLoader`](https://github.com/diffbot/langchain-diffbot) | <span data-sort-value="211"><a href="https://pypi.org/project/langchain-diffbot/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-diffbot/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Google cloud SQL for SQL server`](/oss/python/integrations/document_loaders/google_cloud_sql_mssql) | <span data-sort-value="209"><a href="https://pypi.org/project/langchain-google-cloud-sql-mssql/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-cloud-sql-mssql/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`AgentQLLoader`](https://docs.agentql.com/home) | <span data-sort-value="203"><a href="https://pypi.org/project/langchain-agentql/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-agentql/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Google el carro for Oracle workloads`](https://github.com/googleapis/langchain-google-el-carro-python/) | <span data-sort-value="175"><a href="https://pypi.org/project/langchain-google-el-carro/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-el-carro/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`PlasmateSOMLLoader`](https://docs.plasmate.app/integration-langchain) | <span data-sort-value="168"><a href="https://pypi.org/project/langchain-plasmate/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-plasmate/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Undatasio`](https://undatas.io) | <span data-sort-value="161"><a href="https://pypi.org/project/langchain-undatasio/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-undatasio/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Soniox`](https://soniox.com/docs/stt/concepts/supported-languages) | <span data-sort-value="160"><a href="https://pypi.org/project/langchain-soniox/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-soniox/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`AgentMail`](https://github.com/agentmail-to/langchain-agentmail) | <span data-sort-value="144"><a href="https://pypi.org/project/langchain-agentmail/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-agentmail/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`OxidizePdfLoader`](https://github.com/bzsanti/oxidize-pdf-integrations/tree/main/langchain) | <span data-sort-value="129"><a href="https://pypi.org/project/langchain-oxidize-pdf/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-oxidize-pdf/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`LangSmithLoader`](/oss/python/integrations/document_loaders/langsmith) | <span data-sort-value="-1">N/A</span> |
 
 </div>
@@ -71377,6 +71499,14 @@ Browse the complete collection of integrations available for Python. LangChain P
     </Card>
 
     <Card
+        title="Capslane"
+        href="https://capslane.com/integrations/langchain"
+        icon="link"
+    >
+        Loads timestamped video transcript passages into LangChain Documents with playback citations and optional asynchronous transcription.
+    </Card>
+
+    <Card
         title="Cerebras"
         href="/oss/python/integrations/providers/cerebras"
         icon="link"
@@ -71871,6 +72001,14 @@ Browse the complete collection of integrations available for Python. LangChain P
         icon="link"
     >
         Football statistics, model probabilities, and Monte Carlo season projections for 90+ leagues.
+    </Card>
+
+    <Card
+        title="FoxNose"
+        href="https://langchain-foxnose.readthedocs.io/"
+        icon="link"
+    >
+        Retriever, document loader and agent tool for FoxNose collections, with text, vector, hybrid and vector-boosted search over the Flux delivery API.
     </Card>
 
     <Card
@@ -87795,18 +87933,19 @@ The below retrievers will search over an external index (e.g., constructed from 
 | [`AmazonKnowledgeBasesRetriever`](/oss/python/integrations/retrievers/bedrock) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`langchain-aws`](https://reference.langchain.com/python/langchain-aws/retrievers/bedrock/AmazonKnowledgeBasesRetriever) | <span data-sort-value="11000000"><a href="https://pypi.org/project/langchain-aws/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-aws/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Google drive`](/oss/python/integrations/retrievers/google_drive) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-google-community`](https://pypi.org/project/langchain-google-community/) | <span data-sort-value="11000000"><a href="https://pypi.org/project/langchain-google-community/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-community/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`VertexAISearchRetriever`](/oss/python/integrations/retrievers/google_vertex_ai_search) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`langchain-google-community`](https://reference.langchain.com/python/langchain-google-community/vertex_ai_search/VertexAISearchRetriever) | <span data-sort-value="11000000"><a href="https://pypi.org/project/langchain-google-community/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-google-community/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Cohere RAG`](/oss/python/integrations/retrievers/cohere) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-cohere`](https://pypi.org/project/langchain-cohere/) | <span data-sort-value="790000"><a href="https://pypi.org/project/langchain-cohere/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-cohere/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Cohere reranker`](/oss/python/integrations/retrievers/cohere-reranker) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-cohere`](https://pypi.org/project/langchain-cohere/) | <span data-sort-value="790000"><a href="https://pypi.org/project/langchain-cohere/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-cohere/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Pinecone rerank`](/oss/python/integrations/retrievers/pinecone_rerank) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-pinecone`](https://pypi.org/project/langchain-pinecone/) | <span data-sort-value="777000"><a href="https://pypi.org/project/langchain-pinecone/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-pinecone/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`NVIDIARAGRetriever`](/oss/python/integrations/retrievers/nvidia) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-nvidia-ai-endpoints`](https://reference.langchain.com/python/langchain-nvidia-ai-endpoints/retrievers/NVIDIARAGRetriever) | <span data-sort-value="749000"><a href="https://pypi.org/project/langchain-nvidia-ai-endpoints/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-nvidia-ai-endpoints/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`WatsonxRerank`](/oss/python/integrations/retrievers/ibm_watsonx_ranker) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-ibm`](https://reference.langchain.com/python/integrations/langchain_ibm/) | <span data-sort-value="481000"><a href="https://pypi.org/project/langchain-ibm/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-ibm/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`PerplexitySearchRetriever`](/oss/python/integrations/retrievers/perplexity_search) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`langchain-perplexity`](https://reference.langchain.com/python/langchain-perplexity/retrievers/PerplexitySearchRetriever) | <span data-sort-value="312000"><a href="https://pypi.org/project/langchain-perplexity/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-perplexity/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`ElasticsearchRetriever`](/oss/python/integrations/retrievers/elasticsearch_retriever) | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | [`langchain-elasticsearch`](https://reference.langchain.com/python/langchain-elasticsearch/retrievers/ElasticsearchRetriever) | <span data-sort-value="223000"><a href="https://pypi.org/project/langchain-elasticsearch/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-elasticsearch/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Graph RAG`](/oss/python/integrations/retrievers/graph_rag) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-graph-retriever`](https://pypi.org/project/langchain-graph-retriever/) | <span data-sort-value="144000"><a href="https://pypi.org/project/langchain-graph-retriever/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-graph-retriever/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Self Querying with SAP HANA Cloud Vector Engine`](https://pypi.org/project/langchain-hana/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-hana`](https://pypi.org/project/langchain-hana/) | <span data-sort-value="28000"><a href="https://pypi.org/project/langchain-hana/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-hana/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`MongoDBAtlas`](/oss/python/integrations/retrievers/mongodb_atlas) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-mongodb`](https://pypi.org/project/langchain-mongodb/) | <span data-sort-value="825000"><a href="https://pypi.org/project/langchain-mongodb/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-mongodb/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Cohere RAG`](/oss/python/integrations/retrievers/cohere) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-cohere`](https://pypi.org/project/langchain-cohere/) | <span data-sort-value="743000"><a href="https://pypi.org/project/langchain-cohere/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-cohere/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Cohere reranker`](/oss/python/integrations/retrievers/cohere-reranker) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-cohere`](https://pypi.org/project/langchain-cohere/) | <span data-sort-value="743000"><a href="https://pypi.org/project/langchain-cohere/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-cohere/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`NVIDIARAGRetriever`](/oss/python/integrations/retrievers/nvidia) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-nvidia-ai-endpoints`](https://reference.langchain.com/python/langchain-nvidia-ai-endpoints/retrievers/NVIDIARAGRetriever) | <span data-sort-value="723000"><a href="https://pypi.org/project/langchain-nvidia-ai-endpoints/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-nvidia-ai-endpoints/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Pinecone rerank`](/oss/python/integrations/retrievers/pinecone_rerank) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-pinecone`](https://pypi.org/project/langchain-pinecone/) | <span data-sort-value="701000"><a href="https://pypi.org/project/langchain-pinecone/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-pinecone/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`WatsonxRerank`](/oss/python/integrations/retrievers/ibm_watsonx_ranker) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-ibm`](https://reference.langchain.com/python/integrations/langchain_ibm/) | <span data-sort-value="458000"><a href="https://pypi.org/project/langchain-ibm/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-ibm/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`PerplexitySearchRetriever`](/oss/python/integrations/retrievers/perplexity_search) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`langchain-perplexity`](https://reference.langchain.com/python/langchain-perplexity/retrievers/PerplexitySearchRetriever) | <span data-sort-value="297000"><a href="https://pypi.org/project/langchain-perplexity/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-perplexity/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`ElasticsearchRetriever`](/oss/python/integrations/retrievers/elasticsearch_retriever) | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | [`langchain-elasticsearch`](https://reference.langchain.com/python/langchain-elasticsearch/retrievers/ElasticsearchRetriever) | <span data-sort-value="213000"><a href="https://pypi.org/project/langchain-elasticsearch/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-elasticsearch/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Graph RAG`](/oss/python/integrations/retrievers/graph_rag) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-graph-retriever`](https://pypi.org/project/langchain-graph-retriever/) | <span data-sort-value="138000"><a href="https://pypi.org/project/langchain-graph-retriever/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-graph-retriever/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Self Querying with SAP HANA Cloud Vector Engine`](https://pypi.org/project/langchain-hana/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-hana`](https://pypi.org/project/langchain-hana/) | <span data-sort-value="26000"><a href="https://pypi.org/project/langchain-hana/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-hana/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`ApifySearchRetriever`](https://docs.apify.com/integrations/langchain) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-apify`](https://pypi.org/project/langchain-apify/) | <span data-sort-value="23000"><a href="https://pypi.org/project/langchain-apify/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-apify/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`M3Retriever`](https://github.com/skynetcmd/m3-memory/blob/main/docs/integrations/LANGCHAIN.md) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`m3-memory`](https://pypi.org/project/m3-memory/) | <span data-sort-value="23000"><a href="https://pypi.org/project/m3-memory/" target="_blank"><img src="https://static.pepy.tech/badge/m3-memory/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Ragatouille`](/oss/python/integrations/retrievers/ragatouille) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`ragatouille`](https://pypi.org/project/ragatouille/) | <span data-sort-value="20000"><a href="https://pypi.org/project/ragatouille/" target="_blank"><img src="https://static.pepy.tech/badge/ragatouille/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Ragatouille`](/oss/python/integrations/retrievers/ragatouille) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`ragatouille`](https://pypi.org/project/ragatouille/) | <span data-sort-value="18000"><a href="https://pypi.org/project/ragatouille/" target="_blank"><img src="https://static.pepy.tech/badge/ragatouille/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`M3Retriever`](https://github.com/skynetcmd/m3-memory/blob/main/docs/integrations/LANGCHAIN.md) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`m3-memory`](https://pypi.org/project/m3-memory/) | <span data-sort-value="14000"><a href="https://pypi.org/project/m3-memory/" target="_blank"><img src="https://static.pepy.tech/badge/m3-memory/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`ParallelSearchRetriever`](/oss/python/integrations/retrievers/parallel) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`langchain-parallel`](https://reference.langchain.com/python/langchain-parallel/retrievers/ParallelSearchRetriever) | <span data-sort-value="6000"><a href="https://pypi.org/project/langchain-parallel/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-parallel/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`RecallRetriever`](https://giulioder.github.io/RE-call/integrations.html) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`recall-rag`](https://pypi.org/project/recall-rag/) | <span data-sort-value="6000"><a href="https://pypi.org/project/recall-rag/" target="_blank"><img src="https://static.pepy.tech/badge/recall-rag/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Nebius`](https://docs.tokenfactory.nebius.com/quickstart) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-nebius`](https://pypi.org/project/langchain-nebius/) | <span data-sort-value="5000"><a href="https://pypi.org/project/langchain-nebius/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-nebius/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
@@ -87821,60 +87960,61 @@ The below retrievers will search over an external index (e.g., constructed from 
 | [`YouTubeSearchRetriever`](https://github.com/urraf/langchain-youtube#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-youtube`](https://pypi.org/project/langchain-youtube/) | <span data-sort-value="1000"><a href="https://pypi.org/project/langchain-youtube/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-youtube/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`YouTubeTranscriptRetriever`](https://github.com/urraf/langchain-youtube#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-youtube`](https://pypi.org/project/langchain-youtube/) | <span data-sort-value="1000"><a href="https://pypi.org/project/langchain-youtube/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-youtube/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`YouTubeVideoRetriever`](https://github.com/urraf/langchain-youtube#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-youtube`](https://pypi.org/project/langchain-youtube/) | <span data-sort-value="1000"><a href="https://pypi.org/project/langchain-youtube/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-youtube/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`CKGRetriever`](https://github.com/Yarmoluk/langchain-ckg) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-ckg`](https://pypi.org/project/langchain-ckg/) | <span data-sort-value="761"><a href="https://pypi.org/project/langchain-ckg/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-ckg/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`AlfrescoRetriever`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Retriever.md#alfrescoretriever) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-opendma`](https://pypi.org/project/langchain-opendma/) | <span data-sort-value="705"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`DocumentumRetriever`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Retriever.md#documentumretriever) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-opendma`](https://pypi.org/project/langchain-opendma/) | <span data-sort-value="705"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`FileNetP8Retriever`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Retriever.md#filenetp8retriever) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-opendma`](https://pypi.org/project/langchain-opendma/) | <span data-sort-value="705"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`OnBaseRetriever`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Retriever.md#onbaseretriever) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-opendma`](https://pypi.org/project/langchain-opendma/) | <span data-sort-value="705"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`OpenDMARetriever`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Retriever.md) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-opendma`](https://pypi.org/project/langchain-opendma/) | <span data-sort-value="705"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`HydrafetchSearchRetriever`](https://docs.hydrafetch.com) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-hydrafetch`](https://pypi.org/project/langchain-hydrafetch/) | <span data-sort-value="562"><a href="https://pypi.org/project/langchain-hydrafetch/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-hydrafetch/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`RedditCommentsRetriever`](https://github.com/urraf/langchain-reddit#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-reddit`](https://pypi.org/project/langchain-reddit/) | <span data-sort-value="458"><a href="https://pypi.org/project/langchain-reddit/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-reddit/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`RedditSearchRetriever`](https://github.com/urraf/langchain-reddit#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-reddit`](https://pypi.org/project/langchain-reddit/) | <span data-sort-value="458"><a href="https://pypi.org/project/langchain-reddit/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-reddit/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`RedditSubredditRetriever`](https://github.com/urraf/langchain-reddit#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-reddit`](https://pypi.org/project/langchain-reddit/) | <span data-sort-value="458"><a href="https://pypi.org/project/langchain-reddit/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-reddit/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`StackOverflowAnswerRetriever`](https://github.com/urraf/langchain-stackoverflow#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-stackoverflow`](https://pypi.org/project/langchain-stackoverflow/) | <span data-sort-value="453"><a href="https://pypi.org/project/langchain-stackoverflow/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-stackoverflow/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`StackOverflowSearchRetriever`](https://github.com/urraf/langchain-stackoverflow#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-stackoverflow`](https://pypi.org/project/langchain-stackoverflow/) | <span data-sort-value="453"><a href="https://pypi.org/project/langchain-stackoverflow/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-stackoverflow/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`AlphaAINewsRetriever`](https://alphai.io/developers) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-alphai`](https://pypi.org/project/langchain-alphai/) | <span data-sort-value="444"><a href="https://pypi.org/project/langchain-alphai/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-alphai/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`HackerNewsCommentsRetriever`](https://github.com/urraf/langchain-hackernews#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-hackernews`](https://pypi.org/project/langchain-hackernews/) | <span data-sort-value="435"><a href="https://pypi.org/project/langchain-hackernews/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-hackernews/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`HackerNewsFrontPageRetriever`](https://github.com/urraf/langchain-hackernews#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-hackernews`](https://pypi.org/project/langchain-hackernews/) | <span data-sort-value="435"><a href="https://pypi.org/project/langchain-hackernews/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-hackernews/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`HackerNewsSearchRetriever`](https://github.com/urraf/langchain-hackernews#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-hackernews`](https://pypi.org/project/langchain-hackernews/) | <span data-sort-value="435"><a href="https://pypi.org/project/langchain-hackernews/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-hackernews/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`QuanticDataRetriever`](https://quanticdata.io/docs/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-quanticdata`](https://pypi.org/project/langchain-quanticdata/) | <span data-sort-value="432"><a href="https://pypi.org/project/langchain-quanticdata/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-quanticdata/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Contextual AI reranker`](https://docs.contextual.ai/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-contextual`](https://pypi.org/project/langchain-contextual/) | <span data-sort-value="430"><a href="https://pypi.org/project/langchain-contextual/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-contextual/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`PlayStoreAppRetriever`](https://github.com/urraf/langchain-playstore#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-playstore`](https://pypi.org/project/langchain-playstore/) | <span data-sort-value="420"><a href="https://pypi.org/project/langchain-playstore/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-playstore/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`PlayStoreReviewsRetriever`](https://github.com/urraf/langchain-playstore#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-playstore`](https://pypi.org/project/langchain-playstore/) | <span data-sort-value="420"><a href="https://pypi.org/project/langchain-playstore/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-playstore/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`BoxRetriever`](/oss/python/integrations/retrievers/box) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-box`](https://pypi.org/project/langchain-box/) | <span data-sort-value="390"><a href="https://pypi.org/project/langchain-box/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-box/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Valyucontext`](https://docs.valyu.ai/overview) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-valyu`](https://pypi.org/project/langchain-valyu/) | <span data-sort-value="384"><a href="https://pypi.org/project/langchain-valyu/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-valyu/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`SynapRetriever`](https://www.maximem.ai/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`maximem-synap-langchain`](https://pypi.org/project/maximem-synap-langchain/) | <span data-sort-value="340"><a href="https://pypi.org/project/maximem-synap-langchain/" target="_blank"><img src="https://static.pepy.tech/badge/maximem-synap-langchain/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`ReplyLayerRetriever`](https://replylayer.ai/docs/guides/langchain) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`langchain-replylayer`](https://pypi.org/project/langchain-replylayer/) | <span data-sort-value="329"><a href="https://pypi.org/project/langchain-replylayer/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-replylayer/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Dappier`](https://docs.dappier.com/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-dappier`](https://pypi.org/project/langchain-dappier/) | <span data-sort-value="323"><a href="https://pypi.org/project/langchain-dappier/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-dappier/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`PerseusVaultRetriever`](https://github.com/Perseus-Computing-LLC/langchain-perseus-vault) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-perseus-vault`](https://pypi.org/project/langchain-perseus-vault/) | <span data-sort-value="294"><a href="https://pypi.org/project/langchain-perseus-vault/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-perseus-vault/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`PolarisRetriever`](https://github.com/Veroq-ai/polaris-sdks/tree/main/python/langchain_polaris) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-polaris`](https://pypi.org/project/langchain-polaris/) | <span data-sort-value="276"><a href="https://pypi.org/project/langchain-polaris/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-polaris/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Sourcey`](https://sourcey.com/docs/guides/guide-langchain-retriever) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-sourcey`](https://pypi.org/project/langchain-sourcey/) | <span data-sort-value="276"><a href="https://pypi.org/project/langchain-sourcey/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-sourcey/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Kinetica vectorstore based retriever`](https://github.com/kineticadb/langchain-kinetica) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-kinetica`](https://pypi.org/project/langchain-kinetica/) | <span data-sort-value="236"><a href="https://pypi.org/project/langchain-kinetica/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-kinetica/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`arXiv`](https://j1c.github.io/langchain-arxiv-retriever) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-arxiv-retriever`](https://pypi.org/project/langchain-arxiv-retriever/) | <span data-sort-value="235"><a href="https://pypi.org/project/langchain-arxiv-retriever/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-arxiv-retriever/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`SpiceDB Retriever`](https://github.com/authzed/langchain-spicedb) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-spicedb`](https://pypi.org/project/langchain-spicedb/) | <span data-sort-value="230"><a href="https://pypi.org/project/langchain-spicedb/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-spicedb/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`MemstateRetriever`](https://memstate.ai/docs/integrations/langchain) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`langchain-memstate`](https://pypi.org/project/langchain-memstate/) | <span data-sort-value="229"><a href="https://pypi.org/project/langchain-memstate/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-memstate/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`AxioraRetriever`](https://axiora.dev/docs) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`langchain-axiora`](https://pypi.org/project/langchain-axiora/) | <span data-sort-value="220"><a href="https://pypi.org/project/langchain-axiora/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-axiora/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`EgnyteRetriever`](/oss/python/integrations/retrievers/egnyte) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`egnyte-langchain-connector`](https://pypi.org/project/egnyte-langchain-connector/) | <span data-sort-value="220"><a href="https://pypi.org/project/egnyte-langchain-connector/" target="_blank"><img src="https://static.pepy.tech/badge/egnyte-langchain-connector/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`MengramRetriever`](https://mengram.io/docs) | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | [`langchain-mengram`](https://pypi.org/project/langchain-mengram/) | <span data-sort-value="218"><a href="https://pypi.org/project/langchain-mengram/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-mengram/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`CoalentRetriever`](https://coalent.ai/docs) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-coalent`](https://pypi.org/project/langchain-coalent/) | <span data-sort-value="217"><a href="https://pypi.org/project/langchain-coalent/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-coalent/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`DiffbotKnowledgeGraphRetriever`](https://github.com/diffbot/langchain-diffbot) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-diffbot`](https://pypi.org/project/langchain-diffbot/) | <span data-sort-value="208"><a href="https://pypi.org/project/langchain-diffbot/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-diffbot/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`DiffbotWebSearchRetriever`](https://github.com/diffbot/langchain-diffbot) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-diffbot`](https://pypi.org/project/langchain-diffbot/) | <span data-sort-value="208"><a href="https://pypi.org/project/langchain-diffbot/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-diffbot/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`HighSNRDocumentCompressor`](https://www.high-snr.com/docs.html) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`langchain-highsnr`](https://pypi.org/project/langchain-highsnr/) | <span data-sort-value="203"><a href="https://pypi.org/project/langchain-highsnr/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-highsnr/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Galaxia`](https://smabbler.gitbook.io/smabbler/api-rag/smabblers-api-rag) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-galaxia-retriever`](https://pypi.org/project/langchain-galaxia-retriever/) | <span data-sort-value="194"><a href="https://pypi.org/project/langchain-galaxia-retriever/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-galaxia-retriever/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Permit`](https://docs.permit.io/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-permit`](https://pypi.org/project/langchain-permit/) | <span data-sort-value="189"><a href="https://pypi.org/project/langchain-permit/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-permit/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Cognee`](https://docs.cognee.ai/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-cognee`](https://pypi.org/project/langchain-cognee/) | <span data-sort-value="175"><a href="https://pypi.org/project/langchain-cognee/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-cognee/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`DeweyRetriever`](https://github.com/meetdewey/langchain-dewey) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`langchain-dewey`](https://pypi.org/project/langchain-dewey/) | <span data-sort-value="166"><a href="https://pypi.org/project/langchain-dewey/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-dewey/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`AlchemystMemory`](https://getalchemystai.com/docs) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`alchemyst-langchain`](https://pypi.org/project/alchemyst-langchain/) | <span data-sort-value="155"><a href="https://pypi.org/project/alchemyst-langchain/" target="_blank"><img src="https://static.pepy.tech/badge/alchemyst-langchain/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`VectorizeRetriever`](https://docs.vectorize.io/rag-pipelines/retrieval-endpoint#access-tokens) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-vectorize`](https://pypi.org/project/langchain-vectorize/) | <span data-sort-value="146"><a href="https://pypi.org/project/langchain-vectorize/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-vectorize/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`AgentMail`](https://github.com/agentmail-to/langchain-agentmail) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-agentmail`](https://pypi.org/project/langchain-agentmail/) | <span data-sort-value="145"><a href="https://pypi.org/project/langchain-agentmail/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-agentmail/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`IgptSearchRetriever`](https://docs.igpt.ai/docs/api-reference/search) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-igpt`](https://pypi.org/project/langchain-igpt/) | <span data-sort-value="135"><a href="https://pypi.org/project/langchain-igpt/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-igpt/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`IMAP`](https://github.com/jfouret/langchain-imap) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-imap`](https://pypi.org/project/langchain-imap/) | <span data-sort-value="123"><a href="https://pypi.org/project/langchain-imap/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-imap/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Perigon`](https://perigon.io/docs/api/intro) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-perigon`](https://pypi.org/project/langchain-perigon/) | <span data-sort-value="123"><a href="https://pypi.org/project/langchain-perigon/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-perigon/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Greennode`](https://greennode.ai/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-greennode`](https://pypi.org/project/langchain-greennode/) | <span data-sort-value="121"><a href="https://pypi.org/project/langchain-greennode/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-greennode/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`EngramRetriever`](https://engram.ai/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-engram`](https://pypi.org/project/langchain-engram/) | <span data-sort-value="116"><a href="https://pypi.org/project/langchain-engram/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-engram/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`OpenMemoryRetriever`](https://github.com/nullure/langchain-openmemory) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-openmemory`](https://pypi.org/project/langchain-openmemory/) | <span data-sort-value="109"><a href="https://pypi.org/project/langchain-openmemory/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-openmemory/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`KeiroRetriever`](https://github.com/Keirolabs-API/langchain-keiro) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`langchain-keiro`](https://pypi.org/project/langchain-keiro/) | <span data-sort-value="108"><a href="https://pypi.org/project/langchain-keiro/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-keiro/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Zotero`](https://github.com/TimBMK/langchain-zotero-retriever) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-zotero-retriever`](https://pypi.org/project/langchain-zotero-retriever/) | <span data-sort-value="103"><a href="https://pypi.org/project/langchain-zotero-retriever/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-zotero-retriever/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`AlfrescoRetriever`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Retriever.md#alfrescoretriever) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-opendma`](https://pypi.org/project/langchain-opendma/) | <span data-sort-value="725"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`DocumentumRetriever`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Retriever.md#documentumretriever) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-opendma`](https://pypi.org/project/langchain-opendma/) | <span data-sort-value="725"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`FileNetP8Retriever`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Retriever.md#filenetp8retriever) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-opendma`](https://pypi.org/project/langchain-opendma/) | <span data-sort-value="725"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`OnBaseRetriever`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Retriever.md#onbaseretriever) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-opendma`](https://pypi.org/project/langchain-opendma/) | <span data-sort-value="725"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`OpenDMARetriever`](https://github.com/OpenDMA/langchain-opendma/blob/main/docs/Retriever.md) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-opendma`](https://pypi.org/project/langchain-opendma/) | <span data-sort-value="725"><a href="https://pypi.org/project/langchain-opendma/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-opendma/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`CKGRetriever`](https://github.com/Yarmoluk/langchain-ckg) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-ckg`](https://pypi.org/project/langchain-ckg/) | <span data-sort-value="638"><a href="https://pypi.org/project/langchain-ckg/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-ckg/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`HydrafetchSearchRetriever`](https://docs.hydrafetch.com) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-hydrafetch`](https://pypi.org/project/langchain-hydrafetch/) | <span data-sort-value="595"><a href="https://pypi.org/project/langchain-hydrafetch/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-hydrafetch/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`RedditCommentsRetriever`](https://github.com/urraf/langchain-reddit#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-reddit`](https://pypi.org/project/langchain-reddit/) | <span data-sort-value="507"><a href="https://pypi.org/project/langchain-reddit/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-reddit/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`RedditSearchRetriever`](https://github.com/urraf/langchain-reddit#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-reddit`](https://pypi.org/project/langchain-reddit/) | <span data-sort-value="507"><a href="https://pypi.org/project/langchain-reddit/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-reddit/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`RedditSubredditRetriever`](https://github.com/urraf/langchain-reddit#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-reddit`](https://pypi.org/project/langchain-reddit/) | <span data-sort-value="507"><a href="https://pypi.org/project/langchain-reddit/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-reddit/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`FoxNoseRetriever`](https://langchain-foxnose.readthedocs.io/) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`langchain-foxnose`](https://pypi.org/project/langchain-foxnose/) | <span data-sort-value="495"><a href="https://pypi.org/project/langchain-foxnose/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-foxnose/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`StackOverflowAnswerRetriever`](https://github.com/urraf/langchain-stackoverflow#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-stackoverflow`](https://pypi.org/project/langchain-stackoverflow/) | <span data-sort-value="483"><a href="https://pypi.org/project/langchain-stackoverflow/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-stackoverflow/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`StackOverflowSearchRetriever`](https://github.com/urraf/langchain-stackoverflow#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-stackoverflow`](https://pypi.org/project/langchain-stackoverflow/) | <span data-sort-value="483"><a href="https://pypi.org/project/langchain-stackoverflow/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-stackoverflow/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`QuanticDataRetriever`](https://quanticdata.io/docs/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-quanticdata`](https://pypi.org/project/langchain-quanticdata/) | <span data-sort-value="476"><a href="https://pypi.org/project/langchain-quanticdata/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-quanticdata/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`AlphaAINewsRetriever`](https://alphai.io/developers) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-alphai`](https://pypi.org/project/langchain-alphai/) | <span data-sort-value="475"><a href="https://pypi.org/project/langchain-alphai/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-alphai/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`HackerNewsCommentsRetriever`](https://github.com/urraf/langchain-hackernews#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-hackernews`](https://pypi.org/project/langchain-hackernews/) | <span data-sort-value="469"><a href="https://pypi.org/project/langchain-hackernews/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-hackernews/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`HackerNewsFrontPageRetriever`](https://github.com/urraf/langchain-hackernews#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-hackernews`](https://pypi.org/project/langchain-hackernews/) | <span data-sort-value="469"><a href="https://pypi.org/project/langchain-hackernews/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-hackernews/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`HackerNewsSearchRetriever`](https://github.com/urraf/langchain-hackernews#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-hackernews`](https://pypi.org/project/langchain-hackernews/) | <span data-sort-value="469"><a href="https://pypi.org/project/langchain-hackernews/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-hackernews/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`PlayStoreAppRetriever`](https://github.com/urraf/langchain-playstore#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-playstore`](https://pypi.org/project/langchain-playstore/) | <span data-sort-value="452"><a href="https://pypi.org/project/langchain-playstore/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-playstore/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`PlayStoreReviewsRetriever`](https://github.com/urraf/langchain-playstore#readme) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-playstore`](https://pypi.org/project/langchain-playstore/) | <span data-sort-value="452"><a href="https://pypi.org/project/langchain-playstore/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-playstore/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Valyucontext`](https://docs.valyu.ai/overview) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-valyu`](https://pypi.org/project/langchain-valyu/) | <span data-sort-value="396"><a href="https://pypi.org/project/langchain-valyu/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-valyu/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Contextual AI reranker`](https://docs.contextual.ai/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-contextual`](https://pypi.org/project/langchain-contextual/) | <span data-sort-value="385"><a href="https://pypi.org/project/langchain-contextual/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-contextual/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`BoxRetriever`](/oss/python/integrations/retrievers/box) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-box`](https://pypi.org/project/langchain-box/) | <span data-sort-value="370"><a href="https://pypi.org/project/langchain-box/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-box/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`ReplyLayerRetriever`](https://replylayer.ai/docs/guides/langchain) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`langchain-replylayer`](https://pypi.org/project/langchain-replylayer/) | <span data-sort-value="331"><a href="https://pypi.org/project/langchain-replylayer/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-replylayer/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`SynapRetriever`](https://www.maximem.ai/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`maximem-synap-langchain`](https://pypi.org/project/maximem-synap-langchain/) | <span data-sort-value="313"><a href="https://pypi.org/project/maximem-synap-langchain/" target="_blank"><img src="https://static.pepy.tech/badge/maximem-synap-langchain/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Dappier`](https://docs.dappier.com/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-dappier`](https://pypi.org/project/langchain-dappier/) | <span data-sort-value="312"><a href="https://pypi.org/project/langchain-dappier/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-dappier/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`PerseusVaultRetriever`](https://github.com/Perseus-Computing-LLC/langchain-perseus-vault) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-perseus-vault`](https://pypi.org/project/langchain-perseus-vault/) | <span data-sort-value="290"><a href="https://pypi.org/project/langchain-perseus-vault/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-perseus-vault/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`PolarisRetriever`](https://github.com/Veroq-ai/polaris-sdks/tree/main/python/langchain_polaris) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-polaris`](https://pypi.org/project/langchain-polaris/) | <span data-sort-value="283"><a href="https://pypi.org/project/langchain-polaris/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-polaris/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Sourcey`](https://sourcey.com/docs/guides/guide-langchain-retriever) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-sourcey`](https://pypi.org/project/langchain-sourcey/) | <span data-sort-value="279"><a href="https://pypi.org/project/langchain-sourcey/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-sourcey/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Kinetica vectorstore based retriever`](https://github.com/kineticadb/langchain-kinetica) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-kinetica`](https://pypi.org/project/langchain-kinetica/) | <span data-sort-value="242"><a href="https://pypi.org/project/langchain-kinetica/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-kinetica/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`arXiv`](https://j1c.github.io/langchain-arxiv-retriever) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-arxiv-retriever`](https://pypi.org/project/langchain-arxiv-retriever/) | <span data-sort-value="241"><a href="https://pypi.org/project/langchain-arxiv-retriever/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-arxiv-retriever/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`SpiceDB Retriever`](https://github.com/authzed/langchain-spicedb) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-spicedb`](https://pypi.org/project/langchain-spicedb/) | <span data-sort-value="239"><a href="https://pypi.org/project/langchain-spicedb/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-spicedb/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`MemstateRetriever`](https://memstate.ai/docs/integrations/langchain) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`langchain-memstate`](https://pypi.org/project/langchain-memstate/) | <span data-sort-value="236"><a href="https://pypi.org/project/langchain-memstate/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-memstate/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`MengramRetriever`](https://mengram.io/docs) | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | [`langchain-mengram`](https://pypi.org/project/langchain-mengram/) | <span data-sort-value="225"><a href="https://pypi.org/project/langchain-mengram/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-mengram/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`EgnyteRetriever`](/oss/python/integrations/retrievers/egnyte) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`egnyte-langchain-connector`](https://pypi.org/project/egnyte-langchain-connector/) | <span data-sort-value="224"><a href="https://pypi.org/project/egnyte-langchain-connector/" target="_blank"><img src="https://static.pepy.tech/badge/egnyte-langchain-connector/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`AxioraRetriever`](https://axiora.dev/docs) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`langchain-axiora`](https://pypi.org/project/langchain-axiora/) | <span data-sort-value="222"><a href="https://pypi.org/project/langchain-axiora/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-axiora/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`DiffbotKnowledgeGraphRetriever`](https://github.com/diffbot/langchain-diffbot) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-diffbot`](https://pypi.org/project/langchain-diffbot/) | <span data-sort-value="211"><a href="https://pypi.org/project/langchain-diffbot/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-diffbot/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`DiffbotWebSearchRetriever`](https://github.com/diffbot/langchain-diffbot) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-diffbot`](https://pypi.org/project/langchain-diffbot/) | <span data-sort-value="211"><a href="https://pypi.org/project/langchain-diffbot/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-diffbot/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`CoalentRetriever`](https://coalent.ai/docs) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-coalent`](https://pypi.org/project/langchain-coalent/) | <span data-sort-value="202"><a href="https://pypi.org/project/langchain-coalent/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-coalent/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`HighSNRDocumentCompressor`](https://www.high-snr.com/docs.html) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`langchain-highsnr`](https://pypi.org/project/langchain-highsnr/) | <span data-sort-value="198"><a href="https://pypi.org/project/langchain-highsnr/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-highsnr/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Permit`](https://docs.permit.io/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-permit`](https://pypi.org/project/langchain-permit/) | <span data-sort-value="185"><a href="https://pypi.org/project/langchain-permit/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-permit/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Cognee`](https://docs.cognee.ai/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-cognee`](https://pypi.org/project/langchain-cognee/) | <span data-sort-value="178"><a href="https://pypi.org/project/langchain-cognee/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-cognee/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Galaxia`](https://smabbler.gitbook.io/smabbler/api-rag/smabblers-api-rag) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-galaxia-retriever`](https://pypi.org/project/langchain-galaxia-retriever/) | <span data-sort-value="178"><a href="https://pypi.org/project/langchain-galaxia-retriever/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-galaxia-retriever/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`DeweyRetriever`](https://github.com/meetdewey/langchain-dewey) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`langchain-dewey`](https://pypi.org/project/langchain-dewey/) | <span data-sort-value="164"><a href="https://pypi.org/project/langchain-dewey/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-dewey/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`AlchemystMemory`](https://getalchemystai.com/docs) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`alchemyst-langchain`](https://pypi.org/project/alchemyst-langchain/) | <span data-sort-value="161"><a href="https://pypi.org/project/alchemyst-langchain/" target="_blank"><img src="https://static.pepy.tech/badge/alchemyst-langchain/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`VectorizeRetriever`](https://docs.vectorize.io/rag-pipelines/retrieval-endpoint#access-tokens) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-vectorize`](https://pypi.org/project/langchain-vectorize/) | <span data-sort-value="145"><a href="https://pypi.org/project/langchain-vectorize/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-vectorize/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`AgentMail`](https://github.com/agentmail-to/langchain-agentmail) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-agentmail`](https://pypi.org/project/langchain-agentmail/) | <span data-sort-value="144"><a href="https://pypi.org/project/langchain-agentmail/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-agentmail/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`IgptSearchRetriever`](https://docs.igpt.ai/docs/api-reference/search) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-igpt`](https://pypi.org/project/langchain-igpt/) | <span data-sort-value="138"><a href="https://pypi.org/project/langchain-igpt/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-igpt/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`IMAP`](https://github.com/jfouret/langchain-imap) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-imap`](https://pypi.org/project/langchain-imap/) | <span data-sort-value="137"><a href="https://pypi.org/project/langchain-imap/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-imap/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Perigon`](https://perigon.io/docs/api/intro) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-perigon`](https://pypi.org/project/langchain-perigon/) | <span data-sort-value="126"><a href="https://pypi.org/project/langchain-perigon/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-perigon/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`EngramRetriever`](https://engram.ai/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-engram`](https://pypi.org/project/langchain-engram/) | <span data-sort-value="122"><a href="https://pypi.org/project/langchain-engram/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-engram/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Greennode`](https://greennode.ai/) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-greennode`](https://pypi.org/project/langchain-greennode/) | <span data-sort-value="119"><a href="https://pypi.org/project/langchain-greennode/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-greennode/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`OpenMemoryRetriever`](https://github.com/nullure/langchain-openmemory) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-openmemory`](https://pypi.org/project/langchain-openmemory/) | <span data-sort-value="119"><a href="https://pypi.org/project/langchain-openmemory/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-openmemory/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`KeiroRetriever`](https://github.com/Keirolabs-API/langchain-keiro) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`langchain-keiro`](https://pypi.org/project/langchain-keiro/) | <span data-sort-value="117"><a href="https://pypi.org/project/langchain-keiro/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-keiro/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Zotero`](https://github.com/TimBMK/langchain-zotero-retriever) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-zotero-retriever`](https://pypi.org/project/langchain-zotero-retriever/) | <span data-sort-value="114"><a href="https://pypi.org/project/langchain-zotero-retriever/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-zotero-retriever/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 
 </div>
 
@@ -114327,6 +114467,10 @@ You can invoke an agent with a message. Behind the scenes that passes an update 
     ```
 </CodeGroup>
 
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/b220516f-9133-4c86-bc5a-073ef63e3f7f/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
+
 
 
 
@@ -114527,6 +114671,10 @@ If you also need to pass per-run configuration (such as a user ID, API keys, or 
     ```
 </CodeGroup>
 
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/fb33392a-cf5d-4673-a9b2-c58a5abeffd0/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
+
 `thread_id` scopes the *conversation* (message history, checkpoints), while `context` carries *per-run* data your tools and middleware read at invocation time. Both are commonly passed together. See [tool context](/oss/python/langchain/tools#context) and [Runtime](/oss/python/langchain/runtime) for more.
 
 
@@ -114554,6 +114702,10 @@ for snapshot in stream.values:
     elif latest_message.tool_calls:
         print(f"Calling tools: {[tc['name'] for tc in latest_message.tool_calls]}")
 ```
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/502a2e8a-a9aa-412a-b2e0-ef2ab0290175/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
 
 
 
@@ -117364,7 +117516,6 @@ Replace the agent from the previous step with one that includes [`FilesystemMidd
     from langsmith.sandbox import SandboxClient
     
     client = SandboxClient()
-    sandbox = None
     sandbox = client.create_sandbox(name="langchain-docs", snapshot_name="docs-test-ci")
     backend = LangSmithSandbox(sandbox=sandbox)
     
@@ -117382,7 +117533,6 @@ Replace the agent from the previous step with one that includes [`FilesystemMidd
     from langsmith.sandbox import SandboxClient
     
     client = SandboxClient()
-    sandbox = None
     sandbox = client.create_sandbox(name="langchain-docs", snapshot_name="docs-test-ci")
     backend = LangSmithSandbox(sandbox=sandbox)
     
@@ -117400,7 +117550,6 @@ Replace the agent from the previous step with one that includes [`FilesystemMidd
     from langsmith.sandbox import SandboxClient
     
     client = SandboxClient()
-    sandbox = None
     sandbox = client.create_sandbox(name="langchain-docs", snapshot_name="docs-test-ci")
     backend = LangSmithSandbox(sandbox=sandbox)
     
@@ -117418,7 +117567,6 @@ Replace the agent from the previous step with one that includes [`FilesystemMidd
     from langsmith.sandbox import SandboxClient
     
     client = SandboxClient()
-    sandbox = None
     sandbox = client.create_sandbox(name="langchain-docs", snapshot_name="docs-test-ci")
     backend = LangSmithSandbox(sandbox=sandbox)
     
@@ -117436,7 +117584,6 @@ Replace the agent from the previous step with one that includes [`FilesystemMidd
     from langsmith.sandbox import SandboxClient
     
     client = SandboxClient()
-    sandbox = None
     sandbox = client.create_sandbox(name="langchain-docs", snapshot_name="docs-test-ci")
     backend = LangSmithSandbox(sandbox=sandbox)
     
@@ -117454,7 +117601,6 @@ Replace the agent from the previous step with one that includes [`FilesystemMidd
     from langsmith.sandbox import SandboxClient
     
     client = SandboxClient()
-    sandbox = None
     sandbox = client.create_sandbox(name="langchain-docs", snapshot_name="docs-test-ci")
     backend = LangSmithSandbox(sandbox=sandbox)
     
@@ -117472,7 +117618,6 @@ Replace the agent from the previous step with one that includes [`FilesystemMidd
     from langsmith.sandbox import SandboxClient
     
     client = SandboxClient()
-    sandbox = None
     sandbox = client.create_sandbox(name="langchain-docs", snapshot_name="docs-test-ci")
     backend = LangSmithSandbox(sandbox=sandbox)
     
@@ -127759,6 +127904,10 @@ For more information about the memory store, see the [Persistence](/oss/python/l
     ```
 </CodeGroup>
 
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/bce035a2-e2ac-4bd3-9ab3-53d88b16cc43/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
+
 
 
 
@@ -128194,6 +128343,10 @@ with PostgresStore.from_conn_string(DB_URI) as store:
     item = store.get(("users",), "user_123")
     ```
 </CodeGroup>
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/477f5212-de64-4076-87d7-c4653d5c3c15/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
 
 
 
@@ -128811,6 +128964,10 @@ async def run_agent(server) -> dict:
             }
         )
 ```
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/025418ad-e7bc-43a3-b700-d1a78b3a4856/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
 
 For general guidance on defining, binding, and using LangChain tools, see [Tools](/oss/python/langchain/tools). For several MCP servers and their namespaced tool catalogs, see [Connections](/oss/python/langchain/mcp/connections#multiple-servers).
 
@@ -143487,6 +143644,10 @@ To add short-term memory (thread-level persistence) to an agent, you need to spe
     ```
 </CodeGroup>
 
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/958890cd-88c9-4f06-a277-de708a44ee55/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
+
 
 
 
@@ -145424,6 +145585,10 @@ Pass a `thread_id` via `config` so the conversation is checkpointed and follow-u
     ```
 </CodeGroup>
 
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/a52e36fe-3aeb-4273-9ff3-f8a42d0d218b/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
+
 ```shell title="Output"
 step: model
 content: [{'type': 'tool_call', 'name': 'get_weather', 'args': {'city': 'San Francisco'}, 'id': 'call_9lBtsDbmmobzyA8xc4I4Ctne'}]
@@ -145726,6 +145891,10 @@ for message in stream.messages:
     for token in message.text:
         print(token, end="", flush=True)
 ```
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/603f06aa-a85d-4b00-a85a-dd4f75755aee/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
 
 ```shell title="Output"
 [thinking] The user is asking about the weather in San Francisco. I have a tool
@@ -148304,6 +148473,10 @@ def set_user_name(new_name: str, runtime: ToolRuntime[None, CustomState]) -> Com
     )
 ```
 
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/c1516e64-17dc-42c3-a4ef-8aa02c439527/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
+
 <Tip>
     When tools update state variables, consider defining a [reducer](/oss/python/langgraph/graph-api#reducers) for those fields. Since LLMs can call multiple tools in parallel, a reducer determines how to resolve conflicts when the same state field is updated by concurrent tool calls.
 </Tip>
@@ -148741,6 +148914,10 @@ Access context through `runtime.context`. Pass it alongside a `thread_id` so the
     ```
 </CodeGroup>
 
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/9fcdc511-876a-4675-890e-7a607980df3b/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
+
 
 
 
@@ -148949,6 +149126,10 @@ def get_weather(city: str) -> str:
     """Get weather for a city."""
     return f"It is currently sunny in {city}."
 ```
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/29f72020-12be-4cfc-8cc4-e9d8bdfae60b/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
 
 
 
@@ -149248,6 +149429,10 @@ Set return direct on a tool to short-circuit the agent loop: the agent returns t
     # "Order 12345 is shipped and will arrive in 2 days."
     ```
 </CodeGroup>
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/12de6f5b-a35b-46a9-a66e-36ed1e373d84/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
 
 
 
@@ -158220,6 +158405,10 @@ graph.invoke({"user_input": "My"})
 # {'graph_output': 'My name is Lance'}
 ```
 
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/db7e0ca9-0d20-4958-9b72-48bcc6564c0e/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
+
 
 
 
@@ -158261,6 +158450,10 @@ for snapshot in stream.values:
 # {'foo': 'My name', 'user_input': 'My', 'bar': 'My name is'}        # <-- private channel
 # {'foo': 'My name', 'user_input': 'My', 'graph_output': 'My name is Lance', 'bar': 'My name is'}
 ```
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/41466c41-ad4c-4ca8-965a-bfae7b03ab67/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
 
 To restrict the streamed values to a specific set of channels (e.g. only the output schema), pass `output_keys`:
 
@@ -158751,6 +158944,10 @@ config = {"configurable": {"thread_id": thread_id}}
 
 graph.invoke({"url": "https://www.example.com"}, config)
 ```
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/ecb04879-c086-47c3-9244-405be60f0c26/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
     </Tab>
     <Tab title="With task">
     ```python
@@ -158795,6 +158992,10 @@ config = {"configurable": {"thread_id": thread_id}}
 
 graph.invoke({"urls": ["https://www.example.com"]}, config)
 ```
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/cc6bd7b8-a3c0-45bb-80e1-a8428c1fcd4d/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
     </Tab>
 </Tabs>
 
@@ -159151,6 +159352,10 @@ print(stream.interrupts)
 resumed = graph.stream_events(Command(resume="yes"), config, version="v3")
 final = resumed.output
 ```
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/55c552d5-6214-4be2-8271-571acd47e3e3/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
 
 Check out the [interrupts conceptual guide](/oss/python/langgraph/interrupts) for full details on interrupt patterns, including multiple interrupts and validation loops.
 
@@ -159586,6 +159791,10 @@ resumed = graph.stream_events(Command(resume=True), config=config, version="v3")
 final = resumed.output
 ```
 
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/924527bc-da7c-4e0a-8986-4194e622140a/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
+
 <Note>
 The default `graph.invoke(...)` API still works and surfaces interrupts under `result["__interrupt__"]`. Use it when you don't need streamed projections; otherwise prefer `graph.stream_events(..., version="v3")`.
 </Note>
@@ -159649,6 +159858,10 @@ while True:
     user_response = get_user_input(interrupt_info)
     stream_input = Command(resume=user_response)
 ```
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/a1d09dc8-80ac-4bad-a70c-59e4b7cdbff8/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
 
 - **`stream.messages`**: Chat-model output as content blocks; iterate each `message.text` for token deltas. For nested subgraphs, read message chunks from `stream.subgraphs[*].messages`.
 - **`stream.values`**: Full state snapshots after each step
@@ -159716,6 +159929,10 @@ resumed = graph.stream_events(Command(resume=resume_map), config, version="v3")
 print("Final state:", resumed.output)
 # Final state: {'vals': ['a:answer for question_a', 'b:answer for question_b']}
 ```
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/0db5e7bd-c53b-490a-9ed2-650ac477cd2d/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
 
 
 
@@ -159819,6 +160036,10 @@ resumed = graph.stream_events(Command(resume=True), config=config, version="v3")
 print(resumed.output["status"])
 ```
 
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/dc8614c9-bbb7-4231-b852-7a5899964e10/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
+
 
 
 
@@ -159906,6 +160127,10 @@ final_state = graph.stream_events(
 )
 print(final_state.output["generated_text"])  # -> "Improved draft after review"
 ```
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/cf03e7a5-8261-499d-9612-57b0d775c4ab/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
 
 
 
@@ -164309,6 +164534,10 @@ initial_state: State = {"topic": "AI", "answer": "", "notes": ""}
 stream = graph.stream_events(initial_state, version="v3")
 ```
 
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/e17f4132-e295-47d7-a61d-eb85ca98fbfa/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
+
 
 
 
@@ -166156,6 +166385,10 @@ final_state = resumed.output
 print("Email sent successfully!")
 ```
 
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/2636e51a-5dcd-4a33-8b4d-23678e364ef2/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
+
 
 
 
@@ -166642,6 +166875,10 @@ for mode, chunk in stream.interleave("values"):
     print(f"{mode}: {chunk}")
 # values: 10
 ```
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/1b3e500b-749a-4587-9906-5a92c0471ffe/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
 
 1. Import [`get_stream_writer`](https://reference.langchain.com/python/langgraph/config/get_stream_writer) from `langgraph.config`.
 2. Obtain a stream writer instance within the entrypoint.
@@ -170368,6 +170605,10 @@ output = stream.output  # drive the stream to completion
 resumed = agent.stream_events(Command(resume=True), config=config, version="v3")
 final = resumed.output
 ```
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/b9877a82-7701-4a9b-9430-bf5cb8740be0/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
   </Tab>
   <Tab title="Multi-turn">
   Each invocation starts with a fresh subagent state. The subagent does not remember previous calls:
@@ -170497,6 +170738,10 @@ output = stream.output  # drive the stream to completion
 resumed = agent.stream_events(Command(resume=True), config=config, version="v3")
 final = resumed.output
 ```
+
+<Card title="View example trace" icon="chart-line" href="https://smith.langchain.com/public/b9877a82-7701-4a9b-9430-bf5cb8740be0/r" arrow horizontal>
+  Open a public LangSmith run for this example.
+</Card>
   </Tab>
   <Tab title="Multi-turn">
   State accumulates across invocations—the subagent remembers past conversations:
