@@ -25242,13 +25242,13 @@ const result = await agent.invoke(
 </Tabs>
 
 
-## Load skills at runtime
+## Skill availability
 
-When you have a large collection of skills but only a subset is relevant for a given run, select which skills to load based on runtime context such as user role, tenant, or request type. There are two main approaches:
+Not every run needs every skill. Control which skills the agent can see by choosing the paths passed to `skills`, by resolving those paths against context-specific storage, or by combining multiple skill sources. The context can come from a request handler, auth claims, a graph factory, deployment configuration, or any other application logic.
 
-### Dynamic skill lists
+### Select skills by context
 
-The simplest approach is to construct the `skills` array before creating the agent. Choose which skill paths to include based on whatever runtime context you have:
+Choose the `skills` array before creating the agent. Use this when skills live in a common location and your application decides which paths apply to the current role, tenant, user, or request type:
 
 
 
@@ -25278,7 +25278,7 @@ function createAgentForUser(userRole: string) {
 ```
 
 
-This works well when skills live on disk or in a shared backend and you just need to control which ones the agent sees. The skills themselves are not duplicated — you maintain one copy and vary the paths passed to each run.
+This pattern keeps one maintained copy of each skill and varies only the paths passed to each agent. In deployments, a graph factory is a natural place to parse user information and construct the agent with the right skill paths.
 
 <Note>
     The SDK only loads the sources you pass in `skills`. It does not automatically scan CLI directories such as `~/.deepagents/...` or `~/.agents/...`.
@@ -25303,9 +25303,11 @@ This works well when skills live on disk or in a shared backend and you just nee
     </Accordion>
 </Note>
 
-### Namespaced skills
+### Isolate skill libraries
 
-For multi-tenant applications where each user's skill set is managed independently, route `/skills/` to a [StoreBackend](https://reference.langchain.com/javascript/deepagents/backends/StoreBackend) with a namespace factory. Populate each namespace with only the skills that user should have access to, and the middleware resolves to the correct set at runtime:
+Use isolated libraries when the same skill path should resolve to different files for different users, roles, tenants, workspaces, or environments. For example, every agent can receive `skills=["/skills/"]`, while the backend resolves `/skills/` against storage scoped to the current identity or deployment context.
+
+The following example uses [StoreBackend](https://reference.langchain.com/javascript/deepagents/backends/StoreBackend), but the same pattern applies to any backend that can resolve files based on runtime context:
 
 
 
@@ -25332,7 +25334,34 @@ const agent = await createDeepAgent({
 ```
 
 
-This pattern is useful when different users or tenants need fully independent skill libraries that can be updated separately. For a managed solution that handles skill access, sharing, and workspace-level visibility out of the box, see [Fleet skills](/langsmith/fleet/skills).
+This keeps the agent configuration stable while the backend enforces which library the agent can access. The scope does not need to be user-specific. It can be any boundary your application uses, including role, tenant, workspace, organization, environment, or request type.
+
+To populate a shared library, seed the store from your application code or an admin workflow:
+
+- Namespace by org ID for workspace-wide skills. Pair this with [read-only skills](#read-only-skills) when agents should use the library but not modify it.
+- Namespace by user ID when each user needs an independent library, as in the example above.
+
+Seed the store with keys like `/company-policies/SKILL.md` and values that include `content` and `encoding` fields. The `/skills/` route prefix is stripped before records are read from the store.
+
+You can also combine shared and personal libraries: route `/skills/approved/` to an organization-scoped `StoreBackend`, route `/skills/editable/` to a user-scoped backend, and pass both paths in `skills`. See [Writable skills](#writable-skills).
+
+### Compose multiple sources
+
+Pass multiple skill paths when the agent should see more than one library. For example, you can combine approved organization skills, team-specific workflows, and request-specific instructions:
+
+
+
+```ts
+import { createDeepAgent } from "deepagents";
+
+const agent = await createDeepAgent({
+  model: "anthropic:claude-sonnet-4-6",
+  skills: ["/skills/org/", "/skills/team/", "/skills/request/"],
+});
+```
+
+
+Each path can point to the same backend, a different backend route, or a backend scoped by runtime context. For a managed solution that handles skill access, sharing, and workspace-level visibility, see [Fleet skills](/langsmith/fleet/skills).
 
 ## Skills for subagents
 
@@ -25368,33 +25397,11 @@ For more information on subagent configuration and skills inheritance, see [Suba
 
 ## Skill permissions
 
-Production deployments usually need to control three things: which skills each user can see, whether the agent can modify skill files, and whether writes require human approval. You control visibility with the `skills` argument and [backend routing](#backends-and-remote-skill-loading), access with [filesystem permissions](/oss/javascript/deepagents/permissions), and approval with [`interrupt_on`](/oss/javascript/deepagents/human-in-the-loop) or permission rules with `mode="interrupt"`.
+Skill availability controls which skill files the agent can see. Skill permissions control whether the agent can read those files, write to them, or pause for human approval before writing. Use [filesystem permissions](/oss/javascript/deepagents/permissions) for path-based read and write rules, and use [`interrupt_on`](/oss/javascript/deepagents/human-in-the-loop) or permission rules with `mode="interrupt"` when writes need approval.
 
-### Share skills across users
+### Read-only skills
 
-To give every user access to the same curated library, route `/skills/` to a shared [StoreBackend](https://reference.langchain.com/javascript/deepagents/backends/StoreBackend) and seed it from your application code or an admin workflow. Use an organization-scoped namespace so all agents in that org resolve to the same store:
-
-- Namespace by org ID for workspace-wide skills (see [Enforce read-only skills](#enforce-read-only-skills)).
-- Namespace by user ID when each user needs an independent library ([namespaced skills](#namespaced-skills)).
-
-Seed the store with keys like `/company-policies/SKILL.md` and values that include `content` and `encoding` fields. The `/skills/` route prefix is stripped before records are read from the store.
-
-For a managed solution that handles skill access, sharing, and workspace-level visibility, see [Fleet skills](/langsmith/fleet/skills).
-
-You can also combine shared and personal libraries: route `/skills/shared/` to an organization-scoped `StoreBackend`, route `/skills/personal/` to a user-scoped backend, and pass both paths in `skills`. See [Allow agents to edit personal skills](#allow-agents-to-edit-personal-skills).
-
-### Limit skills by user context
-
-Not every user should see every skill. Control which skills load at runtime based on role, tenant, or other request context. There are two main approaches:
-
-- **[Dynamic skill lists](#dynamic-skill-lists)** — Build the `skills` array before creating the agent. Pass different path lists for different roles or request types. Works when skills live in a shared backend and you filter by path.
-- **[Namespaced skills](#namespaced-skills)** — Route `/skills/` to a `StoreBackend` with a namespace factory keyed on user or tenant ID. Populate each namespace with only the skills that identity should access.
-
-These patterns work alongside the read and write controls below. For example, you can give admins a larger skill set than engineers while keeping both libraries read-only.
-
-### Enforce read-only skills
-
-To share skills without letting agents modify them, route `/skills/` to a shared store and deny write operations under `/skills/**` with [filesystem permissions](/oss/javascript/deepagents/permissions). The agent can discover and read skills; only your application code or an admin workflow updates the store.
+To let agents use a curated skill library without modifying it, route the skill path to the backend that contains the approved library and deny write operations under that path. The agent can discover and read skills; only your application code or an admin workflow updates the backend.
 
 
 
@@ -25612,9 +25619,58 @@ To share skills without letting agents modify them, route `/skills/` to a shared
 
 
 
-Use this for enterprise knowledge bases, approved tool instructions, or shared skill packs where the agent should benefit from centrally managed context but should not rewrite the source of truth.
+Use this for enterprise knowledge bases, approved tool instructions, or centrally managed skill packs where the agent should use the content but should not rewrite the source of truth.
 
-### Require approval for skill writes
+### Writable skills
+
+By default, agents can write to skill files if the backend permits it and no permission rule blocks the path. To let agents create or refine some skills while protecting others:
+
+1. Route writable paths to a backend that can persist agent edits.
+2. Pass those paths in `skills`.
+3. Add `deny` rules for any paths that should stay read-only. Place more specific rules before broader deny rules if paths overlap ([rule ordering](/oss/javascript/deepagents/permissions#rule-ordering)).
+
+
+
+```ts
+import { InMemoryStore } from "@langchain/langgraph";
+import {
+  createDeepAgent,
+  CompositeBackend,
+  StateBackend,
+  StoreBackend,
+} from "deepagents";
+
+const store = new InMemoryStore(); // Good for local dev; omit for LangSmith Deployment
+
+const agent = await createDeepAgent({
+  model: "anthropic:claude-sonnet-4-6",
+  backend: new CompositeBackend(new StateBackend(), {
+    "/skills/approved/": new StoreBackend({
+      namespace: (rt) => ["approved-skills", rt.context.orgId],
+    }),
+    "/skills/editable/": new StoreBackend({
+      namespace: (ctx) => [
+        "editable-skills",
+        ctx.config?.configurable?.user_id ?? "anonymous",
+      ],
+    }),
+  }),
+  skills: ["/skills/approved/", "/skills/editable/"],
+  permissions: [
+    {
+      operations: ["write"],
+      paths: ["/skills/approved/**"],
+      mode: "deny",
+    },
+  ],
+  store,
+});
+```
+
+
+The agent uses `write_file` and `edit_file` to create or update `SKILL.md` and supporting files under writable paths. To capture general learnings outside the skills format, route a separate path such as `/memories/` to another writable backend. See [Backends](/oss/javascript/deepagents/backends) for routing and store setup.
+
+### Write approval
 
 If agents may write to skill files but you want a human in the loop first, use either [`interrupt_on`](/oss/javascript/deepagents/human-in-the-loop) or a permission rule with `mode="interrupt"`. Both pause before `write_file` or `edit_file` runs and use the same resume flow.
 
@@ -25626,7 +25682,7 @@ import { createDeepAgent } from "deepagents";
 
 const agent = await createDeepAgent({
   model: "anthropic:claude-sonnet-4-6",
-  skills: ["/skills/personal/"],
+  skills: ["/skills/editable/"],
   permissions: [
     {
       operations: ["write"],
@@ -25642,51 +25698,6 @@ const agent = await createDeepAgent({
 Alternatively, configure `interrupt_on={"write_file": True, "edit_file": True}` to require approval for all filesystem writes, not only skills paths. See [Human-in-the-loop](/oss/javascript/deepagents/human-in-the-loop) for handling and resuming interrupts.
 
 
-
-### Allow agents to edit personal skills
-
-By default, agents can write to skill files if the backend permits it and no permission rule blocks the path. To let agents create or refine skills without touching shared libraries:
-
-1. Route a writable path such as `/skills/personal/` to a user-scoped `StoreBackend`.
-2. Pass that path (along with any shared paths) in `skills`.
-3. Do not add a `deny` rule for the writable path. Place more specific rules before broader deny rules if you mix shared and personal paths ([rule ordering](/oss/javascript/deepagents/permissions#rule-ordering)).
-
-
-
-```ts
-import {
-  createDeepAgent,
-  CompositeBackend,
-  StateBackend,
-  StoreBackend,
-} from "deepagents";
-
-const agent = await createDeepAgent({
-  model: "anthropic:claude-sonnet-4-6",
-  backend: new CompositeBackend(new StateBackend(), {
-    "/skills/shared/": new StoreBackend({
-      namespace: (rt) => ["curated-skills", rt.context.orgId],
-    }),
-    "/skills/personal/": new StoreBackend({
-      namespace: (ctx) => [
-        "user-skills",
-        ctx.config?.configurable?.user_id ?? "anonymous",
-      ],
-    }),
-  }),
-  skills: ["/skills/shared/", "/skills/personal/"],
-  permissions: [
-    {
-      operations: ["write"],
-      paths: ["/skills/shared/**"],
-      mode: "deny",
-    },
-  ],
-});
-```
-
-
-The agent uses `write_file` and `edit_file` to create or update `SKILL.md` and supporting files under the writable path. To capture general learnings outside the skills format, route a separate path such as `/memories/` to another writable backend. See [Backends](/oss/javascript/deepagents/backends) for routing and store setup.
 
 ## Execute code with skills
 
@@ -52381,6 +52392,14 @@ Connect LangGraph agents to front ends and observability platforms.
 <Columns cols={3}>
 
   <Card
+    title="aiworker"
+    href="https://github.com/ai-worker227/aiworker-examples/tree/main/langchain"
+    icon="link"
+  >
+    Paid data tools (DeFi yields, page-to-Markdown, Base token and wallet checks, Polymarket odds, history and backtests, fact checks, headline search) built from aiworker's live OpenAPI catalogue; each call pays itself in USDC over the x402 protocol from the agent's wallet, no API key.
+  </Card>
+
+  <Card
     title="Atomic Mail"
     href="https://atomic-mail.github.io/atomic-mail-agentic/langchain"
     icon="link"
@@ -52497,6 +52516,14 @@ Connect LangGraph agents to front ends and observability platforms.
   </Card>
 
   <Card
+    title="Pushary"
+    href="https://github.com/Pushary/pushary-langgraph"
+    icon="link"
+  >
+    Customer confirmation, choice and text input through an enrolled Pushary mobile app, exposed as a LangChain structured tool.
+  </Card>
+
+  <Card
     title="Serpex"
     href="https://serpex.dev/docs"
     icon="link"
@@ -52597,6 +52624,14 @@ Connect LangGraph agents to front ends and observability platforms.
     href="/oss/javascript/integrations/retrievers/exa"
   >
     AI-powered web search and retrieval.
+  </Card>
+
+  <Card
+    title="FoxNose"
+    href="https://github.com/FoxNoseTech/langchain-foxnose-js#readme"
+    icon="link"
+  >
+    Retriever, document loader and agent tool for FoxNose collections, with text, vector, hybrid and vector-boosted search over the Flux delivery API.
   </Card>
 
   <Card
@@ -55289,12 +55324,13 @@ Refer to the vector store [integration docs](/oss/javascript/integrations/vector
 
 | Retriever | Self-host | Cloud offering | Package | Downloads |
 | :--- | :--- | :--- | :--- | :--- |
-| [`AWSKendraRetriever`](/oss/javascript/integrations/retrievers/kendra-retriever) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`@langchain/aws`](https://www.npmjs.com/package/@langchain/aws) | <span data-sort-value="3181274"><a href="https://www.npmjs.com/package/@langchain/aws" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/aws?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Knowledge bases for Amazon Bedrock`](/oss/javascript/integrations/retrievers/bedrock-knowledge-bases) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`@langchain/aws`](https://www.npmjs.com/package/@langchain/aws) | <span data-sort-value="3181274"><a href="https://www.npmjs.com/package/@langchain/aws" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/aws?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`ExaRetriever`](/oss/javascript/integrations/retrievers/exa) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`@langchain/exa`](https://www.npmjs.com/package/@langchain/exa) | <span data-sort-value="76768"><a href="https://www.npmjs.com/package/@langchain/exa" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/exa?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`PerplexitySearchRetriever`](/oss/javascript/integrations/retrievers/perplexity_search) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`@langchain/perplexity`](https://www.npmjs.com/package/@langchain/perplexity) | <span data-sort-value="750"><a href="https://www.npmjs.com/package/@langchain/perplexity" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/perplexity?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`AlchemystRetriever`](https://getalchemystai.com/docs) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`@alchemystai/langchain-js`](https://www.npmjs.com/package/@alchemystai/langchain-js) | <span data-sort-value="39"><a href="https://www.npmjs.com/package/@alchemystai/langchain-js" target="_blank"><img src="https://img.shields.io/npm/dm/@alchemystai/langchain-js?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`SourceyRetriever`](/oss/javascript/integrations/retrievers/sourcey) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-sourcey`](https://www.npmjs.com/package/langchain-sourcey) | <span data-sort-value="7"><a href="https://www.npmjs.com/package/langchain-sourcey" target="_blank"><img src="https://img.shields.io/npm/dm/langchain-sourcey?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`AWSKendraRetriever`](/oss/javascript/integrations/retrievers/kendra-retriever) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`@langchain/aws`](https://www.npmjs.com/package/@langchain/aws) | <span data-sort-value="2940428"><a href="https://www.npmjs.com/package/@langchain/aws" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/aws?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Knowledge bases for Amazon Bedrock`](/oss/javascript/integrations/retrievers/bedrock-knowledge-bases) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`@langchain/aws`](https://www.npmjs.com/package/@langchain/aws) | <span data-sort-value="2940428"><a href="https://www.npmjs.com/package/@langchain/aws" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/aws?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`ExaRetriever`](/oss/javascript/integrations/retrievers/exa) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`@langchain/exa`](https://www.npmjs.com/package/@langchain/exa) | <span data-sort-value="64698"><a href="https://www.npmjs.com/package/@langchain/exa" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/exa?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`PerplexitySearchRetriever`](/oss/javascript/integrations/retrievers/perplexity_search) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`@langchain/perplexity`](https://www.npmjs.com/package/@langchain/perplexity) | <span data-sort-value="706"><a href="https://www.npmjs.com/package/@langchain/perplexity" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/perplexity?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`AlchemystRetriever`](https://getalchemystai.com/docs) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`@alchemystai/langchain-js`](https://www.npmjs.com/package/@alchemystai/langchain-js) | <span data-sort-value="50"><a href="https://www.npmjs.com/package/@alchemystai/langchain-js" target="_blank"><img src="https://img.shields.io/npm/dm/@alchemystai/langchain-js?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`FoxNoseRetriever`](https://github.com/FoxNoseTech/langchain-foxnose-js#readme) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`@foxnose/langchain`](https://www.npmjs.com/package/@foxnose/langchain) | <span data-sort-value="17"><a href="https://www.npmjs.com/package/@foxnose/langchain" target="_blank"><img src="https://img.shields.io/npm/dm/@foxnose/langchain?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`SourceyRetriever`](/oss/javascript/integrations/retrievers/sourcey) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-sourcey`](https://www.npmjs.com/package/langchain-sourcey) | <span data-sort-value="17"><a href="https://www.npmjs.com/package/langchain-sourcey" target="_blank"><img src="https://img.shields.io/npm/dm/langchain-sourcey?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Hyde`](/oss/javascript/integrations/retrievers/hyde) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> |  | <span data-sort-value="-1">N/A</span> |
 | [`Self Querying with SAP HANA Cloud Vector Engine`](/oss/javascript/integrations/retrievers/self_query/hanavector_self_query) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> |  | <span data-sort-value="-1">N/A</span> |
 | [`Time-weighted`](/oss/javascript/integrations/retrievers/time-weighted-retriever) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> |  | <span data-sort-value="-1">N/A</span> |
@@ -59903,45 +59939,47 @@ The following table shows tools that generate video, image, or audio assets:
 
 | Integration | Downloads |
 | :--- | :--- |
-| [`Dall-e`](/oss/javascript/integrations/tools/dalle) | <span data-sort-value="13687988"><a href="https://www.npmjs.com/package/@langchain/openai" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/openai?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`OpenAI`](/oss/javascript/integrations/tools/openai) | <span data-sort-value="13687988"><a href="https://www.npmjs.com/package/@langchain/openai" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/openai?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`OpenAPI toolkit`](/oss/javascript/integrations/tools/openapi) | <span data-sort-value="12020073"><a href="https://www.npmjs.com/package/@langchain/langgraph" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/langgraph?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Anthropic`](/oss/javascript/integrations/tools/anthropic) | <span data-sort-value="4886002"><a href="https://www.npmjs.com/package/@langchain/anthropic" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/anthropic?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`TavilyCrawl`](/oss/javascript/integrations/tools/tavily_crawl) | <span data-sort-value="304831"><a href="https://www.npmjs.com/package/@langchain/tavily" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/tavily?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`TavilyExtract`](/oss/javascript/integrations/tools/tavily_extract) | <span data-sort-value="304831"><a href="https://www.npmjs.com/package/@langchain/tavily" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/tavily?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`TavilyGetResearch`](/oss/javascript/integrations/tools/tavily_get_research) | <span data-sort-value="304831"><a href="https://www.npmjs.com/package/@langchain/tavily" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/tavily?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`TavilyMap`](/oss/javascript/integrations/tools/tavily_map) | <span data-sort-value="304831"><a href="https://www.npmjs.com/package/@langchain/tavily" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/tavily?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`TavilyResearch`](/oss/javascript/integrations/tools/tavily_research) | <span data-sort-value="304831"><a href="https://www.npmjs.com/package/@langchain/tavily" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/tavily?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`TavilySearch`](/oss/javascript/integrations/tools/tavily_search) | <span data-sort-value="304831"><a href="https://www.npmjs.com/package/@langchain/tavily" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/tavily?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Google`](/oss/javascript/integrations/tools/google) | <span data-sort-value="291597"><a href="https://www.npmjs.com/package/@langchain/google" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/google?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`OracleSummary`](/oss/javascript/integrations/tools/oracleai) | <span data-sort-value="163388"><a href="https://www.npmjs.com/package/@oracle/langchain-oracledb" target="_blank"><img src="https://img.shields.io/npm/dm/@oracle/langchain-oracledb?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`ExaSearchResults`](/oss/javascript/integrations/tools/exa_search) | <span data-sort-value="64698"><a href="https://www.npmjs.com/package/@langchain/exa" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/exa?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Composio`](/oss/javascript/integrations/tools/composio) | <span data-sort-value="44976"><a href="https://www.npmjs.com/package/@composio/langchain" target="_blank"><img src="https://img.shields.io/npm/dm/@composio/langchain?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Mcp toolbox for databases`](/oss/javascript/integrations/tools/mcp_toolbox) | <span data-sort-value="14623"><a href="https://www.npmjs.com/package/@toolbox-sdk/core" target="_blank"><img src="https://img.shields.io/npm/dm/@toolbox-sdk/core?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`WatsonxToolkit`](/oss/javascript/integrations/tools/ibm) | <span data-sort-value="3500"><a href="https://www.npmjs.com/package/@langchain/ibm" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/ibm?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Bilig WorkPaper`](https://proompteng.github.io/bilig/) | <span data-sort-value="1298"><a href="https://www.npmjs.com/package/@bilig/workpaper" target="_blank"><img src="https://img.shields.io/npm/dm/@bilig/workpaper?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Jigsawstack`](/oss/javascript/integrations/tools/jigsawstack) | <span data-sort-value="1286"><a href="https://www.npmjs.com/package/@langchain/jigsawstack" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/jigsawstack?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`AtomicMailToolkit`](https://atomic-mail.github.io/atomic-mail-agentic/langchain) | <span data-sort-value="1166"><a href="https://www.npmjs.com/package/@atomicmail/langchain" target="_blank"><img src="https://img.shields.io/npm/dm/@atomicmail/langchain?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Fidacy Action Firewall`](https://github.com/fidacy/fidacy-open) | <span data-sort-value="941"><a href="https://www.npmjs.com/package/@fidacy/langchain" target="_blank"><img src="https://img.shields.io/npm/dm/@fidacy/langchain?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`PerplexitySearchResults`](/oss/javascript/integrations/tools/perplexity_search) | <span data-sort-value="706"><a href="https://www.npmjs.com/package/@langchain/perplexity" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/perplexity?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Decodo`](/oss/javascript/integrations/tools/decodo) | <span data-sort-value="389"><a href="https://www.npmjs.com/package/@decodo/langchain-ts" target="_blank"><img src="https://img.shields.io/npm/dm/@decodo/langchain-ts?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Falkordb`](/oss/javascript/integrations/tools/falkordb) | <span data-sort-value="323"><a href="https://www.npmjs.com/package/@falkordb/langchain-ts" target="_blank"><img src="https://img.shields.io/npm/dm/@falkordb/langchain-ts?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`TalorDataSerpTool`](https://docs.talordata.com/serp-api/integration/sdk-integration/how-to-set-up-talordata-with-langchain) | <span data-sort-value="296"><a href="https://www.npmjs.com/package/langchain-talordata" target="_blank"><img src="https://img.shields.io/npm/dm/langchain-talordata?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Azure container apps dynamic sessions`](/oss/javascript/integrations/tools/azure_dynamic_sessions) | <span data-sort-value="205"><a href="https://www.npmjs.com/package/@langchain/azure-dynamic-sessions" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/azure-dynamic-sessions?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`MagicHourTools`](https://docs.magichour.ai) | <span data-sort-value="148"><a href="https://www.npmjs.com/package/langchain-magic-hour" target="_blank"><img src="https://img.shields.io/npm/dm/langchain-magic-hour?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`You.com search tools`](https://you.com/docs/integrations/langchain) | <span data-sort-value="136"><a href="https://www.npmjs.com/package/@youdotcom-oss/langchain" target="_blank"><img src="https://img.shields.io/npm/dm/@youdotcom-oss/langchain?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`The Context Company`](https://docs.thecontextcompany.com/frameworks/langchain-langgraph) | <span data-sort-value="82"><a href="https://www.npmjs.com/package/@contextcompany/langchain" target="_blank"><img src="https://img.shields.io/npm/dm/@contextcompany/langchain?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Toolstem`](https://toolstem.com) | <span data-sort-value="58"><a href="https://www.npmjs.com/package/langchain-toolstem" target="_blank"><img src="https://img.shields.io/npm/dm/langchain-toolstem?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Dall-e`](/oss/javascript/integrations/tools/dalle) | <span data-sort-value="14383544"><a href="https://www.npmjs.com/package/@langchain/openai" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/openai?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`OpenAI`](/oss/javascript/integrations/tools/openai) | <span data-sort-value="14383544"><a href="https://www.npmjs.com/package/@langchain/openai" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/openai?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`OpenAPI toolkit`](/oss/javascript/integrations/tools/openapi) | <span data-sort-value="12626155"><a href="https://www.npmjs.com/package/@langchain/langgraph" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/langgraph?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Anthropic`](/oss/javascript/integrations/tools/anthropic) | <span data-sort-value="4942671"><a href="https://www.npmjs.com/package/@langchain/anthropic" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/anthropic?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`TavilyCrawl`](/oss/javascript/integrations/tools/tavily_crawl) | <span data-sort-value="325160"><a href="https://www.npmjs.com/package/@langchain/tavily" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/tavily?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`TavilyExtract`](/oss/javascript/integrations/tools/tavily_extract) | <span data-sort-value="325160"><a href="https://www.npmjs.com/package/@langchain/tavily" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/tavily?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`TavilyGetResearch`](/oss/javascript/integrations/tools/tavily_get_research) | <span data-sort-value="325160"><a href="https://www.npmjs.com/package/@langchain/tavily" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/tavily?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`TavilyMap`](/oss/javascript/integrations/tools/tavily_map) | <span data-sort-value="325160"><a href="https://www.npmjs.com/package/@langchain/tavily" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/tavily?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`TavilyResearch`](/oss/javascript/integrations/tools/tavily_research) | <span data-sort-value="325160"><a href="https://www.npmjs.com/package/@langchain/tavily" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/tavily?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`TavilySearch`](/oss/javascript/integrations/tools/tavily_search) | <span data-sort-value="325160"><a href="https://www.npmjs.com/package/@langchain/tavily" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/tavily?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Google`](/oss/javascript/integrations/tools/google) | <span data-sort-value="298563"><a href="https://www.npmjs.com/package/@langchain/google" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/google?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`OracleSummary`](/oss/javascript/integrations/tools/oracleai) | <span data-sort-value="163782"><a href="https://www.npmjs.com/package/@oracle/langchain-oracledb" target="_blank"><img src="https://img.shields.io/npm/dm/@oracle/langchain-oracledb?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`ExaSearchResults`](/oss/javascript/integrations/tools/exa_search) | <span data-sort-value="62860"><a href="https://www.npmjs.com/package/@langchain/exa" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/exa?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Composio`](/oss/javascript/integrations/tools/composio) | <span data-sort-value="42291"><a href="https://www.npmjs.com/package/@composio/langchain" target="_blank"><img src="https://img.shields.io/npm/dm/@composio/langchain?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Mcp toolbox for databases`](/oss/javascript/integrations/tools/mcp_toolbox) | <span data-sort-value="10655"><a href="https://www.npmjs.com/package/@toolbox-sdk/core" target="_blank"><img src="https://img.shields.io/npm/dm/@toolbox-sdk/core?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`WatsonxToolkit`](/oss/javascript/integrations/tools/ibm) | <span data-sort-value="3664"><a href="https://www.npmjs.com/package/@langchain/ibm" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/ibm?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Bilig WorkPaper`](https://proompteng.github.io/bilig/) | <span data-sort-value="1302"><a href="https://www.npmjs.com/package/@bilig/workpaper" target="_blank"><img src="https://img.shields.io/npm/dm/@bilig/workpaper?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Jigsawstack`](/oss/javascript/integrations/tools/jigsawstack) | <span data-sort-value="1268"><a href="https://www.npmjs.com/package/@langchain/jigsawstack" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/jigsawstack?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`AtomicMailToolkit`](https://atomic-mail.github.io/atomic-mail-agentic/langchain) | <span data-sort-value="1033"><a href="https://www.npmjs.com/package/@atomicmail/langchain" target="_blank"><img src="https://img.shields.io/npm/dm/@atomicmail/langchain?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Fidacy Action Firewall`](https://github.com/fidacy/fidacy-open) | <span data-sort-value="858"><a href="https://www.npmjs.com/package/@fidacy/langchain" target="_blank"><img src="https://img.shields.io/npm/dm/@fidacy/langchain?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`PerplexitySearchResults`](/oss/javascript/integrations/tools/perplexity_search) | <span data-sort-value="698"><a href="https://www.npmjs.com/package/@langchain/perplexity" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/perplexity?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Pushary`](https://github.com/Pushary/pushary-langgraph) | <span data-sort-value="643"><a href="https://www.npmjs.com/package/@pushary/langgraph" target="_blank"><img src="https://img.shields.io/npm/dm/@pushary/langgraph?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Decodo`](/oss/javascript/integrations/tools/decodo) | <span data-sort-value="383"><a href="https://www.npmjs.com/package/@decodo/langchain-ts" target="_blank"><img src="https://img.shields.io/npm/dm/@decodo/langchain-ts?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Falkordb`](/oss/javascript/integrations/tools/falkordb) | <span data-sort-value="283"><a href="https://www.npmjs.com/package/@falkordb/langchain-ts" target="_blank"><img src="https://img.shields.io/npm/dm/@falkordb/langchain-ts?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`TalorDataSerpTool`](https://docs.talordata.com/serp-api/integration/sdk-integration/how-to-set-up-talordata-with-langchain) | <span data-sort-value="278"><a href="https://www.npmjs.com/package/langchain-talordata" target="_blank"><img src="https://img.shields.io/npm/dm/langchain-talordata?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`aiworker`](https://github.com/ai-worker227/aiworker-examples/tree/main/langchain) | <span data-sort-value="257"><a href="https://www.npmjs.com/package/aiworker-langchain-tools" target="_blank"><img src="https://img.shields.io/npm/dm/aiworker-langchain-tools?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`You.com search tools`](https://you.com/docs/integrations/langchain) | <span data-sort-value="198"><a href="https://www.npmjs.com/package/@youdotcom-oss/langchain" target="_blank"><img src="https://img.shields.io/npm/dm/@youdotcom-oss/langchain?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Azure container apps dynamic sessions`](/oss/javascript/integrations/tools/azure_dynamic_sessions) | <span data-sort-value="197"><a href="https://www.npmjs.com/package/@langchain/azure-dynamic-sessions" target="_blank"><img src="https://img.shields.io/npm/dm/@langchain/azure-dynamic-sessions?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`MagicHourTools`](https://docs.magichour.ai) | <span data-sort-value="154"><a href="https://www.npmjs.com/package/langchain-magic-hour" target="_blank"><img src="https://img.shields.io/npm/dm/langchain-magic-hour?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`The Context Company`](https://docs.thecontextcompany.com/frameworks/langchain-langgraph) | <span data-sort-value="75"><a href="https://www.npmjs.com/package/@contextcompany/langchain" target="_blank"><img src="https://img.shields.io/npm/dm/@contextcompany/langchain?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Toolstem`](https://toolstem.com) | <span data-sort-value="52"><a href="https://www.npmjs.com/package/langchain-toolstem" target="_blank"><img src="https://img.shields.io/npm/dm/langchain-toolstem?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`ClickSend`](/oss/javascript/integrations/tools/clicksend) | <span data-sort-value="39"><a href="https://www.npmjs.com/package/@clicksend/langchain-clicksend-mcp" target="_blank"><img src="https://img.shields.io/npm/dm/@clicksend/langchain-clicksend-mcp?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`SafePromptCallbackHandler`](https://docs.safeprompt.dev/langchain) | <span data-sort-value="27"><a href="https://www.npmjs.com/package/@safeprompt.dev/langchain" target="_blank"><img src="https://img.shields.io/npm/dm/@safeprompt.dev/langchain?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`iFlow Search`](https://platform.iflow.cn) | <span data-sort-value="24"><a href="https://www.npmjs.com/package/@iflow-ai/search-langchain" target="_blank"><img src="https://img.shields.io/npm/dm/@iflow-ai/search-langchain?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`SafePromptCallbackHandler`](https://docs.safeprompt.dev/langchain) | <span data-sort-value="39"><a href="https://www.npmjs.com/package/@safeprompt.dev/langchain" target="_blank"><img src="https://img.shields.io/npm/dm/@safeprompt.dev/langchain?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Corsair`](https://docs.corsair.dev/mcp-adapters/langchain) | <span data-sort-value="38"><a href="https://www.npmjs.com/package/@corsair-dev/langchain" target="_blank"><img src="https://img.shields.io/npm/dm/@corsair-dev/langchain?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`iFlow Search`](https://platform.iflow.cn) | <span data-sort-value="23"><a href="https://www.npmjs.com/package/@iflow-ai/search-langchain" target="_blank"><img src="https://img.shields.io/npm/dm/@iflow-ai/search-langchain?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`AproxPay`](https://github.com/aproxpay/langchain-aproxpay) | <span data-sort-value="22"><a href="https://www.npmjs.com/package/langchain-aproxpay" target="_blank"><img src="https://img.shields.io/npm/dm/langchain-aproxpay?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`CekiToolkit`](https://ceki.me) | <span data-sort-value="20"><a href="https://www.npmjs.com/package/@ceki/langchain-ceki" target="_blank"><img src="https://img.shields.io/npm/dm/@ceki/langchain-ceki?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Serpex`](https://serpex.dev/docs) | <span data-sort-value="20"><a href="https://www.npmjs.com/package/langchain-serpex-js" target="_blank"><img src="https://img.shields.io/npm/dm/langchain-serpex-js?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`CekiToolkit`](https://ceki.me) | <span data-sort-value="19"><a href="https://www.npmjs.com/package/@ceki/langchain-ceki" target="_blank"><img src="https://img.shields.io/npm/dm/@ceki/langchain-ceki?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Respan`](https://www.respan.ai/docs/documentation/overview) | <span data-sort-value="19"><a href="https://www.npmjs.com/package/@respan/instrumentation-langchain" target="_blank"><img src="https://img.shields.io/npm/dm/@respan/instrumentation-langchain?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Corsair`](https://docs.corsair.dev/mcp-adapters/langchain) | <span data-sort-value="17"><a href="https://www.npmjs.com/package/@corsair-dev/langchain" target="_blank"><img src="https://img.shields.io/npm/dm/@corsair-dev/langchain?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`SnapRender`](https://snap-render.com) | <span data-sort-value="17"><a href="https://www.npmjs.com/package/langchain-snaprender" target="_blank"><img src="https://img.shields.io/npm/dm/langchain-snaprender?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`SIGNA`](https://github.com/codexvritra/signa/tree/main/sdk/langchain) | <span data-sort-value="13"><a href="https://www.npmjs.com/package/signa-langchain" target="_blank"><img src="https://img.shields.io/npm/dm/signa-langchain?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Respan`](https://www.respan.ai/docs/documentation/overview) | <span data-sort-value="18"><a href="https://www.npmjs.com/package/@respan/instrumentation-langchain" target="_blank"><img src="https://img.shields.io/npm/dm/@respan/instrumentation-langchain?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`SnapRender`](https://snap-render.com) | <span data-sort-value="18"><a href="https://www.npmjs.com/package/langchain-snaprender" target="_blank"><img src="https://img.shields.io/npm/dm/langchain-snaprender?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`SIGNA`](https://github.com/codexvritra/signa/tree/main/sdk/langchain) | <span data-sort-value="16"><a href="https://www.npmjs.com/package/signa-langchain" target="_blank"><img src="https://img.shields.io/npm/dm/signa-langchain?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`NiaToolkit`](/oss/javascript/integrations/tools/nia) | <span data-sort-value="10"><a href="https://www.npmjs.com/package/@nozomioai/langchain-nia" target="_blank"><img src="https://img.shields.io/npm/dm/@nozomioai/langchain-nia?style=flat-square&label=%20&" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Agent with AWS lambda`](/oss/javascript/integrations/tools/lambda_agent) | <span data-sort-value="-1">N/A</span> |
 | [`Browserless`](https://browserless.io) | <span data-sort-value="-1">N/A</span> |

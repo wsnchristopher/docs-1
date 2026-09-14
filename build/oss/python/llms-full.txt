@@ -21839,9 +21839,9 @@ Pass that question to a [Deep Agent](/oss/python/deepagents/overview) with no cu
     ```python Google
     from deepagents import create_deep_agent
     from langchain.messages import HumanMessage
-
+    
     EXAMPLE_QUERY = "How do I stream intermediate tool results from a subagent?"
-
+    
     baseline_agent = create_deep_agent(
         model="google_genai:gemini-3.6-flash",
         tools=[],
@@ -21850,20 +21850,20 @@ Pass that question to a [Deep Agent](/oss/python/deepagents/overview) with no cu
             "Answer questions about LangChain APIs and patterns."
         ),
     )
-
+    
     result = baseline_agent.invoke(
         {"messages": [HumanMessage(content=EXAMPLE_QUERY)]}
     )
-
+    
     print(result["messages"][-1].text)
     ```
 
     ```python OpenAI
     from deepagents import create_deep_agent
     from langchain.messages import HumanMessage
-
+    
     EXAMPLE_QUERY = "How do I stream intermediate tool results from a subagent?"
-
+    
     baseline_agent = create_deep_agent(
         model="openai:gpt-5.5",
         tools=[],
@@ -21872,20 +21872,20 @@ Pass that question to a [Deep Agent](/oss/python/deepagents/overview) with no cu
             "Answer questions about LangChain APIs and patterns."
         ),
     )
-
+    
     result = baseline_agent.invoke(
         {"messages": [HumanMessage(content=EXAMPLE_QUERY)]}
     )
-
+    
     print(result["messages"][-1].text)
     ```
 
     ```python Anthropic
     from deepagents import create_deep_agent
     from langchain.messages import HumanMessage
-
+    
     EXAMPLE_QUERY = "How do I stream intermediate tool results from a subagent?"
-
+    
     baseline_agent = create_deep_agent(
         model="anthropic:claude-sonnet-4-6",
         tools=[],
@@ -21894,20 +21894,20 @@ Pass that question to a [Deep Agent](/oss/python/deepagents/overview) with no cu
             "Answer questions about LangChain APIs and patterns."
         ),
     )
-
+    
     result = baseline_agent.invoke(
         {"messages": [HumanMessage(content=EXAMPLE_QUERY)]}
     )
-
+    
     print(result["messages"][-1].text)
     ```
 
     ```python OpenRouter
     from deepagents import create_deep_agent
     from langchain.messages import HumanMessage
-
+    
     EXAMPLE_QUERY = "How do I stream intermediate tool results from a subagent?"
-
+    
     baseline_agent = create_deep_agent(
         model="openrouter:z-ai/glm-5.2",
         tools=[],
@@ -21916,20 +21916,20 @@ Pass that question to a [Deep Agent](/oss/python/deepagents/overview) with no cu
             "Answer questions about LangChain APIs and patterns."
         ),
     )
-
+    
     result = baseline_agent.invoke(
         {"messages": [HumanMessage(content=EXAMPLE_QUERY)]}
     )
-
+    
     print(result["messages"][-1].text)
     ```
 
     ```python Fireworks
     from deepagents import create_deep_agent
     from langchain.messages import HumanMessage
-
+    
     EXAMPLE_QUERY = "How do I stream intermediate tool results from a subagent?"
-
+    
     baseline_agent = create_deep_agent(
         model="fireworks:accounts/fireworks/models/glm-5p2",
         tools=[],
@@ -21938,20 +21938,20 @@ Pass that question to a [Deep Agent](/oss/python/deepagents/overview) with no cu
             "Answer questions about LangChain APIs and patterns."
         ),
     )
-
+    
     result = baseline_agent.invoke(
         {"messages": [HumanMessage(content=EXAMPLE_QUERY)]}
     )
-
+    
     print(result["messages"][-1].text)
     ```
 
     ```python Baseten
     from deepagents import create_deep_agent
     from langchain.messages import HumanMessage
-
+    
     EXAMPLE_QUERY = "How do I stream intermediate tool results from a subagent?"
-
+    
     baseline_agent = create_deep_agent(
         model="baseten:zai-org/GLM-5.2",
         tools=[],
@@ -21960,20 +21960,20 @@ Pass that question to a [Deep Agent](/oss/python/deepagents/overview) with no cu
             "Answer questions about LangChain APIs and patterns."
         ),
     )
-
+    
     result = baseline_agent.invoke(
         {"messages": [HumanMessage(content=EXAMPLE_QUERY)]}
     )
-
+    
     print(result["messages"][-1].text)
     ```
 
     ```python Ollama
     from deepagents import create_deep_agent
     from langchain.messages import HumanMessage
-
+    
     EXAMPLE_QUERY = "How do I stream intermediate tool results from a subagent?"
-
+    
     baseline_agent = create_deep_agent(
         model="ollama:north-mini-code-1.0",
         tools=[],
@@ -21982,11 +21982,11 @@ Pass that question to a [Deep Agent](/oss/python/deepagents/overview) with no cu
             "Answer questions about LangChain APIs and patterns."
         ),
     )
-
+    
     result = baseline_agent.invoke(
         {"messages": [HumanMessage(content=EXAMPLE_QUERY)]}
     )
-
+    
     print(result["messages"][-1].text)
     ```
 </CodeGroup>
@@ -27513,26 +27513,17 @@ result = agent.invoke(
 
 
 
-## Load skills at runtime
+## Skill availability
 
-When you have a large collection of skills but only a subset is relevant for a given run, select which skills to load based on runtime context such as user role, tenant, or request type. There are two main approaches:
+Not every run needs every skill. Control which skills the agent can see by choosing the paths passed to `skills`, by resolving those paths against context-specific storage, or by combining multiple skill sources. The context can come from a request handler, auth claims, a graph factory, deployment configuration, or any other application logic.
 
-### Dynamic skill lists
+### Select skills by context
 
-The simplest approach is to construct the `skills` array before creating the agent. Choose which skill paths to include based on whatever runtime context you have:
+Choose the `skills` array before creating the agent. Use this when skills live in a common location and your application decides which paths apply to the current role, tenant, user, or request type:
 
 ```python
 from deepagents import create_deep_agent
 
-# Each role path is a container with one subdirectory per skill:
-# /skills/
-# ├── engineering/
-# │   ├── code-review/SKILL.md
-# │   └── testing/SKILL.md
-# ├── data/
-# │   └── sql-analysis/SKILL.md
-# └── support/
-#     └── ticket-triage/SKILL.md
 SKILLS_BY_ROLE = {
     "engineering": ["/skills/engineering/"],
     "data": ["/skills/data/"],
@@ -27550,7 +27541,7 @@ def create_agent_for_user(user_role: str):
 
 
 
-This works well when skills live on disk or in a shared backend and you just need to control which ones the agent sees. The skills themselves are not duplicated — you maintain one copy and vary the paths passed to each run.
+This pattern keeps one maintained copy of each skill and varies only the paths passed to each agent. In deployments, a graph factory is a natural place to parse user information and construct the agent with the right skill paths.
 
 <Note>
     The SDK only loads the sources you pass in `skills`. It does not automatically scan CLI directories such as `~/.deepagents/...` or `~/.agents/...`.
@@ -27575,9 +27566,11 @@ This works well when skills live on disk or in a shared backend and you just nee
     </Accordion>
 </Note>
 
-### Namespaced skills
+### Isolate skill libraries
 
-For multi-tenant applications where each user's skill set is managed independently, route `/skills/` to a [StoreBackend](https://reference.langchain.com/python/deepagents/backends/store/StoreBackend) with a namespace factory. Populate each namespace with only the skills that user should have access to, and the middleware resolves to the correct set at runtime:
+Use isolated libraries when the same skill path should resolve to different files for different users, roles, tenants, workspaces, or environments. For example, every agent can receive `skills=["/skills/"]`, while the backend resolves `/skills/` against storage scoped to the current identity or deployment context.
+
+The following example uses [StoreBackend](https://reference.langchain.com/python/deepagents/backends/store/StoreBackend), but the same pattern applies to any backend that can resolve files based on runtime context:
 
 ```python
 from deepagents import create_deep_agent
@@ -27603,7 +27596,34 @@ agent = create_deep_agent(
 
 
 
-This pattern is useful when different users or tenants need fully independent skill libraries that can be updated separately. For a managed solution that handles skill access, sharing, and workspace-level visibility out of the box, see [Fleet skills](/langsmith/fleet/skills).
+This keeps the agent configuration stable while the backend enforces which library the agent can access. The scope does not need to be user-specific. It can be any boundary your application uses, including role, tenant, workspace, organization, environment, or request type.
+
+To populate a shared library, seed the store from your application code or an admin workflow:
+
+- Namespace by org ID for workspace-wide skills. Pair this with [read-only skills](#read-only-skills) when agents should use the library but not modify it.
+- Namespace by user ID when each user needs an independent library, as in the example above.
+
+Seed the store with keys like `/company-policies/SKILL.md` and values that include `content` and `encoding` fields. The `/skills/` route prefix is stripped before records are read from the store.
+
+You can also combine shared and personal libraries: route `/skills/approved/` to an organization-scoped `StoreBackend`, route `/skills/editable/` to a user-scoped backend, and pass both paths in `skills`. See [Writable skills](#writable-skills).
+
+### Compose multiple sources
+
+Pass multiple skill paths when the agent should see more than one library. For example, you can combine approved organization skills, team-specific workflows, and request-specific instructions:
+
+```python
+from deepagents import create_deep_agent
+
+agent = create_deep_agent(
+    model="anthropic:claude-sonnet-4-6",
+    skills=["/skills/org/", "/skills/team/", "/skills/request/"],
+)
+```
+
+
+
+
+Each path can point to the same backend, a different backend route, or a backend scoped by runtime context. For a managed solution that handles skill access, sharing, and workspace-level visibility, see [Fleet skills](/langsmith/fleet/skills).
 
 ## Skills for subagents
 
@@ -27617,12 +27637,6 @@ Skill state is fully isolated: the main agent's skills are not visible to subage
 ```python
 from deepagents import create_deep_agent
 
-# Each path is a container with one subdirectory per skill:
-# /skills/main/
-# └── overview/SKILL.md
-# /skills/researcher/
-# ├── research/SKILL.md
-# └── web-search/SKILL.md
 research_subagent = {
     "name": "researcher",
     "description": "Research assistant with specialized skills",
@@ -27645,33 +27659,11 @@ For more information on subagent configuration and skills inheritance, see [Suba
 
 ## Skill permissions
 
-Production deployments usually need to control three things: which skills each user can see, whether the agent can modify skill files, and whether writes require human approval. You control visibility with the `skills` argument and [backend routing](#backends-and-remote-skill-loading), access with [filesystem permissions](/oss/python/deepagents/permissions), and approval with [`interrupt_on`](/oss/python/deepagents/human-in-the-loop) or permission rules with `mode="interrupt"`.
+Skill availability controls which skill files the agent can see. Skill permissions control whether the agent can read those files, write to them, or pause for human approval before writing. Use [filesystem permissions](/oss/python/deepagents/permissions) for path-based read and write rules, and use [`interrupt_on`](/oss/python/deepagents/human-in-the-loop) or permission rules with `mode="interrupt"` when writes need approval.
 
-### Share skills across users
+### Read-only skills
 
-To give every user access to the same curated library, route `/skills/` to a shared [StoreBackend](https://reference.langchain.com/python/deepagents/backends/store/StoreBackend) and seed it from your application code or an admin workflow. Use an organization-scoped namespace so all agents in that org resolve to the same store:
-
-- Namespace by org ID for workspace-wide skills (see [Enforce read-only skills](#enforce-read-only-skills)).
-- Namespace by user ID when each user needs an independent library ([namespaced skills](#namespaced-skills)).
-
-Seed the store with keys like `/company-policies/SKILL.md` and values that include `content` and `encoding` fields. The `/skills/` route prefix is stripped before records are read from the store.
-
-For a managed solution that handles skill access, sharing, and workspace-level visibility, see [Fleet skills](/langsmith/fleet/skills).
-
-You can also combine shared and personal libraries: route `/skills/shared/` to an organization-scoped `StoreBackend`, route `/skills/personal/` to a user-scoped backend, and pass both paths in `skills`. See [Allow agents to edit personal skills](#allow-agents-to-edit-personal-skills).
-
-### Limit skills by user context
-
-Not every user should see every skill. Control which skills load at runtime based on role, tenant, or other request context. There are two main approaches:
-
-- **[Dynamic skill lists](#dynamic-skill-lists)** — Build the `skills` array before creating the agent. Pass different path lists for different roles or request types. Works when skills live in a shared backend and you filter by path.
-- **[Namespaced skills](#namespaced-skills)** — Route `/skills/` to a `StoreBackend` with a namespace factory keyed on user or tenant ID. Populate each namespace with only the skills that identity should access.
-
-These patterns work alongside the read and write controls below. For example, you can give admins a larger skill set than engineers while keeping both libraries read-only.
-
-### Enforce read-only skills
-
-To share skills without letting agents modify them, route `/skills/` to a shared store and deny write operations under `/skills/**` with [filesystem permissions](/oss/python/deepagents/permissions). The agent can discover and read skills; only your application code or an admin workflow updates the store.
+To let agents use a curated skill library without modifying it, route the skill path to the backend that contains the approved library and deny write operations under that path. The agent can discover and read skills; only your application code or an admin workflow updates the backend.
 
 <CodeGroup>
     ```python Google
@@ -27882,9 +27874,57 @@ To share skills without letting agents modify them, route `/skills/` to a shared
 
 
 
-Use this for enterprise knowledge bases, approved tool instructions, or shared skill packs where the agent should benefit from centrally managed context but should not rewrite the source of truth.
+Use this for enterprise knowledge bases, approved tool instructions, or centrally managed skill packs where the agent should use the content but should not rewrite the source of truth.
 
-### Require approval for skill writes
+### Writable skills
+
+By default, agents can write to skill files if the backend permits it and no permission rule blocks the path. To let agents create or refine some skills while protecting others:
+
+1. Route writable paths to a backend that can persist agent edits.
+2. Pass those paths in `skills`.
+3. Add `deny` rules for any paths that should stay read-only. Place more specific rules before broader deny rules if paths overlap ([rule ordering](/oss/python/deepagents/permissions#rule-ordering)).
+
+```python
+from deepagents import FilesystemPermission, create_deep_agent
+from deepagents.backends import CompositeBackend, StateBackend, StoreBackend
+from langgraph.store.memory import InMemoryStore
+
+store = InMemoryStore()  # Good for local dev; omit for LangSmith Deployment
+
+agent = create_deep_agent(
+    model="anthropic:claude-sonnet-4-6",
+    backend=CompositeBackend(
+        default=StateBackend(),
+        routes={
+            "/skills/approved/": StoreBackend(
+                namespace=lambda rt: ("approved-skills", rt.context.org_id),
+            ),
+            "/skills/editable/": StoreBackend(
+                namespace=lambda rt: (
+                    "editable-skills",
+                    rt.server_info.user.identity,
+                ),
+            ),
+        },
+    ),
+    skills=["/skills/approved/", "/skills/editable/"],
+    permissions=[
+        FilesystemPermission(
+            operations=["write"],
+            paths=["/skills/approved/**"],
+            mode="deny",
+        ),
+    ],
+    store=store,
+)
+```
+
+
+
+
+The agent uses `write_file` and `edit_file` to create or update `SKILL.md` and supporting files under writable paths. To capture general learnings outside the skills format, route a separate path such as `/memories/` to another writable backend. See [Backends](/oss/python/deepagents/backends) for routing and store setup.
+
+### Write approval
 
 If agents may write to skill files but you want a human in the loop first, use either [`interrupt_on`](/oss/python/deepagents/human-in-the-loop) or a permission rule with `mode="interrupt"`. Both pause before `write_file` or `edit_file` runs and use the same resume flow.
 
@@ -27894,7 +27934,7 @@ from langgraph.checkpoint.memory import MemorySaver
 
 agent = create_deep_agent(
     model="anthropic:claude-sonnet-4-6",
-    skills=["/skills/personal/"],
+    skills=["/skills/editable/"],
     permissions=[
         FilesystemPermission(
             operations=["write"],
@@ -27915,50 +27955,6 @@ Alternatively, configure `interrupt_on={"write_file": True, "edit_file": True}` 
     Filesystem permission interrupts require `deepagents>=0.6.8`.
 </Note>
 
-
-### Allow agents to edit personal skills
-
-By default, agents can write to skill files if the backend permits it and no permission rule blocks the path. To let agents create or refine skills without touching shared libraries:
-
-1. Route a writable path such as `/skills/personal/` to a user-scoped `StoreBackend`.
-2. Pass that path (along with any shared paths) in `skills`.
-3. Do not add a `deny` rule for the writable path. Place more specific rules before broader deny rules if you mix shared and personal paths ([rule ordering](/oss/python/deepagents/permissions#rule-ordering)).
-
-```python
-from deepagents import FilesystemPermission, create_deep_agent
-from deepagents.backends import CompositeBackend, StateBackend, StoreBackend
-
-agent = create_deep_agent(
-    model="anthropic:claude-sonnet-4-6",
-    backend=CompositeBackend(
-        default=StateBackend(),
-        routes={
-            "/skills/shared/": StoreBackend(
-                namespace=lambda rt: ("curated-skills", rt.context.org_id),
-            ),
-            "/skills/personal/": StoreBackend(
-                namespace=lambda rt: (
-                    "user-skills",
-                    rt.server_info.user.identity,
-                ),
-            ),
-        },
-    ),
-    skills=["/skills/shared/", "/skills/personal/"],
-    permissions=[
-        FilesystemPermission(
-            operations=["write"],
-            paths=["/skills/shared/**"],
-            mode="deny",
-        ),
-    ],
-)
-```
-
-
-
-
-The agent uses `write_file` and `edit_file` to create or update `SKILL.md` and supporting files under the writable path. To capture general learnings outside the skills format, route a separate path such as `/memories/` to another writable backend. See [Backends](/oss/python/deepagents/backends) for routing and store setup.
 
 ## Execute code with skills
 
@@ -31968,12 +31964,6 @@ When configuring [skills](/oss/python/deepagents/skills) with `create_deep_agent
 ```python
 from deepagents import create_deep_agent
 
-# Each path is a container with one subdirectory per skill:
-# /skills/main/
-# └── overview/SKILL.md
-# /skills/researcher/
-# ├── research/SKILL.md
-# └── web-search/SKILL.md
 research_subagent = {
     "name": "researcher",
     "description": "Research assistant with specialized skills",
@@ -70224,46 +70214,47 @@ Middleware enables context engineering, harness customization, and runtime safet
 
 | Provider | Middleware available | Source | Downloads |
 | :--- | :--- | :--- | :--- |
-| [`OpenAI middleware`](/oss/python/integrations/middleware/openai) | Content moderation | [`langchain-ai/langchain`](https://github.com/langchain-ai/langchain/tree/master/libs/partners/openai) | <span data-sort-value="64000000"><a href="https://pypi.org/project/langchain-openai/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-openai/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Anthropic middleware`](/oss/python/integrations/middleware/anthropic) | Prompt caching, bash tool, text editor, memory, and file search | [`langchain-ai/langchain`](https://github.com/langchain-ai/langchain/tree/master/libs/partners/anthropic) | <span data-sort-value="22000000"><a href="https://pypi.org/project/langchain-anthropic/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-anthropic/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`AWS middleware`](/oss/python/integrations/middleware/aws) | Prompt caching and AgentCore Payments | [`langchain-ai/langchain-aws`](https://github.com/langchain-ai/langchain-aws/tree/main/libs/aws), [`aws/bedrock-agentcore-sdk-python`](https://github.com/aws/bedrock-agentcore-sdk-python) | <span data-sort-value="11000000"><a href="https://pypi.org/project/langchain-aws/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-aws/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Microsoft Foundry middleware`](/oss/python/integrations/middleware/azure_ai) | Text moderation, image moderation, prompt shield, protected material, and groundedness | [`langchain-ai/langchain-azure`](https://github.com/langchain-ai/langchain-azure/tree/main/libs/azure-ai) | <span data-sort-value="973000"><a href="https://pypi.org/project/langchain-azure-ai/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-azure-ai/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`CopilotKit`](/oss/python/langchain/frontend/integrations/copilotkit) | CopilotKit middleware and FastAPI bridge for Deep Agents, create_agent graphs, AG-UI, and the React and runtime clients | [`CopilotKit/CopilotKit`](https://github.com/CopilotKit/CopilotKit) | <span data-sort-value="433000"><a href="https://pypi.org/project/copilotkit/" target="_blank"><img src="https://static.pepy.tech/badge/copilotkit/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`ISNAD`](https://github.com/alizahidraja/isnad) | Claim-level provenance and trust grading for agent outputs. Grades every transmitter in a claim's chain (source, scraper, model) in a living registry, caps the chain at its weakest link, and quarantines fabricated (mawḍūʿ) chains—with a tamper-evident audit trail. | [`alizahidraja/isnad`](https://github.com/alizahidraja/isnad) | <span data-sort-value="20000"><a href="https://pypi.org/project/isnad/" target="_blank"><img src="https://static.pepy.tech/badge/isnad/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`attenu-guard`](https://attenu.io/docs/example-langgraph/) | Per-agent permission enforcement on every tool call and subagent handoff through wrap_tool_call (a subagent's permissions are a computed subset of its parent's), with a hash-chained audit log verified offline | [`attenu-io/attenu-guard`](https://github.com/attenu-io/attenu-guard) | <span data-sort-value="6000"><a href="https://pypi.org/project/attenu-guard/" target="_blank"><img src="https://static.pepy.tech/badge/attenu-guard/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`xaidr`](https://github.com/delphisecurity/xaidr#langchain-middleware) | In-process runtime security sensor for AI agents. LangChain middleware covering input, tool-call, and output boundaries for prompt injection, jailbreak, DLP, and A2A-protocol scanning. | [`delphisecurity/xaidr`](https://github.com/delphisecurity/xaidr) | <span data-sort-value="6000"><a href="https://pypi.org/project/xaidr/" target="_blank"><img src="https://static.pepy.tech/badge/xaidr/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`PIIAnonymizationMiddleware`](https://athroniaeth.github.io/piighost/getting-started/langchain/) | Protect personal data (PII) in prompts, tool calls, and agent conversations. Hides sensitive values from the model, then restores the real values in the reply and at the tool boundary, so tools and the user still get the real data. Pluggable regex, NER, and LLM detectors, thread-consistent tokens, and token-by-token streaming restoration. | [`Athroniaeth/piighost`](https://github.com/Athroniaeth/piighost) | <span data-sort-value="5000"><a href="https://pypi.org/project/piighost/" target="_blank"><img src="https://static.pepy.tech/badge/piighost/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`OpenAI middleware`](/oss/python/integrations/middleware/openai) | Content moderation | [`langchain-ai/langchain`](https://github.com/langchain-ai/langchain/tree/master/libs/partners/openai) | <span data-sort-value="52000000"><a href="https://pypi.org/project/langchain-openai/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-openai/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Anthropic middleware`](/oss/python/integrations/middleware/anthropic) | Prompt caching, bash tool, text editor, memory, and file search | [`langchain-ai/langchain`](https://github.com/langchain-ai/langchain/tree/master/libs/partners/anthropic) | <span data-sort-value="19000000"><a href="https://pypi.org/project/langchain-anthropic/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-anthropic/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`AWS middleware`](/oss/python/integrations/middleware/aws) | Prompt caching and AgentCore Payments | [`langchain-ai/langchain-aws`](https://github.com/langchain-ai/langchain-aws/tree/main/libs/aws), [`aws/bedrock-agentcore-sdk-python`](https://github.com/aws/bedrock-agentcore-sdk-python) | <span data-sort-value="9000000"><a href="https://pypi.org/project/langchain-aws/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-aws/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Microsoft Foundry middleware`](/oss/python/integrations/middleware/azure_ai) | Text moderation, image moderation, prompt shield, protected material, and groundedness | [`langchain-ai/langchain-azure`](https://github.com/langchain-ai/langchain-azure/tree/main/libs/azure-ai) | <span data-sort-value="760000"><a href="https://pypi.org/project/langchain-azure-ai/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-azure-ai/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`CopilotKit`](/oss/python/langchain/frontend/integrations/copilotkit) | CopilotKit middleware and FastAPI bridge for Deep Agents, create_agent graphs, AG-UI, and the React and runtime clients | [`CopilotKit/CopilotKit`](https://github.com/CopilotKit/CopilotKit) | <span data-sort-value="380000"><a href="https://pypi.org/project/copilotkit/" target="_blank"><img src="https://static.pepy.tech/badge/copilotkit/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`ISNAD`](https://github.com/alizahidraja/isnad) | Claim-level provenance and trust grading for agent outputs. Grades every transmitter in a claim's chain (source, scraper, model) in a living registry, caps the chain at its weakest link, and quarantines fabricated (mawḍūʿ) chains—with a tamper-evident audit trail. | [`alizahidraja/isnad`](https://github.com/alizahidraja/isnad) | <span data-sort-value="23000"><a href="https://pypi.org/project/isnad/" target="_blank"><img src="https://static.pepy.tech/badge/isnad/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`attenu-guard`](https://attenu.io/docs/example-langgraph/) | Per-agent permission enforcement on every tool call and subagent handoff through wrap_tool_call (a subagent's permissions are a computed subset of its parent's), with a hash-chained audit log verified offline | [`attenu-io/attenu-guard`](https://github.com/attenu-io/attenu-guard) | <span data-sort-value="8000"><a href="https://pypi.org/project/attenu-guard/" target="_blank"><img src="https://static.pepy.tech/badge/attenu-guard/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`xaidr`](https://github.com/delphisecurity/xaidr#langchain-middleware) | In-process runtime security sensor for AI agents. LangChain middleware covering input, tool-call, and output boundaries for prompt injection, jailbreak, DLP, and A2A-protocol scanning. | [`delphisecurity/xaidr`](https://github.com/delphisecurity/xaidr) | <span data-sort-value="8000"><a href="https://pypi.org/project/xaidr/" target="_blank"><img src="https://static.pepy.tech/badge/xaidr/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`PIIAnonymizationMiddleware`](https://athroniaeth.github.io/piighost/getting-started/langchain/) | Protect personal data (PII) in prompts, tool calls, and agent conversations. Hides sensitive values from the model, then restores the real values in the reply and at the tool boundary, so tools and the user still get the real data. Pluggable regex, NER, and LLM detectors, thread-consistent tokens, and token-by-token streaming restoration. | [`Athroniaeth/piighost`](https://github.com/Athroniaeth/piighost) | <span data-sort-value="6000"><a href="https://pypi.org/project/piighost/" target="_blank"><img src="https://static.pepy.tech/badge/piighost/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`ATLTaskMiddleware`](https://github.com/wenhua6666668-oss/langchain-agenttrafficlab#automatic-task-time-routing-v03) | Automatic task-time routing to executable MCP and provider capabilities, with failure redecision and outcome reporting. | [`wenhua6666668-oss/langchain-agenttrafficlab`](https://github.com/wenhua6666668-oss/langchain-agenttrafficlab) | <span data-sort-value="3000"><a href="https://pypi.org/project/langchain-agenttrafficlab/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-agenttrafficlab/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Highflame`](https://github.com/highflame-ai/highflame-sdk) | Runtime AI security guardrails (prompt injection, PII/DLP, content safety) applied as middleware via Highflame Shield (OWASP LLM Top 10). | [`highflame-ai/highflame-sdk`](https://github.com/highflame-ai/highflame-sdk) | <span data-sort-value="3000"><a href="https://pypi.org/project/highflame/" target="_blank"><img src="https://static.pepy.tech/badge/highflame/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`prompt-shield`](https://github.com/mthamil107/prompt-shield) | Runtime prompt-injection firewall. Scans inputs, tool results, and outputs across detectors and output scanners with block, flag, and log modes. | [`mthamil107/prompt-shield`](https://github.com/mthamil107/prompt-shield) | <span data-sort-value="2000"><a href="https://pypi.org/project/prompt-shield-ai/" target="_blank"><img src="https://static.pepy.tech/badge/prompt-shield-ai/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`TealTiger`](https://docs.tealtiger.ai/integrations/langchain) | Deterministic governance middleware. Policy enforcement, cost limits, tool allowlisting, FREEZE rules, and SARIF audit evidence with no LLM in the governance path. | [`agentguard-ai/tealtiger`](https://github.com/agentguard-ai/tealtiger/tree/main/packages/langchain-tealtiger) | <span data-sort-value="2000"><a href="https://pypi.org/project/langchain-tealtiger/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-tealtiger/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`compact-middleware`](https://github.com/emanueleielo/compact-middleware) | Claude Code's compaction engine as LangChain middleware. Multi-level context compaction for long-running agents. | [`emanueleielo/compact-middleware`](https://github.com/emanueleielo/compact-middleware) | <span data-sort-value="1000"><a href="https://pypi.org/project/compact-middleware/" target="_blank"><img src="https://static.pepy.tech/badge/compact-middleware/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`DynamicToolSelectorMiddleware`](https://github.com/RauhanAhmed/langchain-dynamic-tools-middleware) | Drop-in agent middleware providing sub-100ms hybrid dense and sparse vector tool retrieval over zvec. Eliminates prompt token overhead by >80% and outperforms LLM-based tool selection on Berkeley Function Calling Leaderboard (BFCL) benchmarks. | [`RauhanAhmed/langchain-dynamic-tools-middleware`](https://github.com/RauhanAhmed/langchain-dynamic-tools-middleware) | <span data-sort-value="1000"><a href="https://pypi.org/project/langchain-dynamic-tools-middleware/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-dynamic-tools-middleware/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Nuggets Authority`](https://nuggets.life) | Pre-execution authority enforcement for tool calls. Verifies a scoped, signed delegation before each tool runs, fails closed on deny, and emits an independently verifiable cryptographic proof of every decision. | [`NuggetsLtd/langchain-nuggets`](https://github.com/NuggetsLtd/langchain-nuggets) | <span data-sort-value="1000"><a href="https://pypi.org/project/langchain-nuggets/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-nuggets/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`prompt-shield`](https://github.com/mthamil107/prompt-shield) | Runtime prompt-injection firewall. Scans inputs, tool results, and outputs across detectors and output scanners with block, flag, and log modes. | [`mthamil107/prompt-shield`](https://github.com/mthamil107/prompt-shield) | <span data-sort-value="1000"><a href="https://pypi.org/project/prompt-shield-ai/" target="_blank"><img src="https://static.pepy.tech/badge/prompt-shield-ai/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`SeekritCredentials`](https://seekrit.dev/docs/guides/frameworks/langgraph#4-scope-a-key-to-one-tool) | Scopes secrets per model call and per tool call. Credentials stay as placeholders in agent code and are substituted at the HTTP boundary against a default-deny allowlist, so an unlisted tool cannot reach a credential. | [`seekritdev/python-sdk`](https://github.com/seekritdev/python-sdk) | <span data-sort-value="973"><a href="https://pypi.org/project/seekrit/" target="_blank"><img src="https://static.pepy.tech/badge/seekrit/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`advisor-middleware`](https://github.com/emanueleielo/advisor-middleware) | Claude Code's advisor pattern as LangChain middleware. Pairs a fast executor model with a powerful advisor model that intervenes only on critical decisions. | [`emanueleielo/advisor-middleware`](https://github.com/emanueleielo/advisor-middleware) | <span data-sort-value="944"><a href="https://pypi.org/project/advisor-middleware/" target="_blank"><img src="https://static.pepy.tech/badge/advisor-middleware/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`langchain-task-steering`](https://github.com/edvinhallvaxhiu/langchain-task-steering) | Implicit state-machine middleware for ordered task pipelines with per-task tool scoping, dynamic prompt injection, and composable completion validation. | [`edvinhallvaxhiu/langchain-task-steering`](https://github.com/edvinhallvaxhiu/langchain-task-steering) | <span data-sort-value="857"><a href="https://pypi.org/project/langchain-task-steering/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-task-steering/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Cisco AI Defense`](https://github.com/cisco-ai-defense/ai-defense-langchain-middleware) | Runtime security inspection | [`cisco-ai-defense/ai-defense-langchain-middleware`](https://github.com/cisco-ai-defense/ai-defense-langchain-middleware) | <span data-sort-value="753"><a href="https://pypi.org/project/langchain-cisco-aidefense/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-cisco-aidefense/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`langchain-runcycles`](https://runcycles.io) | Pre-execution budget authority for model calls, tool calls, and agent loops | [`runcycles/langchain-runcycles`](https://github.com/runcycles/langchain-runcycles) | <span data-sort-value="733"><a href="https://pypi.org/project/langchain-runcycles/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-runcycles/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`langchain-router`](https://github.com/johanity/langchain-router) | Phase-based model routing. Routes execution turns to a fast model, keeps the primary for planning and recovery. | [`johanity/langchain-router`](https://github.com/johanity/langchain-router) | <span data-sort-value="695"><a href="https://pypi.org/project/langchain-router/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-router/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`RelayShield`](https://api.relayshield.net/developers) | Mandatory pre-execution gate that blocks connect_mcp_server and install_mcp_package tool calls when RelayShield reports risk. | [`nzdsf2-gif/langchain-relayshield`](https://github.com/nzdsf2-gif/langchain-relayshield) | <span data-sort-value="629"><a href="https://pypi.org/project/langchain-relayshield/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-relayshield/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`BastionGuardrailMiddleware`](https://bastionsoft.com) | Prompt-injection and jailbreak detection. Screens user input and tool results, including indirect injection through retrieved content, before the model runs. Runs locally on your own hardware. | [`bastion-soft/bastion-prompt-protection`](https://github.com/bastion-soft/bastion-prompt-protection) | <span data-sort-value="541"><a href="https://pypi.org/project/bastion-prompt-protection/" target="_blank"><img src="https://static.pepy.tech/badge/bastion-prompt-protection/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`langchain-collapse`](https://github.com/johanity/langchain-collapse) | Preventive context management. Collapses consecutive tool-call groups before they fill the context window. | [`johanity/langchain-collapse`](https://github.com/johanity/langchain-collapse) | <span data-sort-value="507"><a href="https://pypi.org/project/langchain-collapse/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-collapse/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`NeuralTrust TrustGuard`](https://github.com/NeuralTrust/langchain-neuraltrust) | TrustGuard evaluate middleware. Allow, block, report, or transform agent input, model output, and optional tool traffic. | [`NeuralTrust/langchain-neuraltrust`](https://github.com/NeuralTrust/langchain-neuraltrust) | <span data-sort-value="494"><a href="https://pypi.org/project/langchain-neuraltrust/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-neuraltrust/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`text2sql-framework`](https://github.com/Text2SqlAgent/text2sql-framework) | Replaces RAG with recursive tool use: the agent explores, writes, tests, and self-corrects using one execute_sql tool. | [`Text2SqlAgent/text2sql-framework`](https://github.com/Text2SqlAgent/text2sql-framework) | <span data-sort-value="315"><a href="https://pypi.org/project/text2sql-framework/" target="_blank"><img src="https://static.pepy.tech/badge/text2sql-framework/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Pydantic Monty Code Interpreter`](https://github.com/shane-rand/langchain-monty) | Provides Code Interpretation inside Pydantic's Monty Runtime | [`langchain-monty`](https://github.com/shane-rand/langchain-monty) | <span data-sort-value="279"><a href="https://pypi.org/project/langchain-monty/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-monty/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`DeepKeep middleware`](https://docs.deepkeep.ai) | DeepKeep AI Firewall pre-moderation and post-moderation for LangChain agents. |  | <span data-sort-value="275"><a href="https://pypi.org/project/langchain-deepkeep/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-deepkeep/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`MaskflowReversibleAnonymizer`](https://github.com/maskflow/maskflow/tree/main/packages/maskflow-langchain) | Reversible PII anonymizer / deanonymizer, a drop-in for langchain-experimental's Presidio anonymizer (same .anonymize / .deanonymize / .deanonymizer_mapping and JSON/YAML save-load). Adds the Indian identifiers most tools miss (Aadhaar, PAN, GSTIN, UPI, IFSC, ABHA, names, addresses), a streaming-aware deanonymizer Runnable, and an optional leak-guard callback that fails a call closed if PII reaches the model. | [`maskflow/maskflow`](https://github.com/maskflow/maskflow/tree/main/packages/maskflow-langchain) | <span data-sort-value="270"><a href="https://pypi.org/project/maskflow-langchain/" target="_blank"><img src="https://static.pepy.tech/badge/maskflow-langchain/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`langgraph-state-machine`](https://github.com/mahmoud661/langgraph-state-machine) | Section-based flow control for LangGraph React agents. Divides conversations into discrete phases with scoped tools, prompts, auto-transitions, branching, and optional per-section LLM override. | [`mahmoud661/langgraph-state-machine`](https://github.com/mahmoud661/langgraph-state-machine) | <span data-sort-value="257"><a href="https://pypi.org/project/langgraph-state-machine/" target="_blank"><img src="https://static.pepy.tech/badge/langgraph-state-machine/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`OpenBox`](https://docs.openbox.ai/getting-started/langgraph) | Real-time governance for LangGraph and Deep Agents. Policies, guardrails, HITL, OTel hook governance, and behavior rules. | [`OpenBox-AI/openbox-langgraph-sdk-python`](https://github.com/OpenBox-AI/openbox-langgraph-sdk-python) | <span data-sort-value="236"><a href="https://pypi.org/project/openbox-langgraph-sdk-python/" target="_blank"><img src="https://static.pepy.tech/badge/openbox-langgraph-sdk-python/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`AxioRank`](https://axiorank.com/docs/integrations/langchain) | Security gateway for AI agents: score tool calls and model turns against policy with allow, deny, and redact. | [`AxioRank/langchain-axiorank`](https://github.com/AxioRank/langchain-axiorank) | <span data-sort-value="227"><a href="https://pypi.org/project/langchain-axiorank/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-axiorank/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`Tessera`](https://github.com/kenithphilip/Tessera) | Signed trust labels and taint-tracking that gate tool calls when context contains untrusted segments. | [`kenithphilip/Tessera`](https://github.com/kenithphilip/Tessera) | <span data-sort-value="192"><a href="https://pypi.org/project/tessera-mesh/" target="_blank"><img src="https://static.pepy.tech/badge/tessera-mesh/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`langchain-distil`](https://github.com/dshakes/distil) | Reversible, certified context compression. Digests large tool outputs and message history before the model call (tool and function messages reversibly, human and system losslessly, the model messages never rewritten), with byte-exact recovery of every digest. Decision-equivalence between compressed and full context is certified offline by a statistical non-inferiority gate. | [`dshakes/distil`](https://github.com/dshakes/distil) | <span data-sort-value="148"><a href="https://pypi.org/project/langchain-distil/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-distil/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`comply54`](https://comply54.io/langchain) | Runtime compliance enforcement for AI agents under African data protection and financial-sector regulations (deny, escalate, audit, or allow). | [`comply54/langchain-comply54`](https://github.com/comply54/langchain-comply54) | <span data-sort-value="142"><a href="https://pypi.org/project/langchain-comply54/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-comply54/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`langchain-pop`](https://github.com/joy7758/persona-object-protocol/tree/main/integrations/langchain-pop) | Portable persona loading, legacy migration, and boundary-aware tool filtering for LangChain agents. | [`joy7758/persona-object-protocol`](https://github.com/joy7758/persona-object-protocol/tree/main/integrations/langchain-pop) | <span data-sort-value="133"><a href="https://pypi.org/project/langchain-pop/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-pop/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`DNS-AID`](https://github.com/IngmarVG-IB/langchain-dns-aid) | DNS-based agent discovery via the DNS-AID protocol. Auto-publishes agents on startup, auto-unpublishes on shutdown, and provides discovery tools. | [`IngmarVG-IB/langchain-dns-aid`](https://github.com/IngmarVG-IB/langchain-dns-aid) | <span data-sort-value="120"><a href="https://pypi.org/project/langchain-dns-aid/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-dns-aid/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`OWASP Agent Memory Guard`](https://owasp.org/www-project-agent-memory-guard/) | Runtime defense against AI agent memory poisoning (OWASP ASI06). Scans messages, model responses, and tool outputs locally with block, warn, and strip modes. | [`OWASP/www-project-agent-memory-guard`](https://github.com/OWASP/www-project-agent-memory-guard/tree/main/integrations/langchain-agent-memory-guard) | <span data-sort-value="114"><a href="https://pypi.org/project/langchain-agent-memory-guard/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-agent-memory-guard/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`NoPII`](https://github.com/Enigma-Vault/NoPII/tree/main/integrations/langchain-nopii-middleware) | Runtime PII tokenization. Detects personal data in outbound prompts, replaces it with deterministic vault tokens before the request reaches the LLM, and restores the original values in the response. | [`Enigma-Vault/NoPII`](https://github.com/Enigma-Vault/NoPII/tree/main/integrations/langchain-nopii-middleware) | <span data-sort-value="112"><a href="https://pypi.org/project/langchain-nopii-middleware/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-nopii-middleware/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`VecrContextCompressor`](https://github.com/h2cker/vecr) | Deterministic LLM context compression with a regex retention whitelist for structured tokens before the model call. | [`h2cker/vecr`](https://github.com/h2cker/vecr) | <span data-sort-value="71"><a href="https://pypi.org/project/vecr-compress/" target="_blank"><img src="https://static.pepy.tech/badge/vecr-compress/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`SeekritCredentials`](https://seekrit.dev/docs/guides/frameworks/langgraph#4-scope-a-key-to-one-tool) | Scopes secrets per model call and per tool call. Credentials stay as placeholders in agent code and are substituted at the HTTP boundary against a default-deny allowlist, so an unlisted tool cannot reach a credential. | [`seekritdev/python-sdk`](https://github.com/seekritdev/python-sdk) | <span data-sort-value="1000"><a href="https://pypi.org/project/seekrit/" target="_blank"><img src="https://static.pepy.tech/badge/seekrit/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`MaskflowReversibleAnonymizer`](https://github.com/maskflow/maskflow/tree/main/packages/maskflow-langchain) | Reversible PII anonymizer / deanonymizer, a drop-in for langchain-experimental's Presidio anonymizer (same .anonymize / .deanonymize / .deanonymizer_mapping and JSON/YAML save-load). Adds the Indian identifiers most tools miss (Aadhaar, PAN, GSTIN, UPI, IFSC, ABHA, names, addresses), a streaming-aware deanonymizer Runnable, and an optional leak-guard callback that fails a call closed if PII reaches the model. | [`maskflow/maskflow`](https://github.com/maskflow/maskflow/tree/main/packages/maskflow-langchain) | <span data-sort-value="753"><a href="https://pypi.org/project/maskflow-langchain/" target="_blank"><img src="https://static.pepy.tech/badge/maskflow-langchain/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`langchain-router`](https://github.com/johanity/langchain-router) | Phase-based model routing. Routes execution turns to a fast model, keeps the primary for planning and recovery. | [`johanity/langchain-router`](https://github.com/johanity/langchain-router) | <span data-sort-value="675"><a href="https://pypi.org/project/langchain-router/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-router/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Cisco AI Defense`](https://github.com/cisco-ai-defense/ai-defense-langchain-middleware) | Runtime security inspection | [`cisco-ai-defense/ai-defense-langchain-middleware`](https://github.com/cisco-ai-defense/ai-defense-langchain-middleware) | <span data-sort-value="673"><a href="https://pypi.org/project/langchain-cisco-aidefense/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-cisco-aidefense/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`RelayShield`](https://api.relayshield.net/developers) | Mandatory pre-execution gate that blocks connect_mcp_server and install_mcp_package tool calls when RelayShield reports risk. | [`nzdsf2-gif/langchain-relayshield`](https://github.com/nzdsf2-gif/langchain-relayshield) | <span data-sort-value="660"><a href="https://pypi.org/project/langchain-relayshield/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-relayshield/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`advisor-middleware`](https://github.com/emanueleielo/advisor-middleware) | Claude Code's advisor pattern as LangChain middleware. Pairs a fast executor model with a powerful advisor model that intervenes only on critical decisions. | [`emanueleielo/advisor-middleware`](https://github.com/emanueleielo/advisor-middleware) | <span data-sort-value="649"><a href="https://pypi.org/project/advisor-middleware/" target="_blank"><img src="https://static.pepy.tech/badge/advisor-middleware/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`langchain-runcycles`](https://runcycles.io) | Pre-execution budget authority for model calls, tool calls, and agent loops | [`runcycles/langchain-runcycles`](https://github.com/runcycles/langchain-runcycles) | <span data-sort-value="643"><a href="https://pypi.org/project/langchain-runcycles/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-runcycles/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`langchain-task-steering`](https://github.com/edvinhallvaxhiu/langchain-task-steering) | Implicit state-machine middleware for ordered task pipelines with per-task tool scoping, dynamic prompt injection, and composable completion validation. | [`edvinhallvaxhiu/langchain-task-steering`](https://github.com/edvinhallvaxhiu/langchain-task-steering) | <span data-sort-value="624"><a href="https://pypi.org/project/langchain-task-steering/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-task-steering/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`NeuralTrust TrustGuard`](https://docs.neuraltrust.ai/integrations/langchain) | TrustGuard evaluate middleware. Allow, block, report, or transform agent input, model output, and optional tool traffic. | [`NeuralTrust/langchain-neuraltrust`](https://github.com/NeuralTrust/langchain-neuraltrust) | <span data-sort-value="567"><a href="https://pypi.org/project/langchain-neuraltrust/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-neuraltrust/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`langchain-collapse`](https://github.com/johanity/langchain-collapse) | Preventive context management. Collapses consecutive tool-call groups before they fill the context window. | [`johanity/langchain-collapse`](https://github.com/johanity/langchain-collapse) | <span data-sort-value="488"><a href="https://pypi.org/project/langchain-collapse/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-collapse/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`BastionGuardrailMiddleware`](https://bastionsoft.com) | Prompt-injection and jailbreak detection. Screens user input and tool results, including indirect injection through retrieved content, before the model runs. Runs locally on your own hardware. | [`bastion-soft/bastion-prompt-protection`](https://github.com/bastion-soft/bastion-prompt-protection) | <span data-sort-value="485"><a href="https://pypi.org/project/bastion-prompt-protection/" target="_blank"><img src="https://static.pepy.tech/badge/bastion-prompt-protection/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Pydantic Monty Code Interpreter`](https://github.com/shane-rand/langchain-monty) | Provides Code Interpretation inside Pydantic's Monty Runtime | [`langchain-monty`](https://github.com/shane-rand/langchain-monty) | <span data-sort-value="383"><a href="https://pypi.org/project/langchain-monty/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-monty/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`text2sql-framework`](https://github.com/Text2SqlAgent/text2sql-framework) | Replaces RAG with recursive tool use: the agent explores, writes, tests, and self-corrects using one execute_sql tool. | [`Text2SqlAgent/text2sql-framework`](https://github.com/Text2SqlAgent/text2sql-framework) | <span data-sort-value="295"><a href="https://pypi.org/project/text2sql-framework/" target="_blank"><img src="https://static.pepy.tech/badge/text2sql-framework/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`OpenBox`](https://docs.openbox.ai/getting-started/langgraph) | Real-time governance for LangGraph and Deep Agents. Policies, guardrails, HITL, OTel hook governance, and behavior rules. | [`OpenBox-AI/openbox-langgraph-sdk-python`](https://github.com/OpenBox-AI/openbox-langgraph-sdk-python) | <span data-sort-value="266"><a href="https://pypi.org/project/openbox-langgraph-sdk-python/" target="_blank"><img src="https://static.pepy.tech/badge/openbox-langgraph-sdk-python/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`DeepKeep middleware`](https://docs.deepkeep.ai) | DeepKeep AI Firewall pre-moderation and post-moderation for LangChain agents. |  | <span data-sort-value="255"><a href="https://pypi.org/project/langchain-deepkeep/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-deepkeep/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`AxioRank`](https://axiorank.com/docs/integrations/langchain) | Security gateway for AI agents: score tool calls and model turns against policy with allow, deny, and redact. | [`AxioRank/langchain-axiorank`](https://github.com/AxioRank/langchain-axiorank) | <span data-sort-value="233"><a href="https://pypi.org/project/langchain-axiorank/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-axiorank/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`langgraph-state-machine`](https://github.com/mahmoud661/langgraph-state-machine) | Section-based flow control for LangGraph React agents. Divides conversations into discrete phases with scoped tools, prompts, auto-transitions, branching, and optional per-section LLM override. | [`mahmoud661/langgraph-state-machine`](https://github.com/mahmoud661/langgraph-state-machine) | <span data-sort-value="218"><a href="https://pypi.org/project/langgraph-state-machine/" target="_blank"><img src="https://static.pepy.tech/badge/langgraph-state-machine/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`Tessera`](https://github.com/kenithphilip/Tessera) | Signed trust labels and taint-tracking that gate tool calls when context contains untrusted segments. | [`kenithphilip/Tessera`](https://github.com/kenithphilip/Tessera) | <span data-sort-value="211"><a href="https://pypi.org/project/tessera-mesh/" target="_blank"><img src="https://static.pepy.tech/badge/tessera-mesh/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`langchain-distil`](https://github.com/dshakes/distil) | Reversible, certified context compression. Digests large tool outputs and message history before the model call (tool and function messages reversibly, human and system losslessly, the model messages never rewritten), with byte-exact recovery of every digest. Decision-equivalence between compressed and full context is certified offline by a statistical non-inferiority gate. | [`dshakes/distil`](https://github.com/dshakes/distil) | <span data-sort-value="167"><a href="https://pypi.org/project/langchain-distil/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-distil/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`comply54`](https://comply54.io/langchain) | Runtime compliance enforcement for AI agents under African data protection and financial-sector regulations (deny, escalate, audit, or allow). | [`comply54/langchain-comply54`](https://github.com/comply54/langchain-comply54) | <span data-sort-value="164"><a href="https://pypi.org/project/langchain-comply54/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-comply54/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`langchain-pop`](https://github.com/joy7758/persona-object-protocol/tree/main/integrations/langchain-pop) | Portable persona loading, legacy migration, and boundary-aware tool filtering for LangChain agents. | [`joy7758/persona-object-protocol`](https://github.com/joy7758/persona-object-protocol/tree/main/integrations/langchain-pop) | <span data-sort-value="158"><a href="https://pypi.org/project/langchain-pop/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-pop/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`DNS-AID`](https://github.com/IngmarVG-IB/langchain-dns-aid) | DNS-based agent discovery via the DNS-AID protocol. Auto-publishes agents on startup, auto-unpublishes on shutdown, and provides discovery tools. | [`IngmarVG-IB/langchain-dns-aid`](https://github.com/IngmarVG-IB/langchain-dns-aid) | <span data-sort-value="153"><a href="https://pypi.org/project/langchain-dns-aid/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-dns-aid/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`OWASP Agent Memory Guard`](https://owasp.org/www-project-agent-memory-guard/) | Runtime defense against AI agent memory poisoning (OWASP ASI06). Scans messages, model responses, and tool outputs locally with block, warn, and strip modes. | [`OWASP/www-project-agent-memory-guard`](https://github.com/OWASP/www-project-agent-memory-guard/tree/main/integrations/langchain-agent-memory-guard) | <span data-sort-value="150"><a href="https://pypi.org/project/langchain-agent-memory-guard/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-agent-memory-guard/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`NoPII`](https://github.com/Enigma-Vault/NoPII/tree/main/integrations/langchain-nopii-middleware) | Runtime PII tokenization. Detects personal data in outbound prompts, replaces it with deterministic vault tokens before the request reaches the LLM, and restores the original values in the response. | [`Enigma-Vault/NoPII`](https://github.com/Enigma-Vault/NoPII/tree/main/integrations/langchain-nopii-middleware) | <span data-sort-value="142"><a href="https://pypi.org/project/langchain-nopii-middleware/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-nopii-middleware/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`VecrContextCompressor`](https://github.com/h2cker/vecr) | Deterministic LLM context compression with a regex retention whitelist for structured tokens before the model call. | [`h2cker/vecr`](https://github.com/h2cker/vecr) | <span data-sort-value="73"><a href="https://pypi.org/project/vecr-compress/" target="_blank"><img src="https://static.pepy.tech/badge/vecr-compress/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`ATR Guardrail`](https://github.com/Agent-Threat-Rule/agent-threat-rules/tree/main/integrations/langchain) | Runtime detection of prompt injection, tool poisoning, and unsafe tool calls using Agent Threat Rules. Halts the agent or blocks the tool call on a critical finding and keeps an audit trail. | [`Agent-Threat-Rule/agent-threat-rules`](https://github.com/Agent-Threat-Rule/agent-threat-rules/tree/main/integrations/langchain) | <span data-sort-value="-1">N/A</span> |
 | [`eager-tools`](https://github.com/cloudthinker-ai/eager-tools) | Reduces agent wall-clock latency by dispatching each tool call the moment its streaming block closes, overlapping tool execution with LLM generation. | [`cloudthinker-ai/eager-tools`](https://github.com/cloudthinker-ai/eager-tools) | <span data-sort-value="-1">N/A</span> |
 | [`Haldir`](https://github.com/ExposureGuard/haldir/tree/main/integrations/langchain-haldir) | Governance layer for LangChain agents with scoped sessions, encrypted secrets, hash-chained audit, and policy enforcement. | [`ExposureGuard/haldir`](https://github.com/ExposureGuard/haldir/tree/main/integrations/langchain-haldir) | <span data-sort-value="-1">N/A</span> |
@@ -71296,6 +71287,14 @@ Browse the complete collection of integrations available for Python. LangChain P
     </Card>
 
     <Card
+        title="AntiBrow"
+        href="https://antibrow.com/docs/langchain"
+        icon="link"
+    >
+        Browser tools backed by persistent local browser profiles, keeping cookies, storage, fingerprint and exit IP stable across agent runs.
+    </Card>
+
+    <Card
         title="Anthropic"
         href="/oss/python/integrations/providers/anthropic"
         icon="/images/providers/anthropic-icon.svg"
@@ -71969,6 +71968,14 @@ Browse the complete collection of integrations available for Python. LangChain P
     </Card>
 
     <Card
+        title="DynamicToolSelectorMiddleware"
+        href="https://github.com/RauhanAhmed/langchain-dynamic-tools-middleware"
+        icon="link"
+    >
+        Drop-in agent middleware providing sub-100ms hybrid dense and sparse vector tool retrieval over zvec. Eliminates prompt token overhead by >80% and outperforms LLM-based tool selection on Berkeley Function Calling Leaderboard (BFCL) benchmarks.
+    </Card>
+
+    <Card
         title="E2B"
         href="https://e2b.dev/docs"
         icon="link"
@@ -72182,6 +72189,14 @@ Browse the complete collection of integrations available for Python. LangChain P
         icon="link"
     >
         AI observability and monitoring platform.
+    </Card>
+
+    <Card
+        title="GreenCalculus"
+        href="https://greencalculus.com/guides/emission-factors-langchain/"
+        icon="link"
+    >
+        Greenhouse-gas emission factors from public publishers (DEFRA, US EPA, ADEME, IPCC and others), returned with the publisher's exact source cell, licence and data version.
     </Card>
 
     <Card
@@ -73382,6 +73397,14 @@ Browse the complete collection of integrations available for Python. LangChain P
     </Card>
 
     <Card
+        title="Polign"
+        href="https://github.com/Polign/polign/tree/main/python/langchain-polign"
+        icon="link"
+    >
+        Vector store for Polign, object-store-native vector database, with metadata filtering, MMR, and BM25 hybrid search.
+    </Card>
+
+    <Card
         title="POP"
         href="https://github.com/joy7758/persona-object-protocol/tree/main/integrations/langchain-pop"
         icon="link"
@@ -74465,6 +74488,14 @@ Browse the complete collection of integrations available for Python. LangChain P
         icon="link"
     >
         Global news search with semantic ranking and rich filters for LangChain agents.
+    </Card>
+
+    <Card
+        title="Whoosh"
+        href="https://github.com/priya-sundaram-dev/whoosh/tree/main/integrations/langchain-whoosh#readme"
+        icon="link"
+    >
+        Retriever backed by Whoosh, a pure-Python full-text search library with BM25F ranking and on-disk indexes.
     </Card>
 
     <Card
@@ -88108,6 +88139,7 @@ The below retrievers will search over an external index (e.g., constructed from 
 | [`OpenMemoryRetriever`](https://github.com/nullure/langchain-openmemory) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-openmemory`](https://pypi.org/project/langchain-openmemory/) | <span data-sort-value="119"><a href="https://pypi.org/project/langchain-openmemory/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-openmemory/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`KeiroRetriever`](https://github.com/Keirolabs-API/langchain-keiro) | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | [`langchain-keiro`](https://pypi.org/project/langchain-keiro/) | <span data-sort-value="117"><a href="https://pypi.org/project/langchain-keiro/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-keiro/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Zotero`](https://github.com/TimBMK/langchain-zotero-retriever) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | [`langchain-zotero-retriever`](https://pypi.org/project/langchain-zotero-retriever/) | <span data-sort-value="114"><a href="https://pypi.org/project/langchain-zotero-retriever/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-zotero-retriever/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`WhooshRetriever`](https://github.com/priya-sundaram-dev/whoosh/tree/main/integrations/langchain-whoosh#readme) | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | [`langchain-whoosh`](https://pypi.org/project/langchain-whoosh/) | <span data-sort-value="109"><a href="https://pypi.org/project/langchain-whoosh/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-whoosh/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 
 </div>
 
@@ -97199,7 +97231,7 @@ The following table shows tools that can be used to automate tasks in productivi
 | [AgenticEmail Toolkit](https://agenticemail.dev/docs) | Free tier available, with [paid plans](https://agenticemail.dev/pricing) after |
 | [AgentPhone Toolkit](https://docs.agentphone.to) | Free tier available, with [pay-as-you-go pricing](https://agentphone.to) after |
 | [e2a](https://e2a.dev) | Free tier available, with [flat-rate paid plans](https://e2a.dev) after |
-| [ReplyLayer Toolkit](https://replylayer.ai/docs/guides/langchain) | Private beta: free sandbox trial, with [paid tiers](https://replylayer.ai/pricing) after |
+| [ReplyLayer Toolkit](https://replylayer.ai/docs/guides/langchain) | Public beta: free sandbox trial, with [paid tiers](https://replylayer.ai/pricing) after |
 | [Verifly](https://verifly.email/docs) | Free tier available |
 | [Simplepages Toolkit](https://simplepages.ai/mcp) | Free tier available (draft pages), with [paid plans](https://simplepages.ai/pricing) to publish |
 
@@ -97356,6 +97388,7 @@ The following table shows tools that generate video, image, or audio assets:
 | [`Parallel Task API`](/oss/python/integrations/tools/parallel_task) | <span data-sort-value="6000"><a href="https://pypi.org/project/langchain-parallel/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-parallel/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`StripeAgentToolkit`](/oss/python/integrations/tools/stripe) | <span data-sort-value="6000"><a href="https://pypi.org/project/stripe-agent-toolkit/" target="_blank"><img src="https://static.pepy.tech/badge/stripe-agent-toolkit/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`MadeOnSol`](https://madeonsol.com/api-docs) | <span data-sort-value="5000"><a href="https://pypi.org/project/madeonsol-x402/" target="_blank"><img src="https://static.pepy.tech/badge/madeonsol-x402/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`AntiBrowToolkit`](https://antibrow.com/docs/langchain) | <span data-sort-value="4000"><a href="https://pypi.org/project/antibrow/" target="_blank"><img src="https://static.pepy.tech/badge/antibrow/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Cdp agentkit toolkit`](/oss/python/integrations/tools/cdp_agentkit) | <span data-sort-value="4000"><a href="https://pypi.org/project/coinbase-agentkit-langchain/" target="_blank"><img src="https://static.pepy.tech/badge/coinbase-agentkit-langchain/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`Compass defi toolkit`](https://pypi.org/project/langchain-compass/) | <span data-sort-value="4000"><a href="https://pypi.org/project/langchain-compass/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-compass/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`DomPrunerFetchTool`](https://github.com/dong7812/dompruner-py) | <span data-sort-value="4000"><a href="https://pypi.org/project/dompruner/" target="_blank"><img src="https://static.pepy.tech/badge/dompruner/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
@@ -97570,6 +97603,7 @@ The following table shows tools that generate video, image, or audio assets:
 | [`DynamicFeed`](https://dynamicfeed.ai/integrations) | <span data-sort-value="98"><a href="https://pypi.org/project/dynamicfeed-tools/" target="_blank"><img src="https://static.pepy.tech/badge/dynamicfeed-tools/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`SnapRender`](https://snap-render.com) | <span data-sort-value="98"><a href="https://pypi.org/project/langchain-snaprender/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-snaprender/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`TempGuru`](https://tempguru.co/ai-agents) | <span data-sort-value="97"><a href="https://pypi.org/project/tempguru/" target="_blank"><img src="https://static.pepy.tech/badge/tempguru/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`GreenCalculusToolkit`](https://greencalculus.com/guides/emission-factors-langchain/) | <span data-sort-value="97"><a href="https://pypi.org/project/langchain-greencalculus/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-greencalculus/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`AgentLair`](https://agentlair.dev/docs) | <span data-sort-value="-1">N/A</span> |
 | [`Browserless`](https://browserless.io) | <span data-sort-value="-1">N/A</span> |
 | [`HuangtingFlux`](https://huangtingflux.com/integrations/langchain) | <span data-sort-value="-1">N/A</span> |
@@ -107682,6 +107716,7 @@ vector_store = WeaviateVectorStore(
 | [`CosVectors`](https://github.com/hushengquan/langchain-cos-vectors) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="116"><a href="https://pypi.org/project/langchain-cos-vectors/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-cos-vectors/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`FAISS`](https://github.com/facebookresearch/faiss) | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="0"></span> | <span data-sort-value="-1">N/A</span> |
 | [`InMemoryVectorStore`](/oss/python/integrations/vectorstores/in_memory) | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="-1">N/A</span> |
+| [`PolignVectorStore`](https://github.com/Polign/polign/tree/main/python/langchain-polign) | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="1">❌</span> | <span data-sort-value="2">✅</span> | <span data-sort-value="-1">N/A</span> |
 
 </div>
 
