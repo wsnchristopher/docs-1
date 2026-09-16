@@ -40577,7 +40577,7 @@ ai_msg.content_blocks
 ## Reasoning effort
 
 <Note>
-    `reasoning_effort` requires `langchain-aws>=1.6.5`.
+    `reasoning_effort` requires `langchain-aws>=1.7.0`.
 </Note>
 
 [`ChatBedrockConverse`](https://reference.langchain.com/python/langchain-aws/chat_models/bedrock_converse/ChatBedrockConverse) supports the standard [`reasoning_effort`](/oss/python/langchain/models#reasoning) parameter for models with configurable reasoning, including Claude (Opus 5, Sonnet 5), Amazon Nova 2, and OpenAI gpt-oss and Moonshot Kimi K2 models on Bedrock. Like `temperature`, it can be set at model construction or per invocation, and it is translated into the request format for the underlying model family:
@@ -99585,14 +99585,15 @@ export BROWSERBASE_API_KEY="bb_live_..."  # required for Browserbase
 
 ## Use with a Deep Agent
 
-The integration's MCP server (`stagehand-deepagents-mcp`) is launched over stdio by `MultiServerMCPClient`. Use `load_mcp_tools` to get the tools and pass them directly to `create_deep_agent` — no manual tool definitions needed:
+The integration's MCP server (`stagehand-deepagents-mcp`) is launched over stdio by [`MCPAdapter`](https://reference.langchain.com/python/langchain/mcp/adapter/MCPAdapter). Use `list_tools()` to discover the tools and pass them to `create_deep_agent` — no manual tool definitions needed:
 
 ```python
 import asyncio
+import os
+
 import dotenv
-from langchain_mcp_adapters.client import MultiServerMCPClient
-from langchain_mcp_adapters.tools import load_mcp_tools
 from deepagents import create_deep_agent
+from langchain.mcp import MCPAdapter
 
 dotenv.load_dotenv()
 
@@ -99606,23 +99607,23 @@ Snapshot IDs are valid only for the latest snapshot of the active page.
 Snapshot again after navigation or stale IDs. Do not launch another browser.
 """
 
-client = MultiServerMCPClient(
-    {
+CONFIG = {
+    "mcpServers": {
         "stagehand_browser": {
-            "transport": "stdio",
             "command": "uv",
             "args": ["run", "--project", ".", "--locked", "stagehand-deepagents-mcp"],
             "env": {
-                k: v for k, v in __import__("os").environ.items()
+                k: v for k, v in os.environ.items()
                 if k.startswith(("STAGEHAND_", "BROWSERBASE_")) and v
             },
         }
     }
-)
+}
+
 
 async def main():
-    async with client.session("stagehand_browser") as session:
-        tools = await load_mcp_tools(session)
+    async with MCPAdapter(CONFIG) as adapter:
+        tools = await adapter.list_tools()
         agent = create_deep_agent(
             model="openai:gpt-4o",
             tools=tools,
@@ -99633,11 +99634,12 @@ async def main():
         })
     print(result["messages"][-1].content)
 
+
 asyncio.run(main())
 ```
 
 <Warning>
-  Keep one persistent `ClientSession` for the duration of your agent run. Stateless tool loading (e.g. `MultiServerMCPClient.get_tools()`) starts a new stdio process per call and loses the browser and snapshot IDs.
+  Keep the [`MCPAdapter`](https://reference.langchain.com/python/langchain/mcp/adapter/MCPAdapter) context manager open for the duration of the agent run. The browser session and snapshot IDs are tied to the underlying stdio process — closing the adapter ends the session.
 </Warning>
 
 ## Server configuration
@@ -129136,6 +129138,89 @@ async def run_agent(server) -> dict:
 
 For general guidance on defining, binding, and using LangChain tools, see [Tools](/oss/python/langchain/tools). For several MCP servers and their namespaced tool catalogs, see [Connections](/oss/python/langchain/mcp/connections#multiple-servers).
 
+## Handle tool outputs
+
+MCP tool results become LangChain-native values: content the model can read, an artifact for structured output, and a [`ToolMessage`](https://reference.langchain.com/python/langchain-core/messages/tool/ToolMessage) status that distinguishes a server-reported error from a transport failure.
+
+### Multimodal content
+
+An MCP tool result arrives as LangChain [content blocks](/oss/python/langchain/messages#standard-content-blocks). Image and file content convert into standardized `image` and `file` blocks alongside `text`, so a tool that returns a screenshot reaches the model as an image block:
+
+```python
+from langchain.mcp import MCPAdapter
+
+
+async def access_multimodal_tool_content(server) -> None:
+    async with MCPAdapter(server) as adapter:
+        [screenshot] = await adapter.list_tools()
+
+    # An MCP result arrives as LangChain content blocks. Image and file content
+    # convert into standardized `image`/`file` blocks alongside `text`.
+    message = await screenshot.ainvoke(
+        {"name": "take_screenshot", "args": {}, "id": "1", "type": "tool_call"}
+    )
+    for block in message.content_blocks:  # [!code highlight]
+        if block["type"] == "text":  # [!code highlight]
+            print(f"Text: {block['text']}")  # [!code highlight]
+        elif block["type"] == "image":  # [!code highlight]
+            print(f"Image mime type: {block.get('mime_type')}")  # [!code highlight]
+            print(  # [!code highlight]
+                f"Image base64: {block.get('base64', '')[:20]}..."  # [!code highlight]
+            )  # [!code highlight]
+```
+
+### Structured content
+
+When a tool returns structured content, the adapter attaches it to the [`ToolMessage`](https://reference.langchain.com/python/langchain-core/messages/tool/ToolMessage) as an artifact rather than folding it into the model-visible text. Run the agent, then read the `artifact` off the [`ToolMessage`](https://reference.langchain.com/python/langchain-core/messages/tool/ToolMessage)s in the result:
+
+```python
+from langchain.agents import create_agent
+from langchain.mcp import MCPAdapter
+from langchain.messages import ToolMessage
+
+
+async def run_agent_structured(server) -> dict:
+    async with MCPAdapter(server) as adapter:
+        tools = await adapter.list_tools()
+        agent = create_agent("claude-sonnet-5", tools)
+        result = await agent.ainvoke(
+            {"messages": [{"role": "user", "content": "Look up user 42."}]}
+        )
+
+    # The adapter sets `artifact` only when the tool returned structured
+    # content, so a non-None artifact always carries `structured_content`.
+    for message in result["messages"]:
+        if isinstance(message, ToolMessage) and message.artifact is not None:
+            structured = message.artifact["structured_content"]  # [!code highlight]
+            print(f"Structured content: {structured}")  # [!code highlight]
+
+    return result
+```
+
+The artifact is an `MCPToolArtifact`, whose `structured_content` field holds the tool result's `structuredContent`. A tool that returns no structured content leaves `artifact` as `None`.
+
+### Errors
+
+An MCP tool result carries an `isError` flag. When a server reports `isError=True`, the adapter converts it into a [`ToolMessage`](https://reference.langchain.com/python/langchain-core/messages/tool/ToolMessage) with `status="error"` carrying the server's own message, so the agent can read it and correct itself:
+
+```python
+from langchain.mcp import MCPAdapter
+
+
+async def divide_by_zero(server):
+    async with MCPAdapter(server) as adapter:
+        [divide] = await adapter.list_tools()
+
+    # A server error (isError=True) reaches the model as a failed ToolMessage,
+    # so the agent can read the server's own message and retry. Transport
+    # failures still raise, because a model cannot act on those.
+    return await divide.ainvoke(
+        {"name": "divide", "args": {"a": 10, "b": 0}, "id": "1", "type": "tool_call"}
+    )
+```
+
+A server-reported error reaches the model as a failed tool message, but a transport or session failure raises instead, because a model cannot act on a dropped connection.
+
 ## Tool metadata
 
 Each adapted tool may carry its MCP provenance under an `mcp` namespace on the LangChain tool's metadata:
@@ -129176,71 +129261,6 @@ def is_destructive(tool: BaseTool) -> bool:
     )
     return annotations.get("destructive_hint", False)
 ```
-
-## Handle tool outputs
-
-MCP tool results become LangChain-native values: content the model can read, an artifact for structured output, and a [`ToolMessage`](https://reference.langchain.com/python/langchain-core/messages/tool/ToolMessage) status that distinguishes a server-reported error from a transport failure.
-
-### Multimodal content
-
-An MCP tool result arrives as LangChain [content blocks](/oss/python/langchain/messages#standard-content-blocks). Image and file content convert into standardized `image` and `file` blocks alongside `text`, so a tool that returns a screenshot reaches the model as an image block:
-
-```python
-from langchain.mcp import MCPAdapter
-
-
-async def access_multimodal_tool_content(server) -> None:
-    async with MCPAdapter(server) as adapter:
-        [screenshot] = await adapter.list_tools()
-
-    # An MCP result arrives as LangChain content blocks. Image and file content
-    # convert into standardized `image`/`file` blocks alongside `text`.
-    message = await screenshot.ainvoke(
-        {"name": "take_screenshot", "args": {}, "id": "1", "type": "tool_call"}
-    )
-    for block in message.content_blocks:  # [!code highlight]
-        if block["type"] == "text":  # [!code highlight]
-            print(f"Text: {block['text']}")  # [!code highlight]
-        elif block["type"] == "image":  # [!code highlight]
-            print(f"Image mime type: {block.get('mime_type')}")  # [!code highlight]
-            print(  # [!code highlight]
-                f"Image base64: {block.get('base64', '')[:20]}..."  # [!code highlight]
-            )  # [!code highlight]
-```
-
-### Structured content
-
-When a tool returns structured content, the adapter attaches it to the [`ToolMessage`](https://reference.langchain.com/python/langchain-core/messages/tool/ToolMessage) as an artifact rather than folding it into the model-visible text. Read it off `message.artifact`:
-
-```python
-message = await tool.ainvoke({"name": "...", "args": {...}, "id": "1", "type": "tool_call"})
-if message.artifact is not None:
-    structured = message.artifact["structured_content"]
-```
-
-The artifact is an `MCPToolArtifact`, whose `structured_content` field holds the tool result's `structuredContent`.
-
-### Errors
-
-An MCP tool result carries an `isError` flag. When a server reports `isError=True`, the adapter converts it into a [`ToolMessage`](https://reference.langchain.com/python/langchain-core/messages/tool/ToolMessage) with `status="error"` carrying the server's own message, so the agent can read it and correct itself:
-
-```python
-from langchain.mcp import MCPAdapter
-
-
-async def divide_by_zero(server):
-    async with MCPAdapter(server) as adapter:
-        [divide] = await adapter.list_tools()
-
-    # A server error (isError=True) reaches the model as a failed ToolMessage,
-    # so the agent can read the server's own message and retry. Transport
-    # failures still raise, because a model cannot act on those.
-    return await divide.ainvoke(
-        {"name": "divide", "args": {"a": 10, "b": 0}, "id": "1", "type": "tool_call"}
-    )
-```
-
-A server-reported error reaches the model as a failed tool message, but a transport or session failure raises instead, because a model cannot act on a dropped connection.
 
 ## Human-in-the-loop
 
@@ -134840,7 +134860,7 @@ Many models are capable of performing multi-step reasoning to arrive at a conclu
 Depending on the model, you can sometimes specify the level of effort it should put into reasoning. Similarly, you can request that the model turn off reasoning entirely. This may take the form of categorical "tiers" of reasoning (e.g., `'low'` or `'high'`) or integer token budgets.
 
 <Note>
-    `reasoning_effort` as a standard parameter requires `langchain-core>=1.5.2`, plus the corresponding partner package version: `langchain-anthropic>=1.5.3`, `langchain-openai>=1.4.1`, `langchain-fireworks>=1.5.2`, `langchain-xai>=1.3.0`, `langchain-google-genai>=4.3.1`, or `langchain-aws>=1.6.5`.
+    `reasoning_effort` as a standard parameter requires `langchain-core>=1.5.2`, plus the corresponding partner package version: `langchain-anthropic>=1.5.3`, `langchain-openai>=1.4.1`, `langchain-fireworks>=1.5.2`, `langchain-xai>=1.3.0`, `langchain-google-genai>=4.3.1`, or `langchain-aws>=1.7.0`.
 </Note>
 
 [`ChatOpenAI`](https://reference.langchain.com/python/langchain-openai/chat_models/base/ChatOpenAI), [`ChatAnthropic`](https://reference.langchain.com/python/langchain-anthropic/chat_models/ChatAnthropic), [`ChatFireworks`](https://reference.langchain.com/python/langchain-fireworks/chat_models/ChatFireworks), [`ChatXAI`](https://reference.langchain.com/python/langchain-xai/chat_models/ChatXAI), [`ChatGoogleGenerativeAI`](https://reference.langchain.com/python/langchain-google-genai/chat_models/ChatGoogleGenerativeAI), and [`ChatBedrockConverse`](https://reference.langchain.com/python/langchain-aws/chat_models/bedrock_converse/ChatBedrockConverse) support a standard `reasoning_effort` parameter. Like `temperature`, it can be set at model construction or per invocation, and each provider translates it into its own API format:
