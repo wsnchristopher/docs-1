@@ -12336,6 +12336,93 @@ If provisioning stalls or fails, an exhausted quota is a common cause, alongside
 </div>
 
 
+# Bring your own IAM roles (AWS)
+Source: https://docs.langchain.com/langsmith/byoc-byoiam
+
+Bring your own IAM (BYOIAM) lets you create and manage the AWS IAM resources used by LangSmith BYOC data planes. You control the roles, policies, and permissions boundaries while LangChain provisions and operates the data plane using those resources.
+
+If you want LangChain to manage IAM resources, follow the standard [BYOC onboarding guide](/langsmith/byoc-onboarding).
+
+## Before you begin
+
+Complete the [BYOC prerequisites](/langsmith/byoc#prerequisites) to have a LangSmith org, with BYOC enabled.
+
+## Create the IAM resources
+
+The [`byoiam` Terraform module](https://github.com/langchain-ai/terraform/tree/main/modules/byoc/aws/byoiam) creates the shared data plane roles, policies, and Karpenter instance profile. Apply it once per AWS account for all regions and data planes that use these roles.
+
+To create the IAM resources:
+
+1. Configure the AWS provider for the account where you plan to deploy your data planes.
+2. Add the module to your Terraform configuration. Set `regions` to the [supported AWS regions](/langsmith/byoc#regions-and-cloud-providers) where the roles need to operate.
+3. (Optional) Set `permissions_boundary_arn` to the ARN of your IAM permissions boundary policy. The module applies it to all roles it creates, except service-linked roles.
+4. Use `service_linked_roles_to_create` to create missing service-linked roles. None are created by default. Omit existing roles, or import them into Terraform first.
+5. Initialize Terraform, review the plan, and apply it in your account.
+
+The following configuration creates shared IAM resources for two regions:
+
+```hcl
+module "byoiam" {
+  source = "github.com/langchain-ai/terraform//modules/byoc/aws/byoiam?ref=main"
+
+  regions = ["us-east-1", "us-west-1"]
+}
+```
+
+## Remove IAM management permissions from the provisioning role
+
+The [`langsmith-byoc-role` Terraform module](https://github.com/langchain-ai/terraform/tree/main/modules/byoc/aws/langsmith-byoc-role) creates the cross-account role LangChain assumes to manage your data plane.
+
+After creating the IAM resources, configure the provisioning role:
+
+1. Copy the external ID using the button next to the **Data Planes** header in **Settings > Data Planes**. Pass it to the role module as `external_id`. The role's trust policy must use this value in its `ExternalId` condition.
+2. Set `allow_iam_management_permissions = false` in your `langsmith-byoc-role` module configuration.
+3. Review and apply the Terraform changes. Retain the `crossplane_role_arn` output for data plane creation.
+
+Setting `allow_iam_management_permissions = false` changes the role's permissions:
+
+- **Removed**: IAM creation, modification, and deletion permissions, including service-linked role creation.
+- **Retained**: IAM read permissions, scoped `iam:PassRole`, and `iam:SimulatePrincipalPolicy` to use and validate your existing resources.
+
+Enabling `allow_delete_permissions` does not restore IAM management permissions.
+
+If you also want to [bring your own VPC](/langsmith/byoc-byovpc), set `allow_vpc_creation_permissions = false` and supply the VPC ID in `vpc_ids`.
+
+## Deploy the data plane with existing roles
+
+<Warning>
+You must use the [`byoiam` Terraform module](https://github.com/langchain-ai/terraform/tree/main/modules/byoc/aws/byoiam) to create the exact IAM roles required by LangSmith. LangSmith performs extensive validation of these IAM resources before deploying the data plane.
+</Warning>
+
+The **Use existing IAM roles** checkbox configures the data plane to use the IAM resources you created.
+
+To deploy the data plane:
+
+1. Go to **Settings > Data Planes** and create a data plane.
+2. Supply the name, AWS region, network configuration, and load balancer access described in [BYOC onboarding](/langsmith/byoc-onboarding). Choose a region included in the module's `regions` input.
+3. Use the provisioning role's `crossplane_role_arn` output for the **AWS IAM role ARN**.
+4. Select **Use existing IAM roles** before submitting the request.
+
+Continue with provisioning and private connectivity in the onboarding guide.
+
+## See also
+
+- [BYOC onboarding](/langsmith/byoc-onboarding)
+- [Bring your own VPC on AWS](/langsmith/byoc-byovpc)
+- [BYOC shared responsibility model](/langsmith/byoc-shared-responsibility)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/byoc-byoiam.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>
+
+
 # Bring your own VPC on AWS
 Source: https://docs.langchain.com/langsmith/byoc-byovpc
 
@@ -23762,6 +23849,10 @@ Use the **[Chat](/langsmith/chat)** in the Playground to generate tools, create 
 ## Run the prompt
 
 To run a prompt, use <Icon icon="player-play"/> **Start** at the top of the right panel in the playground.
+
+## Set model fallbacks
+
+To use backup models when your prompt's primary model fails, [configure per-prompt fallbacks through LLM Gateway](/langsmith/llm-gateway-fallbacks#set-fallbacks-for-a-prompt). Select **LangSmith Gateway** as the provider and reference a saved model configuration with `custom/<my_config_name>`.
 
 ## Save your prompt
 
@@ -65046,6 +65137,29 @@ curl https://<data_plane_host>/gateway/v1/chat/completions \
 </CodeGroup>
 
 The gateway applies the fallback chain configured for `anthropic/claude-opus-5` in the API key's workspace. If no chain matches, the gateway returns the primary model's response without attempting a fallback.
+
+## Set fallbacks for a prompt
+
+To give a prompt its own fallback chain, route it through a saved model configuration. The prompt references the configuration by name, while the gateway manages its fallback chain.
+
+Creating the configuration requires workspace admin permissions. Creating the fallback chain requires `organization:manage` permission.
+
+To configure fallbacks for a prompt:
+
+1. [Create a model configuration](/langsmith/model-configurations#create-a-configuration) pointing to the provider and model you want the prompt to use.
+1. [Create a fallback chain](#create-a-fallback-chain) in the same workspace. Select your saved configuration as the primary model, rather than selecting its underlying provider and model directly. Add the backup models, configure the triggers, and save the chain.
+1. [Create a prompt](/langsmith/create-a-prompt) in the Playground. Open **Model Configuration**, select **LangSmith Gateway** as the **Provider**, and enter `custom/<my_config_name>` in the **Model** field. Replace `<my_config_name>` with the saved configuration's name, without angle brackets. You can type the value even if it is not listed. Click **Apply**.
+
+    <img
+      src="/images/llm-gateway-prompt-model-configuration.png"
+      alt="Model Configuration dialog with LangSmith Gateway selected as the provider and custom/<my_config_name> entered in the Model field."
+    />
+
+1. **Save** the prompt, then [pull it with its model](/langsmith/manage-prompts-programmatically#pull-a-prompt). In Python, set `include_model=True` when calling `client.pull_prompt` so the saved Gateway model configuration is included.
+
+Invoke the pulled prompt with its saved model to send requests through the gateway and apply the configuration's fallback chain. Pulling only the prompt template does not include the model configuration.
+
+The fallback chain belongs to the model configuration, not the prompt itself. Prompts that reference the same configuration share its fallbacks. Use a separate configuration for each prompt that needs different fallback behavior.
 
 ## Choose fallback candidates
 
@@ -149885,6 +149999,7 @@ The agent uses its built-in tools, skills, and memory to help you with tasks.
         | `Enter` | Submit prompt |
         | `Shift+Enter`, `Ctrl+J`, `Alt+Enter`, or `Ctrl+Enter` | Insert newline |
         | `@filename` | Auto-complete files and inject content |
+        | `@@query` | Search recent threads and insert a thread reference |
         | `Shift+Tab` | Cycle [approval modes](/oss/deepagents/code/approval-modes) |
         | `Ctrl+G` | Open prompt in external editor |
         | `Ctrl+T` | Expand or collapse the subagent panel when one is present |
@@ -149910,6 +150025,12 @@ The agent uses its built-in tools, skills, and memory to help you with tasks.
         **Search prompt history**
 
         Prompt history search lets you find and reuse previously submitted prompts without leaving the chat input. Press `Ctrl+R` to open an inline search of prompts stored on your machine.
+
+        **Reference a previous thread**
+
+        Type `@@` in the chat input to search recent threads by their initial prompt, thread ID, agent, branch, or working directory. Select a result to insert an `@@(thread:<thread-id>)` reference. Deep Agents Code can inspect the referenced conversation when its context is relevant to your request.
+
+        Add text after `@@` to filter the results. While the suggestions are open, press `Ctrl+R` to browse all threads with the same search. In the full thread picker, press `Ctrl+C` to copy the selected thread ID.
 
         <Note>
             **macOS `Cmd+Left` / `Cmd+Right` / `Cmd+Delete`**
