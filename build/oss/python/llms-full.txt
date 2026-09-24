@@ -35434,6 +35434,97 @@ We welcome your feedback on BigQuery Agent Analytics. If you have questions, sug
 </div>
 
 
+# OpenInference
+Source: https://docs.langchain.com/oss/python/integrations/callbacks/openinference
+
+## Overview
+
+OpenInference instrumentation for LangChain records LangChain and LangGraph operations as OpenTelemetry spans that use OpenInference semantic conventions. Use it to send traces to an OpenTelemetry-compatible collector or observability backend, including Arize AX and Arize Phoenix.
+
+The package hooks into `langchain-core`, which is shared by LangChain packages. It supports LangChain 1.x, LangChain Classic, and partner packages such as `langchain-openai`, `langchain-anthropic`, and `langchain-google-vertexai`.
+
+## Installation
+
+Install the OpenInference instrumentation package with LangChain:
+
+```shell
+pip install openinference-instrumentation-langchain langchain langchain-openai
+```
+
+For LangChain Classic applications, install `langchain-classic` instead:
+
+```shell
+pip install openinference-instrumentation-langchain langchain-classic langchain-openai
+```
+
+## Use with an OpenTelemetry collector
+
+Install the OpenTelemetry SDK and OTLP exporter (they are not pulled in by the instrumentation package alone), then configure a tracer provider and instrument LangChain before running your application:
+
+```shell
+pip install opentelemetry-sdk opentelemetry-exporter-otlp
+```
+
+```python
+from openinference.instrumentation.langchain import LangChainInstrumentor
+from opentelemetry import trace as trace_api
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk import trace as trace_sdk
+from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+
+endpoint = "http://127.0.0.1:6006/v1/traces"
+tracer_provider = trace_sdk.TracerProvider()
+trace_api.set_tracer_provider(tracer_provider)
+tracer_provider.add_span_processor(SimpleSpanProcessor(OTLPSpanExporter(endpoint)))
+
+LangChainInstrumentor().instrument()
+```
+
+The instrumentation records spans for LangChain runs and exports them through the configured tracer provider.
+
+## Use with Arize AX
+
+Arize AX can receive traces from OpenInference instrumentation through OpenTelemetry. Install `arize-otel` with the instrumentation package:
+
+```shell
+pip install arize-otel openinference-instrumentation-langchain langchain langchain-openai
+```
+
+Register an Arize AX tracer provider, then pass it to the LangChain instrumentor:
+
+```python
+import os
+
+from arize.otel import register
+from openinference.instrumentation.langchain import LangChainInstrumentor
+
+tracer_provider = register(
+    space_id=os.environ["ARIZE_SPACE_ID"],
+    api_key=os.environ["ARIZE_API_KEY"],
+    project_name=os.environ["ARIZE_PROJECT_NAME"],
+)
+
+LangChainInstrumentor().instrument(tracer_provider=tracer_provider)
+```
+
+## Resources
+
+- [OpenInference LangChain instrumentation repository](https://github.com/Arize-ai/openinference/tree/main/python/instrumentation/openinference-instrumentation-langchain)
+- [Arize AX LangChain tracing guide](https://arize.com/docs/ax/integrations/python-agent-frameworks/langchain/langchain-tracing)
+- [OpenInference span customization](https://github.com/Arize-ai/openinference/tree/main/python/openinference-instrumentation#customizing-spans)
+
+---
+
+<div className="source-links">
+<Callout icon="terminal-2">
+    [Connect these docs](/use-these-docs) to your agent of choice via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/callbacks/openinference.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
+</Callout>
+</div>
+
+
 # Question Answering with `HanaSparqlQAChain`
 Source: https://docs.langchain.com/oss/python/integrations/chains/sap_hana_sparql_qa_chain
 
@@ -51229,6 +51320,7 @@ To implement your own checkpointer for a custom storage backend, see [Build a cu
 | [TypeDB](https://typedb.com/docs) | [`langgraph-checkpoint-typedb`](https://pypi.org/project/langgraph-checkpoint-typedb/) | [typedb/langgraph-checkpoint-typedb](https://github.com/typedb/langgraph-checkpoint-typedb) |
 | [Inspeximus](https://dancenitra.github.io/inspeximus/) | [`langgraph-checkpoint-inspeximus`](https://pypi.org/project/langgraph-checkpoint-inspeximus/) | [DanceNitra/inspeximus](https://github.com/DanceNitra/inspeximus) |
 | Supabase | [`langgraph-checkpoint-supabase`](https://pypi.org/project/langgraph-checkpoint-supabase/) | [Tghez/langgraph-checkpoint-supabase](https://github.com/Tghez/langgraph-checkpoint-supabase) |
+| [SingleStore](https://www.singlestore.com/docs/) | [`langgraph-singlestore`](https://pypi.org/project/langgraph-singlestore/) | [singlestore-labs/langchain-singlestore](https://github.com/singlestore-labs/langchain-singlestore) |
 
 ---
 
@@ -51351,7 +51443,7 @@ Source: https://docs.langchain.com/oss/python/integrations/document_loaders/azur
 This notebook covers how to load document objects from a container on `Azure Blob Storage`. For more detailed documentation on the document loader, see the [Azure Blob Storage Loader API Reference](https://reference.langchain.com/python/integrations/langchain_azure/storage/).
 
 <Note>
-It is recommended to use this new loader over the previous [`AzureBlobStorageFileLoader`](https://reference.langchain.com/python/langchain-community/document_loaders/azure_blob_storage_file/AzureBlobStorageFileLoader) and [`AzureBlobStorageContainerLoader`](https://reference.langchain.com/python/langchain-community/document_loaders/azure_blob_storage_container/AzureBlobStorageContainerLoader) from `langchain_community`. For detailed instructions on migrating to the new loader, refer to the [migration guide](https://github.com/langchain-ai/langchain-azure/blob/main/libs/azure-storage/README.md#migrating-from-langchain-community-azure-storage-document-loaders)
+It is recommended to use this new loader over the previous [`AzureBlobStorageFileLoader`](https://reference.langchain.com/python/langchain-azure-storage/document_loaders/AzureBlobStorageLoader) and [`AzureBlobStorageContainerLoader`](https://reference.langchain.com/python/langchain-azure-storage/document_loaders/AzureBlobStorageLoader) from `langchain_community`. For detailed instructions on migrating to the new loader, refer to the [migration guide](https://github.com/langchain-ai/langchain-azure/blob/main/libs/azure-storage/README.md#migrating-from-langchain-community-azure-storage-document-loaders)
 </Note>
 
 
@@ -51438,7 +51530,7 @@ Currently, the default when parsing each blob is to return the content as a sing
 
 This works by downloading the blob content to a temporary file. The `loader_factory` then gets called with the filepath to use the specified document loader to load/parse the file and return the [`Document`](https://reference.langchain.com/python/langchain-core/documents/base/Document) object(s).
 
-Below shows how to override the default loader used to parse blobs as PDFs using the [PyPDFLoader](https://reference.langchain.com/python/langchain-community/document_loaders/pdf/PyPDFLoader):
+Below shows how to override the default loader used to parse blobs as PDFs using the [PyPDFLoader](https://reference.langchain.com/python/langchain-classic/document_loaders):
 
 <Warning>
 The `langchain-community` package is no longer maintained. Examples that import from `langchain_community` may be outdated or broken. Use with caution.
@@ -64920,7 +65012,7 @@ You may be looking for [this page instead](/oss/python/integrations/chat/cohere/
 
 >[Cohere](https://cohere.ai/about) is a Canadian startup that provides natural language processing models that help companies improve human-machine interactions.
 
-Head to the [API reference](https://reference.langchain.com/python/langchain-community/llms/cohere/Cohere) for detailed documentation of all attributes and methods.
+Head to the [API reference](https://reference.langchain.com/python/langchain-cohere/llms/Cohere) for detailed documentation of all attributes and methods.
 
 ## Setup
 
@@ -65007,7 +65099,7 @@ model.batch([message])
 
 ## API reference
 
-For detailed documentation of all `Cohere` llm features and configurations head to the [API reference](https://reference.langchain.com/python/langchain-community/llms/cohere/Cohere)
+For detailed documentation of all `Cohere` llm features and configurations head to the [API reference](https://reference.langchain.com/python/langchain-cohere/llms/Cohere)
 
 ---
 
@@ -67401,7 +67493,7 @@ llm_chain.invoke({"question": question})
 
 ## API reference
 
-[API reference](https://reference.langchain.com/python/langchain-community/llms/predictionguard/PredictionGuard)
+[API reference](https://docs.predictionguard.com/)
 
 ---
 
@@ -67679,6 +67771,7 @@ To implement your own store for a custom storage backend, see [Build a custom st
 | [MongoDB](/oss/python/integrations/memory/mongodb-long-term-memory) | [`langgraph-store-mongodb`](https://pypi.org/project/langgraph-store-mongodb/) | [langchain-ai/langchain-mongodb](https://github.com/langchain-ai/langchain-mongodb/tree/main/libs/langgraph-store-mongodb) |
 | Upstash Redis | [`langgraph-store-upstash`](https://pypi.org/project/langgraph-store-upstash/) | [Tghez/langgraph-store-upstash](https://github.com/Tghez/langgraph-store-upstash) |
 | OMEM | [`omem-infrastructure`](https://pypi.org/project/omem-infrastructure/) | [OMEM docs](https://infrastructure.omem-cloud.com/docs) |
+| [SingleStore](https://www.singlestore.com/docs/) | [`langgraph-singlestore`](https://pypi.org/project/langgraph-singlestore/) | [singlestore-labs/langchain-singlestore](https://github.com/singlestore-labs/langchain-singlestore) |
 
 ---
 
@@ -70072,7 +70165,7 @@ Middleware enables context engineering, harness customization, and runtime safet
 | [`ATLTaskMiddleware`](https://github.com/wenhua6666668-oss/langchain-agenttrafficlab#automatic-task-time-routing-v03) | Automatic task-time routing to executable MCP and provider capabilities, with failure redecision and outcome reporting. | [`wenhua6666668-oss/langchain-agenttrafficlab`](https://github.com/wenhua6666668-oss/langchain-agenttrafficlab) | <span data-sort-value="544"><a href="https://pypi.org/project/langchain-agenttrafficlab/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-agenttrafficlab/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`langchain-router`](https://github.com/johanity/langchain-router) | Phase-based model routing. Routes execution turns to a fast model, keeps the primary for planning and recovery. | [`johanity/langchain-router`](https://github.com/johanity/langchain-router) | <span data-sort-value="460"><a href="https://pypi.org/project/langchain-router/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-router/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`langchain-task-steering`](https://github.com/edvinhallvaxhiu/langchain-task-steering) | Implicit state-machine middleware for ordered task pipelines with per-task tool scoping, dynamic prompt injection, and composable completion validation. | [`edvinhallvaxhiu/langchain-task-steering`](https://github.com/edvinhallvaxhiu/langchain-task-steering) | <span data-sort-value="454"><a href="https://pypi.org/project/langchain-task-steering/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-task-steering/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
-| [`CTRLRunMiddleware`](https://github.com/CTRLRun/ctrlrun/tree/main/adapters/langchain) | Gates an agent's tool calls against a CTRLRun policy through `wrap_tool_call`, running the handler as the executor so a refused call never reaches the tool, an effect key executes at most once across processes sharing a store, and a call whose outcome was never established blocks its own retry until a human resolves it. | [`CTRLRun/ctrlrun`](https://github.com/CTRLRun/ctrlrun/tree/main/adapters/langchain) | <span data-sort-value="445"><a href="https://pypi.org/project/ctrlrun-langchain/" target="_blank"><img src="https://static.pepy.tech/badge/ctrlrun-langchain/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
+| [`CTRLRunMiddleware`](https://docs.ctrlrun.dev/guides/langchain-middleware) | Policy-gated tool calls through wrap_tool_call: a refused call never reaches the tool and the model is told which rule refused it; an effect key executes at most once across processes sharing a store; a tool that raises leaves the effect unresolved rather than retried; an approve decision holds the call for a person; a receipt for every decision, refusals included. | [`CTRLRun/ctrlrun`](https://github.com/CTRLRun/ctrlrun/tree/main/adapters/langchain) | <span data-sort-value="445"><a href="https://pypi.org/project/ctrlrun-langchain/" target="_blank"><img src="https://static.pepy.tech/badge/ctrlrun-langchain/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`advisor-middleware`](https://github.com/emanueleielo/advisor-middleware) | Claude Code's advisor pattern as LangChain middleware. Pairs a fast executor model with a powerful advisor model that intervenes only on critical decisions. | [`emanueleielo/advisor-middleware`](https://github.com/emanueleielo/advisor-middleware) | <span data-sort-value="388"><a href="https://pypi.org/project/advisor-middleware/" target="_blank"><img src="https://static.pepy.tech/badge/advisor-middleware/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`BastionGuardrailMiddleware`](https://bastionsoft.com) | Prompt-injection and jailbreak detection. Screens user input and tool results, including indirect injection through retrieved content, before the model runs. Runs locally on your own hardware. | [`bastion-soft/bastion-prompt-protection`](https://github.com/bastion-soft/bastion-prompt-protection) | <span data-sort-value="360"><a href="https://pypi.org/project/bastion-prompt-protection/" target="_blank"><img src="https://static.pepy.tech/badge/bastion-prompt-protection/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
 | [`RelayShield`](https://api.relayshield.net/developers) | Mandatory pre-execution gate that blocks connect_mcp_server and install_mcp_package tool calls when RelayShield reports risk. | [`nzdsf2-gif/langchain-relayshield`](https://github.com/nzdsf2-gif/langchain-relayshield) | <span data-sort-value="328"><a href="https://pypi.org/project/langchain-relayshield/" target="_blank"><img src="https://static.pepy.tech/badge/langchain-relayshield/month" alt="Downloads per month" noZoom class="rounded not-prose" /></a></span> |
@@ -71499,6 +71592,14 @@ Browse the complete collection of integrations available for Python. LangChain P
     </Card>
 
     <Card
+        title="CTRLRun"
+        href="https://docs.ctrlrun.dev/guides/langchain-middleware"
+        icon="link"
+    >
+        Execution safety for AI agents. Middleware that checks every tool call against a policy before it runs, holds the consequential ones for a human, and leaves a receipt.
+    </Card>
+
+    <Card
         title="Cloudflare"
         href="https://developers.cloudflare.com/workers-ai/"
         icon="link"
@@ -71624,14 +71725,6 @@ Browse the complete collection of integrations available for Python. LangChain P
         icon="link"
     >
         Open-source Firecrawl-compatible web scraper for LLM-ready markdown, HTML, or JSON.
-    </Card>
-
-    <Card
-        title="CTRLRunMiddleware"
-        href="https://github.com/CTRLRun/ctrlrun/tree/main/adapters/langchain"
-        icon="link"
-    >
-        Gates an agent's tool calls against a CTRLRun policy through `wrap_tool_call`, running the handler as the executor so a refused call never reaches the tool, an effect key executes at most once across processes sharing a store, and a call whose outcome was never established blocks its own retry until a human resolves it.
     </Card>
 
     <Card
@@ -73044,6 +73137,14 @@ Browse the complete collection of integrations available for Python. LangChain P
         icon="link"
     >
         AI model training and fine-tuning platform.
+    </Card>
+
+    <Card
+        title="OpenInference"
+        href="/oss/python/integrations/callbacks/openinference"
+        icon="link"
+    >
+        OpenTelemetry instrumentation that records LangChain and LangGraph operations using OpenInference semantic conventions.
     </Card>
 
     <Card
@@ -80921,6 +81022,10 @@ Choose a hosting protocol based on how clients interact with the agent:
 | --- | --- | --- | --- | --- |
 | Responses | `--protocol responses` | `ResponsesHostServer` | `/responses` | You need OpenAI-compatible chat, streaming, response history, or conversation threading. Start here for most conversational agents. |
 | Invocations | `--protocol invocations` | `InvocationsHostServer` | `/invocations` | You need a custom JSON shape, a webhook-style endpoint, or non-conversational processing. |
+
+<Note>
+    For hosted graphs using `BaseChatOpenAI`-based models with the Responses API, use `output_version="responses/v1"`. You can omit this setting in `langchain-openai` 1.0.0 or later, unless overridden by `LC_OUTPUT_VERSION`. This guidance applies to both Responses and Invocations hosting protocols.
+</Note>
 
 See the complete run samples for the [Responses protocol](https://github.com/microsoft-foundry/foundry-samples/tree/main/samples/python/hosted-agents/langgraph/responses/10-run) and [Invocations protocol](https://github.com/microsoft-foundry/foundry-samples/tree/main/samples/python/hosted-agents/langgraph/invocations/03-run).
 
@@ -94346,7 +94451,7 @@ Source: https://docs.langchain.com/oss/python/integrations/tools/bedrock_agentco
 
 | Class | Package | Serializable | [JS support](https://js.langchain.com/docs/integrations/tools/) |  Version |
 |:------|:--------|:------------:|:---------------------------------------------------------------:|:--------:|
-| [`BrowserToolkit`](https://github.com/langchain-ai/langchain-aws/tree/main/libs/aws/langchain_aws/tools) | [`langchain-aws`](https://pypi.org/project/langchain-aws/) | ✅ | ❌ | ![PyPI - Version](https://img.shields.io/pypi/v/langchain-aws?style=flat-square&label=%20) |
+| [`BrowserToolkit`](https://github.com/langchain-ai/langchain-aws/tree/main/libs/aws/langchain_aws/tools) | [`langchain-aws`](https://pypi.org/project/langchain-aws/) | ❌ | ❌ | ![PyPI - Version](https://img.shields.io/pypi/v/langchain-aws?style=flat-square&label=%20) |
 
 ### Tool features
 
@@ -94744,7 +94849,7 @@ Source: https://docs.langchain.com/oss/python/integrations/tools/bedrock_agentco
 
 | Class | Package | Serializable | [JS support](https://js.langchain.com/docs/integrations/tools/) |  Version |
 |:------|:--------|:------------:|:---------------------------------------------------------------:|:--------:|
-| [`CodeInterpreterToolkit`](https://github.com/langchain-ai/langchain-aws/tree/main/libs/aws/langchain_aws/tools) | [`langchain-aws`](https://pypi.org/project/langchain-aws/) | ✅ | ❌ | ![PyPI - Version](https://img.shields.io/pypi/v/langchain-aws?style=flat-square&label=%20) |
+| [`CodeInterpreterToolkit`](https://github.com/langchain-ai/langchain-aws/tree/main/libs/aws/langchain_aws/tools) | [`langchain-aws`](https://pypi.org/project/langchain-aws/) | ❌ | ❌ | ![PyPI - Version](https://img.shields.io/pypi/v/langchain-aws?style=flat-square&label=%20) |
 
 ### Tool features
 
@@ -130690,7 +130795,7 @@ Catch exceptions raised during tool execution and convert them into error `ToolM
 - Preventing unexpected tool exceptions from crashing the agent.
 
 <Note>
-Tool error middleware does not automatically retry failed calls. For retries, compose with [Tool retry](#tool-retry) middleware placed *inner* (earlier in the `middleware` list) and configured with `on_failure="error"` so that exceptions reach the tool error middleware. See the [full example](#tool-error-full-example) below.
+Tool error middleware does not automatically retry failed calls. For retries, compose with [Tool retry](#tool-retry) middleware placed *inner* (later in the `middleware` list) and configured with `on_failure="error"` so that exceptions reach the tool error middleware. See the [full example](#tool-error-full-example) below.
 </Note>
 
 **API reference:** [`ToolErrorMiddleware`](https://reference.langchain.com/python/langchain/agents/middleware/tool_error/ToolErrorMiddleware)
@@ -130762,8 +130867,8 @@ agent = create_agent(
     tools=[search_tool, database_tool],
     middleware=[
         # Place retry inner so exceptions reach ToolErrorMiddleware after retries are exhausted
-        ToolRetryMiddleware(max_retries=3, on_failure="error"),
         ToolErrorMiddleware(on_error=on_error, tools=["search_tool"]),
+        ToolRetryMiddleware(max_retries=3, on_failure="error"),
     ],
 )
 
